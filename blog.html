@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog — Arcane Designer</title>
+  <meta name="description" content="Marketing insights, AI tool reviews, and strategies that actually work — the Arcane Designer blog.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" aria-label="Arcane Designer home">
+        <img src="assets/images/LOGO.png" alt="Arcane Designer logo — three overlapping hexagons in blue, pink, and green">
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="blog.html" class="active">Blog</a>
+        <a href="shop.html">Shop</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== PAGE HERO ===== -->
+  <section class="page-hero">
+    <div class="hex-bg" aria-hidden="true">
+      <div class="hex"></div><div class="hex"></div><div class="hex"></div><div class="hex"></div>
+    </div>
+    <h1>The Arcane Blog</h1>
+    <p class="tagline">Marketing insights, AI tool reviews, and strategies that actually work.</p>
+  </section>
+
+  <!-- ===== BLOG CONTENT ===== -->
+  <section class="section-gray">
+    <div class="container">
+      <div class="blog-layout">
+
+        <!-- Main Blog Grid -->
+        <div class="blog-main">
+          <div class="cards-grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr));">
+
+            <article class="blog-card fade-in">
+              <div class="blog-card-image" style="background:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%);"></div>
+              <div class="blog-card-body">
+                <p class="blog-date">March 2026</p>
+                <h3>5 AI Tools Every Small Business Should Be Using in 2026</h3>
+                <p>The AI landscape moves fast. Here are the tools that are actually worth your time and budget right now.</p>
+                <a href="#" class="read-more">Read More &rarr;</a>
+              </div>
+            </article>
+
+            <article class="blog-card fade-in">
+              <div class="blog-card-image" style="background:linear-gradient(135deg,var(--blue) 0%,var(--pink) 100%);"></div>
+              <div class="blog-card-body">
+                <p class="blog-date">March 2026</p>
+                <h3>Why Your Email Open Rates Are Dropping (And How to Fix It)</h3>
+                <p>If your emails are going unread, it's probably not your subject lines. Here's what's really happening.</p>
+                <a href="#" class="read-more">Read More &rarr;</a>
+              </div>
+            </article>
+
+            <article class="blog-card fade-in">
+              <div class="blog-card-image" style="background:linear-gradient(135deg,var(--teal) 0%,var(--navy) 100%);"></div>
+              <div class="blog-card-body">
+                <p class="blog-date">February 2026</p>
+                <h3>The Solo Marketer's Guide to Doing More With Less</h3>
+                <p>You don't need a team of 10 to run marketing that works. Here's how to punch above your weight.</p>
+                <a href="#" class="read-more">Read More &rarr;</a>
+              </div>
+            </article>
+
+            <article class="blog-card fade-in">
+              <div class="blog-card-image" style="background:linear-gradient(135deg,var(--pink) 0%,var(--blue) 100%);"></div>
+              <div class="blog-card-body">
+                <p class="blog-date">February 2026</p>
+                <h3>How to Build a Newsletter From Scratch (Without Losing Your Mind)</h3>
+                <p>Starting a newsletter is easy. Sustaining one is the hard part. Here's a realistic framework that works.</p>
+                <a href="#" class="read-more">Read More &rarr;</a>
+              </div>
+            </article>
+
+            <article class="blog-card fade-in">
+              <div class="blog-card-image" style="background:linear-gradient(135deg,var(--navy) 0%,var(--pink) 100%);"></div>
+              <div class="blog-card-body">
+                <p class="blog-date">January 2026</p>
+                <h3>SEO in 2026: What Actually Matters Now</h3>
+                <p>Search is changing fast. Here's what still works, what doesn't, and where to focus your energy.</p>
+                <a href="#" class="read-more">Read More &rarr;</a>
+              </div>
+            </article>
+
+            <article class="blog-card fade-in">
+              <div class="blog-card-image" style="background:linear-gradient(135deg,var(--blue) 0%,var(--teal) 100%);"></div>
+              <div class="blog-card-body">
+                <p class="blog-date">January 2026</p>
+                <h3>AI Marketing Is Not Cheating. Here's Why.</h3>
+                <p>The debate over AI in marketing misses the point. It's not about replacing creativity — it's about amplifying it.</p>
+                <a href="#" class="read-more">Read More &rarr;</a>
+              </div>
+            </article>
+
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="blog-sidebar">
+          <div class="sidebar-box fade-in">
+            <h3>Subscribe for Updates</h3>
+            <form class="subscribe-form" action="#" method="post">
+              <input type="email" placeholder="your@email.com" aria-label="Email address" required>
+              <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;font-size:.85rem;">Subscribe</button>
+            </form>
+          </div>
+          <div class="sidebar-box fade-in">
+            <h3>Categories</h3>
+            <ul class="category-list">
+              <li><a href="#">AI &amp; Automation</a></li>
+              <li><a href="#">Email Marketing</a></li>
+              <li><a href="#">SEO</a></li>
+              <li><a href="#">Strategy</a></li>
+              <li><a href="#">Tools &amp; Reviews</a></li>
+            </ul>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+
+    <!-- Arc pointing down -->
+    <div style="text-align:center;margin-top:48px;">
+      <img src="assets/images/Arc_Points_Down___Crouches.png" alt="Arc mascot crouching and pointing down" style="width:140px;margin:0 auto;filter:drop-shadow(0 4px 16px rgba(0,0,0,.1));" loading="lazy">
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="assets/images/LOGO.png" alt="Arcane Designer logo">
+        <p>AI-powered digital marketing that blends creative strategy with cutting-edge automation.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="shop.html">Shop</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-social">
+        <h4>Connect</h4>
+        <div class="footer-social-icons">
+          <a href="https://www.linkedin.com/company/arcane-designer/" target="_blank" rel="noopener noreferrer" aria-label="Arcane Designer on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="https://www.instagram.com/arcanedesigner" target="_blank" rel="noopener noreferrer" aria-label="Arcane Designer on Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 Arcane Designer LLC. All rights reserved.
+    </div>
+    <div class="footer-arc" aria-hidden="true">
+      <img src="assets/images/Arc_Points_Down___Crouches.png" alt="" loading="lazy">
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

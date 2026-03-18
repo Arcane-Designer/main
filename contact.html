@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact — Arcane Designer</title>
+  <meta name="description" content="Get in touch with Arcane Designer LLC — let's talk about your marketing needs.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" aria-label="Arcane Designer home">
+        <img src="assets/images/LOGO.png" alt="Arcane Designer logo — three overlapping hexagons in blue, pink, and green">
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="blog.html">Blog</a>
+        <a href="shop.html">Shop</a>
+        <a href="contact.html" class="active">Contact</a>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== PAGE HERO ===== -->
+  <section class="page-hero">
+    <div class="hex-bg" aria-hidden="true">
+      <div class="hex"></div><div class="hex"></div><div class="hex"></div><div class="hex"></div>
+    </div>
+    <h1>Let's Talk</h1>
+    <p class="tagline">Got a question, a project idea, or just want to say hey?</p>
+  </section>
+
+  <!-- ===== CONTACT SECTION ===== -->
+  <section class="dark-section">
+    <div class="container">
+      <div class="contact-wrapper">
+
+        <div class="contact-form fade-in">
+          <!-- TODO: Connect form to Formspree, Netlify Forms, or similar service -->
+          <form action="#" method="post">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" placeholder="Your name" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="your@email.com" required>
+            </div>
+            <div class="form-group">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" placeholder="Tell me about your project, ask a question, or just say hello..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Send Message</button>
+          </form>
+
+          <div class="contact-alt">
+            <p>Or reach out directly:</p>
+            <p>
+              <a href="https://www.linkedin.com/company/arcane-designer/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in"></i> Arcane Designer on LinkedIn</a>
+            </p>
+            <p>
+              <a href="https://www.instagram.com/arcanedesigner" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i> @arcanedesigner on Instagram</a>
+            </p>
+          </div>
+        </div>
+
+        <div class="contact-image fade-in">
+          <img src="assets/images/Arc_Presents_Speaks.png" alt="Arc mascot presenting with hands out" loading="lazy">
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="assets/images/LOGO.png" alt="Arcane Designer logo">
+        <p>AI-powered digital marketing that blends creative strategy with cutting-edge automation.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="shop.html">Shop</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-social">
+        <h4>Connect</h4>
+        <div class="footer-social-icons">
+          <a href="https://www.linkedin.com/company/arcane-designer/" target="_blank" rel="noopener noreferrer" aria-label="Arcane Designer on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="https://www.instagram.com/arcanedesigner" target="_blank" rel="noopener noreferrer" aria-label="Arcane Designer on Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 Arcane Designer LLC. All rights reserved.
+    </div>
+    <div class="footer-arc" aria-hidden="true">
+      <img src="assets/images/Arc_Points_Down___Crouches.png" alt="" loading="lazy">
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
