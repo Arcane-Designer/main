@@ -1017,6 +1017,44 @@ p { margin-bottom: 1rem; }
   color: var(--teal);
 }
 
+/* Horizontal quick links row */
+.footer-links-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.footer-links-row a {
+  font-size: .9rem;
+  color: rgba(255,255,255,.6);
+  transition: color .25s var(--ease);
+  padding: 4px 14px;
+}
+
+.footer-links-row a:hover {
+  color: var(--teal);
+}
+
+.footer-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255,255,255,.15);
+  flex-shrink: 0;
+}
+
+/* Arc centered under Connect section */
+.footer-arc-centered {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.footer-arc-centered img {
+  width: 100px;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,.3));
+  opacity: .75;
+}
+
 .footer-social-icons {
   display: flex;
   gap: 14px;
@@ -1102,6 +1140,24 @@ p { margin-bottom: 1rem; }
   color: var(--pink);
 }
 
+/* ---------- Track Record Layout with Arc ---------- */
+.track-record-layout {
+  position: relative;
+}
+
+.track-arc-top {
+  position: absolute;
+  top: -20px;
+  left: -10px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.track-arc-top img {
+  width: 120px;
+  filter: drop-shadow(0 6px 20px rgba(0,0,0,.3));
+}
+
 .text-center { text-align: center; }
 .mt-0 { margin-top: 0; }
 
@@ -1171,9 +1227,59 @@ p { margin-bottom: 1rem; }
   .footer-inner {
     flex-direction: column;
     gap: 32px;
+    text-align: center;
   }
 
-  .footer-arc { display: none; }
+  .footer-brand { max-width: 100%; }
+
+  .footer-links-row {
+    justify-content: center;
+  }
+
+  .footer-social {
+    text-align: center;
+  }
+
+  .footer-social-icons {
+    justify-content: center;
+  }
+
+  .footer-arc-centered img {
+    width: 90px;
+  }
+
+  /* Track record Arc on mobile - above cards */
+  .track-arc-top {
+    position: static;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .track-arc-top img {
+    width: 100px;
+  }
+
+  /* Contact page mobile fixes */
+  .contact-wrapper {
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .contact-form {
+    width: 100%;
+  }
+
+  .contact-form input,
+  .contact-form textarea {
+    width: 100%;
+  }
+
+  .contact-image {
+    flex: auto;
+    max-width: 180px;
+    margin: 0 auto;
+    order: 1;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1190,6 +1296,19 @@ p { margin-bottom: 1rem; }
 
   .hero-ctas {
     flex-direction: column;
+    width: 100%;
+  }
+
+  .footer-links-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .footer-divider {
+    display: none;
+  }
+
+  .contact-form .btn {
     width: 100%;
   }
 }
