@@ -297,9 +297,34 @@ function renderCharacters() {
   const hiraganaHtml = renderHiraganaKatakanaGrid(HIRAGANA, learned, current);
   const katakanaHtml = renderHiraganaKatakanaGrid(KATAKANA, learned, current);
 
-  // Kanji — pull from character-order.json
+  // Kanji — pull from character-order.json, group by grade
   const kanjiList = (characterOrder?.order || []).filter(c => c.script === 'kanji');
-  const kanjiHtml = kanjiList.map(c => renderCell(c.char, c.romaji, true, c.meaning)).join('');
+  const gradesOrder = [1, 2, 3, 4, 5, 6, 'S'];
+  const gradeLabel = {1: 'Grade 1', 2: 'Grade 2', 3: 'Grade 3', 4: 'Grade 4', 5: 'Grade 5', 6: 'Grade 6', 'S': 'Secondary'};
+  const byGrade = {};
+  for (const g of gradesOrder) byGrade[g] = [];
+  for (const k of kanjiList) {
+    const g = k.grade || 'S';
+    if (byGrade[g]) byGrade[g].push(k);
+    else byGrade['S'].push(k);
+  }
+  const kanjiHtml = gradesOrder.map(g => {
+    const items = byGrade[g];
+    if (!items || items.length === 0) return '';
+    const isSecondary = g === 'S';
+    const gCount = items.filter(k => learned.has(k.char)).length;
+    const cellsHtml = items.map(c => renderCell(c.char, c.romaji, true, c.meaning)).join('');
+    return `
+      <div class="kanji-grade kanji-grade-${g}${isSecondary ? ' collapsed' : ''}" data-grade="${g}">
+        <div class="kanji-grade-header" ${isSecondary ? `onclick="toggleKanjiGrade('${g}')"` : ''}>
+          <h4>${gradeLabel[g]}</h4>
+          <span class="kanji-grade-count">${gCount} / ${items.length}</span>
+          ${isSecondary ? '<span class="kanji-grade-toggle">Show ▾</span>' : ''}
+        </div>
+        <div class="char-grid kanji kanji-grade-grid">${cellsHtml}</div>
+      </div>
+    `;
+  }).join('');
 
   document.getElementById('hiragana-grid').innerHTML = hiraganaHtml;
   document.getElementById('katakana-grid').innerHTML = katakanaHtml;
@@ -312,6 +337,14 @@ function renderCharacters() {
   document.getElementById('hiragana-count').textContent = `${hCount} / ${HIRAGANA.length}`;
   document.getElementById('katakana-count').textContent = `${kCount} / ${KATAKANA.length}`;
   document.getElementById('kanji-count').textContent = `${jCount} / ${kanjiList.length}`;
+}
+
+function toggleKanjiGrade(grade) {
+  const el = document.querySelector(`.kanji-grade[data-grade="${grade}"]`);
+  if (!el) return;
+  el.classList.toggle('collapsed');
+  const toggle = el.querySelector('.kanji-grade-toggle');
+  if (toggle) toggle.textContent = el.classList.contains('collapsed') ? 'Show ▾' : 'Hide ▴';
 }
 
 function renderHiraganaKatakanaGrid(charset, learned, current) {

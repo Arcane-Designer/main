@@ -273,8 +273,64 @@ body::before {
   padding: 1px;
 }
 .char-grid.kanji {
-  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
 }
+
+/* Kanji grade-grouped sub-sections */
+.kanji-grade {
+  margin-bottom: 28px;
+}
+.kanji-grade-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(58,48,36,0.15);
+}
+.kanji-grade-header h4 {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+.kanji-grade-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+.kanji-grade-toggle {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vermilion);
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.kanji-grade-toggle:hover { background: var(--vermilion); color: var(--paper); }
+.kanji-grade.collapsed .kanji-grade-grid { display: none; }
+.kanji-grade.collapsed .kanji-grade-header { cursor: pointer; }
+
+/* Subtle tint variation per grade — keeps minimal vibe */
+.kanji-grade-1 .char-cell { background: var(--paper-warm); }
+.kanji-grade-2 .char-cell { background: #ebe2cf; }
+.kanji-grade-3 .char-cell { background: #ecdfd0; }
+.kanji-grade-4 .char-cell { background: #ebe1d4; }
+.kanji-grade-5 .char-cell { background: #ebe3d6; }
+.kanji-grade-6 .char-cell { background: #eae1d2; }
+.kanji-grade-S .char-cell { background: #e7decd; }
+/* Learned/current overrides keep their vermilion/gold accent regardless of grade tint */
+.kanji-grade .char-cell.learned { background: var(--gold) !important; }
+.kanji-grade .char-cell.current { background: var(--vermilion) !important; }
 .char-cell {
   aspect-ratio: 1;
   background: var(--paper-warm);
@@ -313,7 +369,8 @@ body::before {
   opacity: 0.3;
   font-weight: 500;
 }
-.char-cell.kanji-cell .char { font-size: 28px; }
+.char-cell.kanji-cell .char { font-size: 22px; }
+.char-cell.kanji-cell .romaji { display: none; } /* hide romaji on small kanji tiles, available via flip-card */
 .char-cell .romaji {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
