@@ -486,6 +486,43 @@ body::before {
   margin-left: auto;
   text-transform: uppercase;
 }
+
+/* Collapsible week blocks (All Words tab only) */
+.week-block.collapsible .week-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+.week-block.collapsible .week-header:hover {
+  background: rgba(176,132,56,0.10);
+}
+.week-block.collapsible .week-header .week-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  margin-left: auto;
+  text-transform: uppercase;
+}
+.week-block.collapsible .week-header .week-toggle {
+  font-size: 14px;
+  color: var(--muted);
+  margin-left: 4px;
+  transition: transform 0.2s ease;
+  transform-origin: center;
+  display: inline-block;
+  width: 16px;
+  text-align: center;
+}
+.week-block.collapsible.collapsed .week-header {
+  border-bottom: none;
+}
+.week-block.collapsible.collapsed .week-toggle {
+  transform: rotate(-90deg);
+}
+.week-block.collapsible.collapsed .week-words {
+  display: none;
+}
 .word-row {
   display: grid;
   grid-template-columns: 60px 1fr 1fr auto;
@@ -1255,6 +1292,6 @@ body::before {
   </div>
 </div>
 
-<script src="dashboard.js?v=cdnfix1"></script>
+<script src="dashboard.js?v=collapse1"></script>
 </body>
 </html>

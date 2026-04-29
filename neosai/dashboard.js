@@ -243,6 +243,7 @@ function renderAllWords() {
     return;
   }
 
+  const collapsed = getCollapsedWeeks();
   container.innerHTML = weekKeys.map(wk => {
     const week = byWeek[wk];
     const wordsHtml = week.words.map(w => {
@@ -264,16 +265,46 @@ function renderAllWords() {
       `;
     }).join('');
     const headerLabel = wk === 0 ? 'Personal additions' : `Week ${wk}`;
+    const isCollapsed = !!collapsed[wk];
     return `
-      <div class="week-block">
-        <div class="week-header">
+      <div class="week-block collapsible ${isCollapsed ? 'collapsed' : ''}" data-week="${wk}">
+        <div class="week-header" onclick="toggleWeek('${wk}')">
           ${week.character ? `<div class="char-seal-mini">${week.character}</div>` : ''}
           <h4>${headerLabel}</h4>
+          <span class="week-count">${week.words.length}</span>
+          <span class="week-toggle" aria-hidden="true">▾</span>
         </div>
-        ${wordsHtml}
+        <div class="week-words">${wordsHtml}</div>
       </div>
     `;
   }).join('');
+}
+
+// =============================================================
+// COLLAPSIBLE WEEK STATE — persisted across reloads
+// =============================================================
+const COLLAPSED_WEEKS_KEY = 'neosai-collapsed-weeks';
+
+function getCollapsedWeeks() {
+  try {
+    return JSON.parse(localStorage.getItem(COLLAPSED_WEEKS_KEY) || '{}');
+  } catch (_) {
+    return {};
+  }
+}
+
+function setWeekCollapsed(wk, collapsed) {
+  const map = getCollapsedWeeks();
+  if (collapsed) map[String(wk)] = true;
+  else delete map[String(wk)];
+  try { localStorage.setItem(COLLAPSED_WEEKS_KEY, JSON.stringify(map)); } catch (_) {}
+}
+
+function toggleWeek(wk) {
+  const block = document.querySelector(`.week-block.collapsible[data-week="${wk}"]`);
+  if (!block) return;
+  block.classList.toggle('collapsed');
+  setWeekCollapsed(wk, block.classList.contains('collapsed'));
 }
 
 function renderCharacters() {
