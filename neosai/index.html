@@ -995,35 +995,47 @@ body::before {
 }
 .deco-band.bottom {
   bottom: 0;
-  -webkit-mask-image: linear-gradient(to top, black 0%, black 35%, transparent 100%);
-  mask-image: linear-gradient(to top, black 0%, black 35%, transparent 100%);
+  height: 110px;
+  opacity: 0.18;
+  background-size: 40px 40px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><g fill='none' stroke='%232a3f5f' stroke-width='1'><circle cx='0' cy='0' r='20'/><circle cx='0' cy='0' r='14'/><circle cx='0' cy='0' r='8'/><circle cx='40' cy='0' r='20'/><circle cx='40' cy='0' r='14'/><circle cx='40' cy='0' r='8'/><circle cx='20' cy='40' r='20'/><circle cx='20' cy='40' r='14'/><circle cx='20' cy='40' r='8'/></g></svg>");
+  -webkit-mask-image: linear-gradient(to top, black 0%, transparent 100%);
+  mask-image: linear-gradient(to top, black 0%, transparent 100%);
 }
 
-/* DECORATIVE SIDE PANELS — asanoha (hemp leaf) pattern in the gutters */
-.deco-side {
+/* DECORATIVE SIDE PANELS — shoji-style screens in the gutters */
+.shoji {
   position: fixed;
-  top: 0;
-  bottom: 0;
-  width: calc((100vw - 1180px) / 2);
+  top: 70px;
+  bottom: 70px;
+  width: 78px;
   pointer-events: none;
   z-index: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='31.18' height='54' viewBox='0 0 31.18 54'><g fill='none' stroke='%233a2f25'><g stroke-width='0.6' opacity='0.85'><line x1='0' y1='-9' x2='15.59' y2='0'/><line x1='15.59' y1='0' x2='15.59' y2='18'/><line x1='15.59' y1='18' x2='0' y2='27'/><line x1='0' y1='27' x2='-15.59' y2='18'/><line x1='-15.59' y1='18' x2='-15.59' y2='0'/><line x1='-15.59' y1='0' x2='0' y2='-9'/><line x1='15.59' y1='18' x2='31.18' y2='27'/><line x1='31.18' y1='27' x2='31.18' y2='45'/><line x1='31.18' y1='45' x2='15.59' y2='54'/><line x1='15.59' y1='54' x2='0' y2='45'/><line x1='0' y1='45' x2='0' y2='27'/></g><g stroke-width='0.7'><line x1='0' y1='9' x2='0' y2='-9'/><line x1='0' y1='9' x2='15.59' y2='0'/><line x1='0' y1='9' x2='15.59' y2='18'/><line x1='0' y1='9' x2='0' y2='27'/><line x1='0' y1='9' x2='-15.59' y2='18'/><line x1='0' y1='9' x2='-15.59' y2='0'/><line x1='15.59' y1='36' x2='15.59' y2='18'/><line x1='15.59' y1='36' x2='31.18' y2='27'/><line x1='15.59' y1='36' x2='31.18' y2='45'/><line x1='15.59' y1='36' x2='15.59' y2='54'/><line x1='15.59' y1='36' x2='0' y2='45'/><line x1='15.59' y1='36' x2='0' y2='27'/></g></g></svg>");
-  background-size: 62px 108px;
-  background-repeat: repeat;
-  opacity: 0.22;
+  background-color: #f0e7d3;
+  border: 6px solid #5a3f28;
+  border-radius: 2px;
+  background-image:
+    linear-gradient(to right,
+      transparent calc(33.333% - 1.5px),
+      #5a3f28 calc(33.333% - 1.5px),
+      #5a3f28 calc(33.333% + 1.5px),
+      transparent calc(33.333% + 1.5px),
+      transparent calc(66.666% - 1.5px),
+      #5a3f28 calc(66.666% - 1.5px),
+      #5a3f28 calc(66.666% + 1.5px),
+      transparent calc(66.666% + 1.5px)),
+    repeating-linear-gradient(to bottom,
+      transparent 0,
+      transparent 28px,
+      #5a3f28 28px,
+      #5a3f28 31px);
+  box-shadow: 0 4px 16px rgba(58,48,36,0.18), inset 0 0 0 1px rgba(90,63,40,0.4);
+  opacity: 0.78;
 }
-.deco-side.left {
-  left: 0;
-  -webkit-mask-image: linear-gradient(to right, black 0%, black 50%, transparent 100%);
-  mask-image: linear-gradient(to right, black 0%, black 50%, transparent 100%);
-}
-.deco-side.right {
-  right: 0;
-  -webkit-mask-image: linear-gradient(to left, black 0%, black 50%, transparent 100%);
-  mask-image: linear-gradient(to left, black 0%, black 50%, transparent 100%);
-}
-@media (max-width: 1240px) {
-  .deco-side { display: none; }
+.shoji.left  { left:  max(16px, calc((100vw - 1180px) / 2 - 100px)); }
+.shoji.right { right: max(16px, calc((100vw - 1180px) / 2 - 100px)); }
+@media (max-width: 1340px) {
+  .shoji { display: none; }
 }
 
 /* HANKO — vermilion seal stamp */
@@ -1047,8 +1059,8 @@ body::before {
 <body>
 <div class="deco-band top"></div>
 <div class="deco-band bottom"></div>
-<div class="deco-side left"></div>
-<div class="deco-side right"></div>
+<div class="shoji left" aria-hidden="true"></div>
+<div class="shoji right" aria-hidden="true"></div>
 <div class="wrapper">
 
 <header class="masthead">
