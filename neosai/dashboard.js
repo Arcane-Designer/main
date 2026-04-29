@@ -172,13 +172,17 @@ function renderOverview() {
 }
 
 function renderCurrentWeekBlock(weekNum, character, words) {
+  const dayShort = { Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed', Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun' };
   const wordsHtml = words.map((w, i) => {
-    const slotLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri ★'];
+    const fallback = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri ★'];
+    const fromWeekday = w.weekday ? (dayShort[w.weekday] || w.weekday) + (w.is_funword ? ' ★' : '') : null;
+    const label = fromWeekday || fallback[i] || '';
+    const translation = w.translation || w.english || '';
     return `
       <div class="word-row ${w.is_funword ? 'is-funword' : ''}">
-        <div class="slot-label">${slotLabels[i] || ''}</div>
+        <div class="slot-label">${escapeHtml(label)}</div>
         <div class="word-jp">${escapeHtml(w.japanese)}<span class="reading">${escapeHtml(w.reading_romaji || '')}</span></div>
-        <div class="word-translation">${escapeHtml(w.translation || '')}</div>
+        <div class="word-translation">${escapeHtml(translation)}</div>
         <div class="word-actions"></div>
       </div>
     `;
@@ -205,7 +209,7 @@ function renderAllWords() {
     if (filter === 'user' && w.source !== 'user') return false;
     if (filter === 'funword' && !w.is_funword) return false;
     if (search) {
-      const hay = `${w.japanese} ${w.reading_romaji || ''} ${w.translation || ''} ${w.notes || ''}`.toLowerCase();
+      const hay = `${w.japanese} ${w.reading_romaji || ''} ${w.translation || w.english || ''} ${w.notes || ''}`.toLowerCase();
       if (!hay.includes(search)) return false;
     }
     return true;
@@ -236,7 +240,7 @@ function renderAllWords() {
           <div class="slot-label">${slotText}</div>
           <div class="word-jp">${escapeHtml(w.japanese)}<span class="reading">${escapeHtml(w.reading_romaji || '')}</span></div>
           <div class="word-translation">
-            ${escapeHtml(w.translation || '')}
+            ${escapeHtml(w.translation || w.english || '')}
             ${w.notes ? `<span class="word-notes">${escapeHtml(w.notes)}</span>` : ''}
           </div>
           <div class="word-actions">
@@ -317,7 +321,7 @@ function renderManage() {
       <div class="slot-label">Mine</div>
       <div class="word-jp">${escapeHtml(w.japanese)}<span class="reading">${escapeHtml(w.reading_romaji || '')}</span></div>
       <div class="word-translation">
-        ${escapeHtml(w.translation || '')}
+        ${escapeHtml(w.translation || w.english || '')}
         ${w.notes ? `<span class="word-notes">${escapeHtml(w.notes)}</span>` : ''}
       </div>
       <div class="word-actions"><button class="btn-mini">Edit</button></div>
