@@ -283,7 +283,9 @@ function renderCharacters() {
     if (isKanji) cls += ' kanji-cell';
     if (char === current) cls += ' current';
     else if (learned.has(char)) cls += ' learned';
-    return `<div class="${cls}" title="${meaning || romaji}">
+    const script = isKanji ? 'kanji' : detectScript(char);
+    const meaningAttr = meaning ? ` data-meaning="${escapeAttr(meaning)}"` : '';
+    return `<div class="${cls}" title="${meaning || romaji}" data-char="${escapeAttr(char)}" data-romaji="${escapeAttr(romaji)}" data-script="${script}"${meaningAttr} onclick="openCharDetail(this)">
       <div class="char">${char}</div>
       <div class="romaji">${romaji}</div>
     </div>`;
@@ -317,7 +319,8 @@ function renderHiraganaKatakanaGrid(charset, learned, current) {
     let cls = 'char-cell';
     if (char === current) cls += ' current';
     else if (learned.has(char)) cls += ' learned';
-    return `<div class="${cls}"><div class="char">${char}</div><div class="romaji">${romaji}</div></div>`;
+    const script = detectScript(char);
+    return `<div class="${cls}" data-char="${escapeAttr(char)}" data-romaji="${escapeAttr(romaji)}" data-script="${script}" onclick="openCharDetail(this)"><div class="char">${char}</div><div class="romaji">${romaji}</div></div>`;
   }).join('');
 }
 
@@ -459,6 +462,95 @@ function showToast(msg, type = '') {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.classList.remove('show'); }, 3000);
 }
+
+function detectScript(c) {
+  if (!c) return 'unknown';
+  const cp = c.codePointAt(0);
+  if (cp >= 0x3040 && cp <= 0x309F) return 'hiragana';
+  if (cp >= 0x30A0 && cp <= 0x30FF) return 'katakana';
+  if (cp >= 0x4E00 && cp <= 0x9FFF) return 'kanji';
+  return 'unknown';
+}
+
+// =============================================================
+// CHARACTER DETAIL MODAL
+// =============================================================
+
+function openCharDetail(cellEl) {
+  const char = cellEl.dataset.char;
+  const romaji = cellEl.dataset.romaji;
+  const script = cellEl.dataset.script;
+  const meaning = cellEl.dataset.meaning || null;
+
+  const learned = new Set(state?.all_characters_learned || []);
+  const isCurrent = state?.current_character === char;
+  const isLearned = !isCurrent && learned.has(char);
+  const status = isCurrent ? 'this-week' : (isLearned ? 'learned' : 'not-yet');
+  const statusLabel = isCurrent ? 'This Week' : (isLearned ? 'Learned' : 'Not yet learned');
+
+  const allWords = [
+    ...(state?.all_words_learned || []),
+    ...(state?.user_words || [])
+  ];
+  // De-duplicate by japanese
+  const seenJp = new Set();
+  const dedup = [];
+  for (const w of allWords) {
+    if (!w?.japanese || seenJp.has(w.japanese)) continue;
+    seenJp.add(w.japanese);
+    dedup.push(w);
+  }
+  const examples = dedup.filter(w => w.japanese.includes(char));
+
+  const examplesHtml = examples.length
+    ? examples.map(w => `
+        <li>
+          <span class="ex-jp">${escapeHtml(w.japanese)}</span>
+          <span class="ex-reading">${escapeHtml(w.reading_romaji || '')}</span>
+          <span class="ex-trans">${escapeHtml(w.translation || w.english || '')}</span>
+        </li>
+      `).join('')
+    : '<li class="empty">Once you learn words containing this character, they\'ll show up here.</li>';
+
+  const meaningHtml = meaning ? `<div class="meaning">${escapeHtml(meaning)}</div>` : '';
+  const isKanji = script === 'kanji';
+
+  const card = document.getElementById('char-detail-card');
+  card.innerHTML = `
+    <button class="close-x" aria-label="Close" onclick="closeCharDetail()">×</button>
+    <div class="status-pill ${status}">${statusLabel}</div>
+    <div class="big-char ${isKanji ? 'kanji' : ''}">${escapeHtml(char)}</div>
+    <div class="big-romaji">${escapeHtml(romaji)}</div>
+    <div class="script-tag">${script}</div>
+    ${meaningHtml}
+    <h4>Words you've seen with this character</h4>
+    <ul class="examples">${examplesHtml}</ul>
+  `;
+
+  const modal = document.getElementById('char-detail-modal');
+  modal.classList.remove('closing');
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCharDetail() {
+  const modal = document.getElementById('char-detail-modal');
+  if (!modal.classList.contains('open')) return;
+  modal.classList.add('closing');
+  setTimeout(() => {
+    modal.classList.remove('open', 'closing');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }, 280);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeCharDetail();
+});
+document.getElementById('char-detail-modal')?.addEventListener('click', (e) => {
+  if (e.target.id === 'char-detail-modal') closeCharDetail();
+});
 
 // =============================================================
 // TAB SWITCHING

@@ -284,8 +284,28 @@ body::before {
   justify-content: center;
   font-family: 'Noto Sans JP', sans-serif;
   position: relative;
-  transition: background 0.2s ease;
-  cursor: default;
+  border-radius: 4px;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.55),
+    inset -1px -1px 0 rgba(58,48,36,0.10),
+    0 1px 2px rgba(58,48,36,0.18),
+    0 2px 4px rgba(58,48,36,0.08);
+  transition: transform 0.18s cubic-bezier(0.2,0.8,0.4,1), box-shadow 0.18s ease, background 0.2s ease;
+  cursor: pointer;
+  user-select: none;
+}
+.char-cell:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.65),
+    inset -1px -1px 0 rgba(58,48,36,0.10),
+    0 4px 8px rgba(58,48,36,0.22),
+    0 8px 16px rgba(58,48,36,0.10);
+  z-index: 2;
+}
+.char-cell:active {
+  transform: translateY(-1px);
+  transition-duration: 0.05s;
 }
 .char-cell .char {
   font-size: 32px;
@@ -634,6 +654,170 @@ body::before {
   .form-grid { grid-template-columns: 1fr; }
 }
 
+/* CHARACTER DETAIL MODAL — flip-card view */
+.char-detail-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.char-detail-modal.open { display: flex; animation: fadeBackdrop 0.25s ease; }
+.char-detail-modal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 31, 46, 0.55);
+  backdrop-filter: blur(2px);
+}
+@keyframes fadeBackdrop { from { opacity: 0; } to { opacity: 1; } }
+
+.char-detail-card {
+  position: relative;
+  width: min(440px, 92vw);
+  max-height: 88vh;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.5),
+    0 16px 48px rgba(26,31,46,0.35),
+    0 6px 12px rgba(26,31,46,0.2);
+  padding: 36px 32px 28px;
+  overflow-y: auto;
+  transform-origin: center;
+  animation: charFlipIn 0.55s cubic-bezier(0.2, 0.8, 0.4, 1);
+}
+.char-detail-modal.closing .char-detail-card { animation: charFlipOut 0.28s ease forwards; }
+@keyframes charFlipIn {
+  0% { transform: rotateY(-95deg) scale(0.55); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: rotateY(0) scale(1); opacity: 1; }
+}
+@keyframes charFlipOut {
+  0% { transform: rotateY(0) scale(1); opacity: 1; }
+  100% { transform: rotateY(70deg) scale(0.6); opacity: 0; }
+}
+
+.char-detail-card .close-x {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+.char-detail-card .close-x:hover { background: var(--paper-warm); color: var(--ink); }
+
+.char-detail-card .status-pill {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.char-detail-card .status-pill.this-week { background: var(--ink); color: var(--paper); }
+.char-detail-card .status-pill.learned { background: var(--gold); color: var(--paper); }
+.char-detail-card .status-pill.not-yet { background: var(--paper-warm); color: var(--muted); }
+
+.char-detail-card .big-char {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 156px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: center;
+  margin: 12px 0 4px;
+  text-shadow: 0 2px 6px rgba(58,48,36,0.10);
+}
+.char-detail-card .big-char.kanji { font-size: 132px; }
+.char-detail-card .big-romaji {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  text-align: center;
+  color: var(--vermilion);
+  letter-spacing: 0.12em;
+  margin-bottom: 4px;
+}
+.char-detail-card .script-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 22px;
+}
+.char-detail-card .meaning {
+  text-align: center;
+  font-style: italic;
+  color: var(--ink);
+  font-size: 16px;
+  margin: -16px 0 22px;
+}
+.char-detail-card h4 {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+.char-detail-card .examples {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.char-detail-card .examples li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(58,48,36,0.10);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.char-detail-card .examples li:last-child { border-bottom: none; }
+.char-detail-card .examples li.empty {
+  display: block;
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+  padding: 16px 0;
+  border: none;
+}
+.char-detail-card .ex-jp {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.char-detail-card .ex-reading {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.char-detail-card .ex-trans {
+  margin-left: auto;
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink);
+}
+
 /* DECORATIVE BORDERS — seigaiha wave pattern */
 .deco-band {
   position: fixed;
@@ -825,6 +1009,12 @@ body::before {
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="char-detail-modal" id="char-detail-modal" aria-hidden="true">
+  <div class="char-detail-card" id="char-detail-card" role="dialog" aria-modal="true">
+    <!-- populated by JS -->
+  </div>
+</div>
 
 <script src="dashboard.js"></script>
 </body>
