@@ -414,13 +414,30 @@ async function addUserWord() {
   btn.disabled = true;
   btn.textContent = 'Saving…';
   try {
-    await workerCall('/add-word', 'POST', { japanese: jp, reading_romaji: ro, translation: tr, notes });
+    const result = await workerCall('/add-word', 'POST', { japanese: jp, reading_romaji: ro, translation: tr, notes });
     document.getElementById('add-jp').value = '';
     document.getElementById('add-romaji').value = '';
     document.getElementById('add-translation').value = '';
     document.getElementById('add-notes').value = '';
     showToast('Word added', 'success');
-    await loadData();
+    // Update local state directly — bypasses raw.githubusercontent.com CDN cache
+    // which can be stale for several minutes after a commit and would make new
+    // adds appear to silently disappear from the UI.
+    if (result?.word && state) {
+      state.user_words = state.user_words || [];
+      state.user_words.push(result.word);
+      state.all_words_learned = state.all_words_learned || [];
+      state.all_words_learned.push({
+        ...result.word,
+        week_number: state.current_week_number || 1,
+        character: null,
+        delivered_at: result.word.added_at,
+        source: 'user',
+      });
+      renderAll();
+    } else {
+      await loadData();
+    }
   } catch (err) {
     showToast(err.message, 'error');
   } finally {
@@ -454,11 +471,20 @@ async function saveEdit() {
     translation: document.getElementById('edit-translation').value.trim(),
     notes: document.getElementById('edit-notes').value.trim(),
   };
+  const targetJp = currentEditWord.japanese;
   try {
-    await workerCall('/update-word', 'POST', { japanese: currentEditWord.japanese, updates });
+    await workerCall('/update-word', 'POST', { japanese: targetJp, updates });
     showToast('Saved', 'success');
     closeModal();
-    await loadData();
+    // Update local state directly (avoid stale raw.githubusercontent.com CDN cache)
+    if (state) {
+      const applyUpdates = (w) => {
+        if (w?.japanese === targetJp) Object.assign(w, updates);
+      };
+      (state.user_words || []).forEach(applyUpdates);
+      (state.all_words_learned || []).forEach(applyUpdates);
+      renderAll();
+    }
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -467,11 +493,17 @@ async function saveEdit() {
 async function deleteCurrentWord() {
   if (!currentEditWord) return;
   if (!confirm(`Delete "${currentEditWord.japanese}"? This cannot be undone.`)) return;
+  const targetJp = currentEditWord.japanese;
   try {
-    await workerCall('/delete-word', 'POST', { japanese: currentEditWord.japanese });
+    await workerCall('/delete-word', 'POST', { japanese: targetJp });
     showToast('Deleted', 'success');
     closeModal();
-    await loadData();
+    // Update local state directly (avoid stale raw.githubusercontent.com CDN cache)
+    if (state) {
+      state.user_words = (state.user_words || []).filter(w => w.japanese !== targetJp);
+      state.all_words_learned = (state.all_words_learned || []).filter(w => !(w.japanese === targetJp && w.source === 'user'));
+      renderAll();
+    }
   } catch (err) {
     showToast(err.message, 'error');
   }
