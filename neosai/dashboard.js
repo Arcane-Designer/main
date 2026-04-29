@@ -476,6 +476,8 @@ function detectScript(c) {
 // CHARACTER DETAIL MODAL
 // =============================================================
 
+let _activeCharCell = null;
+
 function openCharDetail(cellEl) {
   const char = cellEl.dataset.char;
   const romaji = cellEl.dataset.romaji;
@@ -492,7 +494,6 @@ function openCharDetail(cellEl) {
     ...(state?.all_words_learned || []),
     ...(state?.user_words || [])
   ];
-  // De-duplicate by japanese
   const seenJp = new Set();
   const dedup = [];
   for (const w of allWords) {
@@ -501,7 +502,6 @@ function openCharDetail(cellEl) {
     dedup.push(w);
   }
   const examples = dedup.filter(w => w.japanese.includes(char));
-
   const examplesHtml = examples.length
     ? examples.map(w => `
         <li>
@@ -515,6 +515,7 @@ function openCharDetail(cellEl) {
   const meaningHtml = meaning ? `<div class="meaning">${escapeHtml(meaning)}</div>` : '';
   const isKanji = script === 'kanji';
 
+  // 1) Build the back-face card content
   const card = document.getElementById('char-detail-card');
   card.innerHTML = `
     <button class="close-x" aria-label="Close" onclick="closeCharDetail()">×</button>
@@ -527,22 +528,84 @@ function openCharDetail(cellEl) {
     <ul class="examples">${examplesHtml}</ul>
   `;
 
+  // 2) Build the front-face that mirrors the clicked tile
+  const front = document.getElementById('char-detail-front');
+  let frontCls = 'char-detail-front';
+  if (isCurrent) frontCls += ' current';
+  else if (isLearned) frontCls += ' learned';
+  front.className = frontCls;
+  front.innerHTML = `<div class="char">${escapeHtml(char)}</div>`;
+
+  // 3) Position the flipping tile exactly over the clicked cell
+  const rect = cellEl.getBoundingClientRect();
+  const tile = document.getElementById('char-detail-tile');
   const modal = document.getElementById('char-detail-modal');
+
+  // Hide the original tile in-place so it doesn't peek through
+  cellEl.style.visibility = 'hidden';
+  _activeCharCell = cellEl;
+
+  // Set initial position/size — same as the clicked tile
+  tile.style.transition = 'none';
+  tile.style.width = rect.width + 'px';
+  tile.style.height = rect.height + 'px';
+  tile.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
+
+  // Open the modal (this also sets the rot transform target via CSS)
   modal.classList.remove('closing');
-  modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
+
+  // Force reflow so the initial transform sticks before we transition
+  void tile.offsetWidth;
+
+  // 4) On the next frame, animate to centered card-size
+  requestAnimationFrame(() => {
+    const targetW = Math.min(440, window.innerWidth * 0.92);
+    const targetH = Math.min(560, window.innerHeight * 0.85);
+    const targetX = (window.innerWidth - targetW) / 2;
+    const targetY = (window.innerHeight - targetH) / 2;
+
+    tile.style.transition = 'width 0.85s cubic-bezier(0.45,0,0.2,1), height 0.85s cubic-bezier(0.45,0,0.2,1), transform 0.85s cubic-bezier(0.45,0,0.2,1)';
+    tile.style.width = targetW + 'px';
+    tile.style.height = targetH + 'px';
+    tile.style.transform = `translate(${targetX}px, ${targetY}px)`;
+    modal.classList.add('open');
+  });
 }
 
 function closeCharDetail() {
   const modal = document.getElementById('char-detail-modal');
   if (!modal.classList.contains('open')) return;
+
+  const tile = document.getElementById('char-detail-tile');
+  const cellEl = _activeCharCell;
+  if (!cellEl) {
+    // Fallback: just hide
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+    return;
+  }
+
   modal.classList.add('closing');
+
+  // Recompute the original tile's current position (page may have scrolled)
+  const rect = cellEl.getBoundingClientRect();
+
+  // Reverse: shrink back to tile spot + rotate back to front face
+  tile.style.transition = 'width 0.65s cubic-bezier(0.45,0,0.2,1), height 0.65s cubic-bezier(0.45,0,0.2,1), transform 0.65s cubic-bezier(0.45,0,0.2,1)';
+  tile.style.width = rect.width + 'px';
+  tile.style.height = rect.height + 'px';
+  tile.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
+  modal.classList.remove('open');
+
   setTimeout(() => {
-    modal.classList.remove('open', 'closing');
+    modal.classList.remove('closing');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
-  }, 280);
+    if (cellEl) cellEl.style.visibility = '';
+    _activeCharCell = null;
+  }, 670);
 }
 
 document.addEventListener('keydown', (e) => {

@@ -654,51 +654,111 @@ body::before {
   .form-grid { grid-template-columns: 1fr; }
 }
 
-/* CHARACTER DETAIL MODAL — flip-card view */
+/* CHARACTER DETAIL MODAL — true tile-flip animation */
 .char-detail-modal {
   position: fixed;
   inset: 0;
   z-index: 200;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
-.char-detail-modal.open { display: flex; animation: fadeBackdrop 0.25s ease; }
-.char-detail-modal::before {
-  content: "";
+.char-detail-modal.open { pointer-events: auto; opacity: 1; }
+
+.char-detail-modal .backdrop {
   position: absolute;
   inset: 0;
   background: rgba(26, 31, 46, 0.55);
   backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
-@keyframes fadeBackdrop { from { opacity: 0; } to { opacity: 1; } }
+.char-detail-modal.open .backdrop { opacity: 1; }
+.char-detail-modal.closing .backdrop { opacity: 0; transition: opacity 0.4s ease; }
 
-.char-detail-card {
+.char-detail-tile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* width/height/transform set inline by JS */
+  perspective: 1400px;
+  pointer-events: none;
+  z-index: 1;
+}
+.char-detail-rot {
   position: relative;
-  width: min(440px, 92vw);
-  max-height: 88vh;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  transition: transform 0.85s cubic-bezier(0.45, 0, 0.2, 1);
+}
+.char-detail-modal.open .char-detail-rot {
+  transform: rotateY(180deg);
+}
+.char-detail-modal.closing .char-detail-rot {
+  transform: rotateY(0deg);
+  transition: transform 0.65s cubic-bezier(0.45, 0, 0.2, 1);
+}
+
+.char-detail-front,
+.char-detail-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 4px;
+  overflow: hidden;
+  pointer-events: auto;
+}
+.char-detail-back {
+  transform: rotateY(180deg);
+  border-radius: 6px;
   background: var(--paper);
   border: 1px solid var(--rule);
-  border-radius: 6px;
   box-shadow:
     inset 1px 1px 0 rgba(255,255,255,0.5),
     0 16px 48px rgba(26,31,46,0.35),
     0 6px 12px rgba(26,31,46,0.2);
+}
+
+/* Front face replicates the tile look (set classes via JS) */
+.char-detail-front {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper-warm);
+  font-family: 'Noto Sans JP', sans-serif;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.55),
+    inset -1px -1px 0 rgba(58,48,36,0.10),
+    0 1px 2px rgba(58,48,36,0.18),
+    0 2px 4px rgba(58,48,36,0.08);
+}
+.char-detail-front.learned { background: var(--gold); }
+.char-detail-front.current { background: var(--vermilion); }
+.char-detail-front .char {
+  font-size: clamp(32px, 14vw, 156px);
+  color: var(--muted);
+  opacity: 0.3;
+  font-weight: 500;
+  line-height: 1;
+}
+.char-detail-front.learned .char,
+.char-detail-front.current .char {
+  color: var(--paper);
+  opacity: 1;
+  font-weight: 700;
+}
+
+.char-detail-card {
+  width: 100%;
+  height: 100%;
   padding: 36px 32px 28px;
   overflow-y: auto;
-  transform-origin: center;
-  animation: charFlipIn 0.55s cubic-bezier(0.2, 0.8, 0.4, 1);
-}
-.char-detail-modal.closing .char-detail-card { animation: charFlipOut 0.28s ease forwards; }
-@keyframes charFlipIn {
-  0% { transform: rotateY(-95deg) scale(0.55); opacity: 0; }
-  60% { opacity: 1; }
-  100% { transform: rotateY(0) scale(1); opacity: 1; }
-}
-@keyframes charFlipOut {
-  0% { transform: rotateY(0) scale(1); opacity: 1; }
-  100% { transform: rotateY(70deg) scale(0.6); opacity: 0; }
+  position: relative;
 }
 
 .char-detail-card .close-x {
@@ -1011,8 +1071,14 @@ body::before {
 <div class="toast" id="toast"></div>
 
 <div class="char-detail-modal" id="char-detail-modal" aria-hidden="true">
-  <div class="char-detail-card" id="char-detail-card" role="dialog" aria-modal="true">
-    <!-- populated by JS -->
+  <div class="backdrop"></div>
+  <div class="char-detail-tile" id="char-detail-tile">
+    <div class="char-detail-rot">
+      <div class="char-detail-front" id="char-detail-front"></div>
+      <div class="char-detail-back">
+        <div class="char-detail-card" id="char-detail-card" role="dialog" aria-modal="true"></div>
+      </div>
+    </div>
   </div>
 </div>
 
