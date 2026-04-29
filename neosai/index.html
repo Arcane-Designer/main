@@ -1,1 +1,885 @@
-<!-- placeholder, will be overwritten -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neosai — Captain's Japanese Learning Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Shippori+Mincho:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1f2e;
+  --paper: #f4ede0;
+  --paper-warm: #ede4d3;
+  --vermilion: #c8443c;
+  --vermilion-deep: #9c2b24;
+  --gold: #b08438;
+  --indigo: #2a3f5f;
+  --rule: #3a3024;
+  --muted: #6b6356;
+  --mark-known: #5a8c4a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Fraunces', Georgia, serif;
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.5;
+  font-size: 17px;
+  background-image:
+    radial-gradient(ellipse at top left, rgba(200,68,60,0.04), transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(42,63,95,0.05), transparent 50%);
+  min-height: 100vh;
+}
+
+/* Subtle paper grain */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 60px 40px 120px;
+}
+
+/* MASTHEAD */
+.masthead {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  border-bottom: 3px double var(--rule);
+  padding-bottom: 24px;
+  margin-bottom: 48px;
+  gap: 24px;
+}
+.masthead .meta-left,
+.masthead .meta-right {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.masthead .meta-right { text-align: right; }
+.masthead h1 {
+  font-family: 'Shippori Mincho', serif;
+  font-weight: 800;
+  font-size: clamp(48px, 7vw, 88px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+.masthead h1 .jp {
+  display: block;
+  font-size: 0.6em;
+  color: var(--vermilion);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+/* SUBTITLE */
+.subtitle {
+  text-align: center;
+  font-style: italic;
+  color: var(--muted);
+  font-size: 17px;
+  margin-bottom: 60px;
+  font-family: 'Fraunces', serif;
+}
+
+/* TAB NAV */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0;
+}
+.tab {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 14px 22px;
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
+  margin-bottom: -1px;
+}
+.tab:hover { color: var(--ink); }
+.tab.active {
+  color: var(--vermilion);
+  border-bottom-color: var(--vermilion);
+}
+
+.panel { display: none; }
+.panel.active { display: block; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* SECTION HEADERS */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 12px;
+}
+.section-header h2 {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.section-header .kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--vermilion);
+  text-transform: uppercase;
+}
+
+/* OVERVIEW STATS */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  margin-bottom: 60px;
+  border: 1px solid var(--rule);
+}
+.stat {
+  background: var(--paper);
+  padding: 28px 24px;
+  text-align: center;
+}
+.stat-number {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--vermilion);
+  margin-bottom: 6px;
+}
+.stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* CURRENT WEEK PANEL */
+.current-week {
+  background: var(--paper-warm);
+  border: 1px solid var(--rule);
+  padding: 40px;
+  margin-bottom: 60px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 40px;
+  align-items: center;
+  position: relative;
+}
+.current-week::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  border: 1px solid var(--rule);
+  pointer-events: none;
+}
+.char-seal {
+  background: var(--vermilion);
+  color: var(--paper);
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Shippori Mincho', serif;
+  font-size: 84px;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+}
+.char-seal-mini {
+  background: var(--vermilion);
+  color: var(--paper);
+  width: 64px;
+  height: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Shippori Mincho', serif;
+  font-size: 38px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.current-week-content { position: relative; z-index: 1; }
+.current-week-content .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--vermilion-deep);
+  margin-bottom: 8px;
+}
+.current-week-content h3 {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.current-week-content .romaji {
+  font-style: italic;
+  color: var(--muted);
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+.current-week-content .progress {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--ink);
+}
+.current-week-content .progress-dots {
+  display: inline-flex;
+  gap: 6px;
+  margin-left: 12px;
+}
+.dot {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--rule);
+  border-radius: 50%;
+  background: transparent;
+}
+.dot.filled {
+  background: var(--vermilion);
+  border-color: var(--vermilion);
+}
+
+/* CHARACTER MAP */
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 6px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  padding: 1px;
+}
+.char-cell {
+  aspect-ratio: 1;
+  background: var(--paper-warm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Shippori Mincho', serif;
+  position: relative;
+  transition: background 0.2s ease;
+  cursor: default;
+}
+.char-cell .char {
+  font-size: 32px;
+  color: var(--muted);
+  opacity: 0.3;
+  font-weight: 500;
+}
+.char-cell .romaji {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  opacity: 0.5;
+  margin-top: 2px;
+  letter-spacing: 0.05em;
+}
+.char-cell.learned {
+  background: var(--vermilion);
+}
+.char-cell.learned .char {
+  color: var(--paper);
+  opacity: 1;
+  font-weight: 700;
+}
+.char-cell.learned .romaji {
+  color: var(--paper);
+  opacity: 0.85;
+}
+.char-cell.current {
+  background: var(--ink);
+}
+.char-cell.current .char,
+.char-cell.current .romaji {
+  color: var(--paper);
+  opacity: 1;
+}
+.char-cell.current::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--vermilion);
+  pointer-events: none;
+}
+
+/* WORDS LIST */
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.filter-bar input,
+.filter-bar select {
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+  padding: 10px 14px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 0;
+}
+.filter-bar input { min-width: 240px; flex: 1; }
+.filter-bar input:focus,
+.filter-bar select:focus {
+  outline: 2px solid var(--vermilion);
+  outline-offset: -1px;
+}
+
+.weeks-list { display: flex; flex-direction: column; gap: 32px; }
+
+.week-block {
+  border: 1px solid var(--rule);
+  background: var(--paper);
+}
+.week-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  background: var(--paper-warm);
+  border-bottom: 1px solid var(--rule);
+}
+.week-header h4 {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 22px;
+  font-weight: 600;
+}
+.week-header .week-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin-left: auto;
+  text-transform: uppercase;
+}
+.word-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr auto;
+  gap: 24px;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(58,48,36,0.15);
+  align-items: center;
+}
+.word-row:last-child { border-bottom: none; }
+.word-row.is-funword { background: rgba(176,132,56,0.08); }
+.word-row.is-known { opacity: 0.55; }
+.word-row .slot-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.word-row .word-jp {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 24px;
+  font-weight: 600;
+}
+.word-row .word-jp .reading {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+}
+.word-row .word-translation {
+  font-style: italic;
+  color: var(--ink);
+}
+.word-row .word-actions { display: flex; gap: 8px; }
+.btn-mini {
+  background: transparent;
+  border: 1px solid var(--rule);
+  padding: 6px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+}
+.btn-mini:hover {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.btn-mini.active {
+  background: var(--mark-known);
+  color: var(--paper);
+  border-color: var(--mark-known);
+}
+
+/* MANAGE PANEL */
+.manage-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-bottom: 48px;
+}
+@media (max-width: 800px) { .manage-grid { grid-template-columns: 1fr; } }
+.manage-card {
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  padding: 28px;
+}
+.manage-card h3 {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+.manage-card p {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+.form-field { margin-bottom: 14px; }
+.form-field label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.form-field input,
+.form-field textarea {
+  width: 100%;
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1px solid var(--rule);
+  background: var(--paper-warm);
+  color: var(--ink);
+  border-radius: 0;
+}
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: 2px solid var(--vermilion);
+  outline-offset: -1px;
+}
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 12px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.15s ease;
+}
+.btn-primary:hover { background: var(--vermilion); }
+
+.list-managed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+.list-managed-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--paper-warm);
+  border: 1px solid var(--rule);
+  font-size: 14px;
+}
+.list-managed-item .word { font-family: 'Shippori Mincho', serif; font-size: 17px; font-weight: 600; }
+.list-managed-item .reading { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); margin-left: 8px; }
+.list-managed-item button {
+  background: transparent;
+  border: none;
+  color: var(--vermilion-deep);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.list-managed-item button:hover { color: var(--ink); }
+
+.export-zone {
+  border: 2px dashed var(--rule);
+  padding: 24px;
+  margin-top: 32px;
+  background: var(--paper-warm);
+}
+.export-zone h4 {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+.export-zone p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.export-zone pre {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 14px;
+  overflow-x: auto;
+  max-height: 280px;
+  line-height: 1.5;
+}
+
+/* SETTINGS */
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(58,48,36,0.15);
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row label {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  flex: 1;
+}
+.settings-row .hint {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 4px;
+}
+
+/* TOGGLE SWITCH */
+.toggle {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  background: var(--rule);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: var(--paper);
+  border-radius: 50%;
+  transition: left 0.2s ease;
+}
+.toggle.on { background: var(--vermilion); }
+.toggle.on::after { left: 27px; }
+
+/* SPOILER ZONE */
+.spoiler-warning {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 28px;
+  text-align: center;
+  margin: 32px 0;
+}
+.spoiler-warning h4 {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 22px;
+  margin-bottom: 10px;
+  color: var(--vermilion);
+}
+
+.upcoming-block {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.upcoming-block .week-block { opacity: 0.95; }
+
+/* EMPTY STATES */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* LOADING */
+.loading-state {
+  text-align: center;
+  padding: 80px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* FOOTER */
+.dashboard-footer {
+  text-align: center;
+  margin-top: 80px;
+  padding-top: 32px;
+  border-top: 1px solid var(--rule);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* MOBILE */
+@media (max-width: 700px) {
+  .wrapper { padding: 32px 20px 80px; }
+  .masthead { grid-template-columns: 1fr; text-align: center; }
+  .masthead .meta-left, .masthead .meta-right { text-align: center; }
+  .current-week { grid-template-columns: 1fr; text-align: center; padding: 24px; }
+  .char-seal { margin: 0 auto; width: 110px; height: 110px; font-size: 64px; }
+  .word-row { grid-template-columns: 1fr; gap: 8px; }
+  .word-row .slot-label { font-size: 9px; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- MASTHEAD -->
+<header class="masthead">
+  <div class="meta-left">
+    <div>Vol. <span id="meta-week">—</span></div>
+    <div id="meta-date">—</div>
+  </div>
+  <h1>
+    <span class="jp">日本語の旅</span>
+    Neosai
+  </h1>
+  <div class="meta-right">
+    <div>Captain</div>
+    <div>Arcane Designer</div>
+  </div>
+</header>
+
+<p class="subtitle">A daily ritual in five characters and one word at a time.</p>
+
+<!-- TABS -->
+<nav class="tabs">
+  <button class="tab active" data-tab="overview">Overview</button>
+  <button class="tab" data-tab="words">All Words</button>
+  <button class="tab" data-tab="characters">Characters</button>
+  <button class="tab" data-tab="manage">Manage Lists</button>
+  <button class="tab" data-tab="upcoming">Upcoming</button>
+  <button class="tab" data-tab="settings">Settings</button>
+</nav>
+
+<!-- LOADING -->
+<div id="loading" class="loading-state">Loading from GitHub…</div>
+
+<!-- ====== OVERVIEW ====== -->
+<section class="panel" data-panel="overview">
+  <div class="stats-grid" id="stats-grid"></div>
+  <div id="current-week-panel"></div>
+  <div class="section-header">
+    <h2>This Week's Five</h2>
+    <span class="kicker">Live</span>
+  </div>
+  <div id="current-week-words" class="weeks-list"></div>
+</section>
+
+<!-- ====== ALL WORDS ====== -->
+<section class="panel" data-panel="words">
+  <div class="section-header">
+    <h2>Every Word, Every Week</h2>
+    <span class="kicker">Archive</span>
+  </div>
+  <div class="filter-bar">
+    <input type="text" id="word-search" placeholder="Search Japanese, romaji, or meaning…">
+    <select id="word-filter">
+      <option value="all">All words</option>
+      <option value="active">Active only (hide known)</option>
+      <option value="known">Marked as known</option>
+      <option value="funword">Funwords only</option>
+    </select>
+  </div>
+  <div id="all-words-list" class="weeks-list"></div>
+</section>
+
+<!-- ====== CHARACTERS ====== -->
+<section class="panel" data-panel="characters">
+  <div class="section-header">
+    <h2>Hiragana Acquired</h2>
+    <span class="kicker">Map</span>
+  </div>
+  <p style="color: var(--muted); font-style: italic; margin-bottom: 24px;">Standard hiragana chart. Vermilion squares are characters you've covered. The dark square is this week's focus. Empty squares are still ahead.</p>
+  <div id="char-grid" class="char-grid"></div>
+</section>
+
+<!-- ====== MANAGE ====== -->
+<section class="panel" data-panel="manage">
+  <div class="section-header">
+    <h2>Your Personal Lists</h2>
+    <span class="kicker">Manage</span>
+  </div>
+  <div class="manage-grid">
+    <div class="manage-card">
+      <h3>Already-Known Words</h3>
+      <p>Mark words you've learned elsewhere so the system skips them when picking new ones. The routine reads this list before delivering each day.</p>
+      <div class="form-field">
+        <label>Japanese (hiragana/katakana)</label>
+        <input type="text" id="known-jp" placeholder="e.g. ありがとう">
+      </div>
+      <div class="form-field">
+        <label>Reading (romaji)</label>
+        <input type="text" id="known-romaji" placeholder="e.g. arigatou">
+      </div>
+      <div class="form-field">
+        <label>Translation</label>
+        <input type="text" id="known-translation" placeholder="e.g. thank you">
+      </div>
+      <button class="btn-primary" onclick="addKnown()">+ Add to known list</button>
+      <div class="list-managed" id="known-list"></div>
+    </div>
+
+    <div class="manage-card">
+      <h3>Words You've Added</h3>
+      <p>Words you've learned outside the system that you want tracked. These appear in the Sunday master recap with a + marker.</p>
+      <div class="form-field">
+        <label>Japanese</label>
+        <input type="text" id="add-jp" placeholder="e.g. すし">
+      </div>
+      <div class="form-field">
+        <label>Reading (romaji)</label>
+        <input type="text" id="add-romaji" placeholder="e.g. sushi">
+      </div>
+      <div class="form-field">
+        <label>Translation</label>
+        <input type="text" id="add-translation" placeholder="e.g. sushi">
+      </div>
+      <div class="form-field">
+        <label>Where you learned it (optional)</label>
+        <input type="text" id="add-source" placeholder="e.g. restaurant menu">
+      </div>
+      <button class="btn-primary" onclick="addCustom()">+ Add this word</button>
+      <div class="list-managed" id="custom-list"></div>
+    </div>
+  </div>
+
+  <div class="export-zone">
+    <h4>Sync to GitHub</h4>
+    <p>This dashboard reads from GitHub but can't write to it. To save your changes, copy this JSON and commit it to <code>user-lists.json</code> in your repo.</p>
+    <button class="btn-primary" onclick="copyExport()" style="margin-bottom: 16px;">📋 Copy to clipboard</button>
+    <pre id="export-json">{}</pre>
+  </div>
+</section>
+
+<!-- ====== UPCOMING ====== -->
+<section class="panel" data-panel="upcoming">
+  <div class="section-header">
+    <h2>What's Coming</h2>
+    <span class="kicker">Spoilers</span>
+  </div>
+  <div id="upcoming-content">
+    <div class="spoiler-warning" id="spoiler-warning">
+      <h4>⚠ Spoiler zone</h4>
+      <p>You said you didn't want to see upcoming words. This is hidden by default. Toggle on in Settings if you ever want to peek.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SETTINGS ====== -->
+<section class="panel" data-panel="settings">
+  <div class="section-header">
+    <h2>Preferences</h2>
+    <span class="kicker">Config</span>
+  </div>
+  <div class="settings-row">
+    <label>
+      Show upcoming curriculum
+      <span class="hint">Default off. Turn on if you want to peek at the next weeks of words.</span>
+    </label>
+    <div class="toggle" id="toggle-spoilers" onclick="toggleSetting('show_spoilers', this)"></div>
+  </div>
+  <div class="settings-row">
+    <label>
+      Hide known-marked words from main lists
+      <span class="hint">Cleaner view of what's still being learned.</span>
+    </label>
+    <div class="toggle on" id="toggle-hide-known" onclick="toggleSetting('hide_known', this)"></div>
+  </div>
+  <div class="settings-row">
+    <label>
+      Repo location
+      <span class="hint" id="repo-hint">Where this dashboard reads its data from.</span>
+    </label>
+    <input type="text" id="repo-input" style="font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px;border:1px solid var(--rule);background:var(--paper-warm);min-width:280px;">
+  </div>
+  <div class="settings-row">
+    <label>
+      Refresh data
+      <span class="hint">Force re-read from GitHub. Useful after a routine just fired.</span>
+    </label>
+    <button class="btn-primary" onclick="loadData()">↻ Refresh now</button>
+  </div>
+</section>
+
+<footer class="dashboard-footer">
+  Arcane Designer LLC · Built for Captain · 日本語
+</footer>
+
+</div>
+
+<script src="dashboard.js"></script>
+</body>
+</html>
