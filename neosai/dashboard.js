@@ -196,6 +196,7 @@ function renderCurrentWeekBlock(weekNum, character, words) {
         <div class="word-jp">${escapeHtml(w.japanese)}<span class="reading">${escapeHtml(w.reading_romaji || '')}</span></div>
         <div class="word-translation">${escapeHtml(translation)}</div>
         <div class="word-actions"></div>
+        ${renderExample(w)}
       </div>
     `;
   }).join('');
@@ -258,6 +259,7 @@ function renderAllWords() {
           <div class="word-actions">
             ${isUser ? `<button class="btn-mini" onclick="openEdit('${escapeAttr(w.japanese)}')">Edit</button>` : ''}
           </div>
+          ${renderExample(w)}
         </div>
       `;
     }).join('');
@@ -485,6 +487,19 @@ function escapeHtml(str) {
 }
 function escapeAttr(str) {
   return escapeHtml(str).replace(/'/g, "&apos;");
+}
+
+function renderExample(w) {
+  if (!w) return '';
+  const jp = w.example_jp || w.example_japanese || '';
+  const en = w.example_en || w.example_english || w.example_translation || '';
+  if (!jp && !en) return '';
+  return `
+    <div class="word-example">
+      ${jp ? `<div class="ex-jp">${escapeHtml(jp)}</div>` : ''}
+      ${en ? `<div class="ex-en">${escapeHtml(en)}</div>` : ''}
+    </div>
+  `;
 }
 
 let toastTimer = null;
