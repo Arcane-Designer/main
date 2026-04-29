@@ -477,8 +477,18 @@ function detectScript(c) {
 // =============================================================
 
 let _activeCharCell = null;
+let _closeTimeoutId = null;
 
 function openCharDetail(cellEl) {
+  // Cancel any pending close animation; restore previously hidden tile
+  if (_closeTimeoutId) {
+    clearTimeout(_closeTimeoutId);
+    _closeTimeoutId = null;
+    if (_activeCharCell) _activeCharCell.style.visibility = '';
+    _activeCharCell = null;
+    const m = document.getElementById('char-detail-modal');
+    m.classList.remove('open', 'closing');
+  }
   const char = cellEl.dataset.char;
   const romaji = cellEl.dataset.romaji;
   const script = cellEl.dataset.script;
@@ -566,7 +576,7 @@ function openCharDetail(cellEl) {
     const targetX = (window.innerWidth - targetW) / 2;
     const targetY = (window.innerHeight - targetH) / 2;
 
-    tile.style.transition = 'width 0.85s cubic-bezier(0.45,0,0.2,1), height 0.85s cubic-bezier(0.45,0,0.2,1), transform 0.85s cubic-bezier(0.45,0,0.2,1)';
+    tile.style.transition = 'width 1s cubic-bezier(0.45,0.05,0.2,1), height 1s cubic-bezier(0.45,0.05,0.2,1), transform 1s cubic-bezier(0.45,0.05,0.2,1)';
     tile.style.width = targetW + 'px';
     tile.style.height = targetH + 'px';
     tile.style.transform = `translate(${targetX}px, ${targetY}px)`;
@@ -577,42 +587,48 @@ function openCharDetail(cellEl) {
 function closeCharDetail() {
   const modal = document.getElementById('char-detail-modal');
   if (!modal.classList.contains('open')) return;
+  if (modal.classList.contains('closing')) return; // already closing
 
   const tile = document.getElementById('char-detail-tile');
   const cellEl = _activeCharCell;
   if (!cellEl) {
-    // Fallback: just hide
     modal.classList.remove('open');
     document.body.style.overflow = '';
     return;
   }
 
+  // Add .closing — KEEPS .open on so modal stays visible while animating
   modal.classList.add('closing');
 
-  // Recompute the original tile's current position (page may have scrolled)
+  // Recompute the original tile's current position
   const rect = cellEl.getBoundingClientRect();
 
-  // Reverse: shrink back to tile spot + rotate back to front face
-  tile.style.transition = 'width 0.65s cubic-bezier(0.45,0,0.2,1), height 0.65s cubic-bezier(0.45,0,0.2,1), transform 0.65s cubic-bezier(0.45,0,0.2,1)';
+  // Reverse the open animation
+  tile.style.transition = 'width 0.85s cubic-bezier(0.45,0.05,0.2,1), height 0.85s cubic-bezier(0.45,0.05,0.2,1), transform 0.85s cubic-bezier(0.45,0.05,0.2,1)';
   tile.style.width = rect.width + 'px';
   tile.style.height = rect.height + 'px';
   tile.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
-  modal.classList.remove('open');
+  // Note: rot reverses to 0deg via .open.closing CSS rule
 
-  setTimeout(() => {
-    modal.classList.remove('closing');
+  _closeTimeoutId = setTimeout(() => {
+    // Remove BOTH classes only after the tile has finished traveling home
+    modal.classList.remove('open', 'closing');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
     if (cellEl) cellEl.style.visibility = '';
     _activeCharCell = null;
-  }, 670);
+    _closeTimeoutId = null;
+  }, 880);
 }
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeCharDetail();
 });
 document.getElementById('char-detail-modal')?.addEventListener('click', (e) => {
-  if (e.target.id === 'char-detail-modal') closeCharDetail();
+  // Close when clicked anywhere outside the back-face card content (i.e., on the backdrop)
+  if (!e.target.closest('.char-detail-back')) {
+    closeCharDetail();
+  }
 });
 
 // =============================================================
