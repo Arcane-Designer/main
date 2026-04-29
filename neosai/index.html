@@ -928,6 +928,33 @@ body::before {
   font-size: 16px;
   margin: -16px 0 22px;
 }
+.char-detail-card .char-actions {
+  display: flex;
+  justify-content: center;
+  margin: 14px 0 18px;
+}
+.char-detail-card .toggle-learned-btn {
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  padding: 9px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  border-radius: 2px;
+}
+.char-detail-card .toggle-learned-btn:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.char-detail-card .toggle-learned-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
 .char-detail-card h4 {
   font-family: 'Shippori Mincho', serif;
   font-size: 14px;

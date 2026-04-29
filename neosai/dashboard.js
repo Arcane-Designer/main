@@ -478,6 +478,75 @@ async function deleteCurrentWord() {
 }
 
 // =============================================================
+// MARK CHARACTER AS LEARNED — manual toggle from char detail
+// =============================================================
+
+async function toggleCharacterLearned(charAttr) {
+  if (!state) return;
+  // Decode in case it came through escapeAttr
+  const char = charAttr.replace(/&apos;/g, "'").replace(/&quot;/g, '"');
+
+  const learnedSet = new Set(state.all_characters_learned || []);
+  const wasLearned = learnedSet.has(char);
+  const wasCurrent = state.current_character === char;
+
+  // Build a fresh state copy to PUT
+  const next = JSON.parse(JSON.stringify(state));
+  next.all_characters_learned = next.all_characters_learned || [];
+
+  if (wasLearned) {
+    // Un-learn: remove from learned list
+    next.all_characters_learned = next.all_characters_learned.filter(c => c !== char);
+  } else {
+    // Mark as learned
+    if (!next.all_characters_learned.includes(char)) {
+      next.all_characters_learned.push(char);
+    }
+    // If marking the current character as learned, advance to next un-learned in priority order
+    if (wasCurrent) {
+      const nextChar = pickNextCharacter(next.all_characters_learned);
+      if (nextChar) {
+        next.current_character = nextChar.char;
+        next.current_character_romaji = nextChar.romaji;
+        next.current_character_script = nextChar.script;
+      } else {
+        next.current_character = null;
+        next.current_character_romaji = null;
+        next.current_character_script = null;
+      }
+      // The previous week's words remain in delivery_log + all_words_learned;
+      // current_week_words holds this week's deliveries which are tied to the
+      // OLD character. Clear them so the dashboard reflects the new character cleanly.
+      next.current_week_words = [];
+    }
+  }
+
+  // Persist
+  const btn = document.querySelector('.toggle-learned-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    await workerCall('/state', 'PUT', next);
+    state = next;
+    showToast(wasLearned ? `${char} marked as not learned` : `${char} marked as learned`, 'success');
+    renderAll();
+    // Close the modal so the user sees the updated character grid + overview
+    closeCharDetail();
+  } catch (err) {
+    showToast(err.message || 'Save failed', 'error');
+    if (btn) { btn.disabled = false; }
+  }
+}
+
+function pickNextCharacter(learnedList) {
+  const learned = new Set(learnedList || []);
+  const order = (characterOrder && characterOrder.order) || [];
+  for (const entry of order) {
+    if (!learned.has(entry.char)) return entry;
+  }
+  return null;
+}
+
+// =============================================================
 // UTILITIES
 // =============================================================
 
@@ -575,6 +644,12 @@ function openCharDetail(cellEl) {
 
   // 1) Build the back-face card content
   const card = document.getElementById('char-detail-card');
+  // Mark-as-learned toggle button label depends on current state
+  let toggleLabel;
+  if (isLearned) toggleLabel = 'Mark as not learned';
+  else if (isCurrent) toggleLabel = 'Mark as learned (advance to next)';
+  else toggleLabel = 'Mark as learned';
+  const charAttr = escapeAttr(char);
   card.innerHTML = `
     <button class="close-x" aria-label="Close" onclick="closeCharDetail()">×</button>
     <div class="status-pill ${status}">${statusLabel}</div>
@@ -582,6 +657,9 @@ function openCharDetail(cellEl) {
     <div class="big-romaji">${escapeHtml(romaji)}</div>
     <div class="script-tag">${script}</div>
     ${meaningHtml}
+    <div class="char-actions">
+      <button class="btn-secondary toggle-learned-btn" onclick="toggleCharacterLearned('${charAttr}')">${toggleLabel}</button>
+    </div>
     <h4>Words you've seen with this character</h4>
     <ul class="examples">${examplesHtml}</ul>
   `;
