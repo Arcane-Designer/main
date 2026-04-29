@@ -569,14 +569,20 @@ function openCharDetail(cellEl) {
   // Force reflow so the initial transform sticks before we transition
   void tile.offsetWidth;
 
-  // 4) On the next frame, animate to centered card-size
+  // 4) On the next frame, animate to centered card-size.
+  //    Tile size+travel uses an ease-IN curve so the tile stays small early
+  //    while the rotation (which has 0.25s delay then 0.55s) happens with the
+  //    front face still looking like a small tile. Then the tile expands into
+  //    the card during the second half of the animation.
   requestAnimationFrame(() => {
     const targetW = Math.min(440, window.innerWidth * 0.92);
     const targetH = Math.min(560, window.innerHeight * 0.85);
     const targetX = (window.innerWidth - targetW) / 2;
     const targetY = (window.innerHeight - targetH) / 2;
 
-    tile.style.transition = 'width 1s cubic-bezier(0.45,0.05,0.2,1), height 1s cubic-bezier(0.45,0.05,0.2,1), transform 1s cubic-bezier(0.45,0.05,0.2,1)';
+    // Ease-in: slow start, fast end — tile stays small while rotating
+    const ease = 'cubic-bezier(0.7, 0, 0.4, 1)';
+    tile.style.transition = `width 1.1s ${ease}, height 1.1s ${ease}, transform 1.1s ${ease}`;
     tile.style.width = targetW + 'px';
     tile.style.height = targetH + 'px';
     tile.style.transform = `translate(${targetX}px, ${targetY}px)`;
@@ -587,7 +593,7 @@ function openCharDetail(cellEl) {
 function closeCharDetail() {
   const modal = document.getElementById('char-detail-modal');
   if (!modal.classList.contains('open')) return;
-  if (modal.classList.contains('closing')) return; // already closing
+  if (modal.classList.contains('closing')) return;
 
   const tile = document.getElementById('char-detail-tile');
   const cellEl = _activeCharCell;
@@ -597,28 +603,27 @@ function closeCharDetail() {
     return;
   }
 
-  // Add .closing — KEEPS .open on so modal stays visible while animating
   modal.classList.add('closing');
 
-  // Recompute the original tile's current position
   const rect = cellEl.getBoundingClientRect();
 
-  // Reverse the open animation
-  tile.style.transition = 'width 0.85s cubic-bezier(0.45,0.05,0.2,1), height 0.85s cubic-bezier(0.45,0.05,0.2,1), transform 0.85s cubic-bezier(0.45,0.05,0.2,1)';
+  // Close: rotation runs FIRST (0-0.5s, no delay via CSS), tile shrink waits,
+  //        then the tile travels back home. This makes it feel like the card
+  //        flips back into a small tile, then the tile flies back to its spot.
+  const ease = 'cubic-bezier(0.7, 0, 0.4, 1)';
+  tile.style.transition = `width 0.85s 0.3s ${ease}, height 0.85s 0.3s ${ease}, transform 0.85s 0.3s ${ease}`;
   tile.style.width = rect.width + 'px';
   tile.style.height = rect.height + 'px';
   tile.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
-  // Note: rot reverses to 0deg via .open.closing CSS rule
 
   _closeTimeoutId = setTimeout(() => {
-    // Remove BOTH classes only after the tile has finished traveling home
     modal.classList.remove('open', 'closing');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
     if (cellEl) cellEl.style.visibility = '';
     _activeCharCell = null;
     _closeTimeoutId = null;
-  }, 880);
+  }, 1200);
 }
 
 document.addEventListener('keydown', (e) => {

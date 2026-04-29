@@ -685,10 +685,12 @@ body::before {
   top: 0;
   left: 0;
   /* width/height/transform set inline by JS */
-  perspective: 900px;
+  perspective: 600px;
   pointer-events: none;
   z-index: 1;
   will-change: width, height, transform;
+  container-type: inline-size;
+  container-name: tile;
 }
 .char-detail-rot {
   position: relative;
@@ -696,16 +698,17 @@ body::before {
   height: 100%;
   transform-style: preserve-3d;
   transform: rotateY(0deg);
-  transition: transform 1s cubic-bezier(0.45, 0.05, 0.2, 1);
+  /* Open: rotation kicks in slightly AFTER the lift starts, runs faster than size growth */
+  transition: transform 0.55s 0.25s cubic-bezier(0.45, 0.05, 0.55, 1);
 }
-/* Open: rot reaches 180deg */
+/* Open target */
 .char-detail-modal.open .char-detail-rot {
   transform: rotateY(180deg);
 }
-/* Open + Closing: rot reverses back to 0deg (overrides the above by specificity tie + later rule) */
+/* Close: rotation runs FIRST, no delay; size shrink waits */
 .char-detail-modal.open.closing .char-detail-rot {
   transform: rotateY(0deg);
-  transition: transform 0.85s cubic-bezier(0.45, 0.05, 0.2, 1);
+  transition: transform 0.5s 0s cubic-bezier(0.45, 0.05, 0.55, 1);
 }
 
 .char-detail-front,
@@ -719,17 +722,20 @@ body::before {
   pointer-events: auto;
 }
 .char-detail-back {
-  transform: rotateY(180deg);
+  transform: rotateY(180deg) translateZ(0.1px); /* slight z-offset for thickness illusion */
   border-radius: 6px;
   background: var(--paper);
   border: 1px solid var(--rule);
   box-shadow:
     inset 1px 1px 0 rgba(255,255,255,0.5),
-    0 16px 48px rgba(26,31,46,0.35),
-    0 6px 12px rgba(26,31,46,0.2);
+    0 18px 56px rgba(26,31,46,0.45),
+    0 8px 16px rgba(26,31,46,0.28),
+    0 0 0 1px rgba(58,48,36,0.18);
 }
 
-/* Front face replicates the tile look (set classes via JS) */
+/* Front face replicates the tile look. Uses container-query units so the char
+   stays proportional to the tile's actual size — when the tile is small, char is small;
+   when tile grows, char grows with it like a real physical tile. */
 .char-detail-front {
   display: flex;
   flex-direction: column;
@@ -740,13 +746,15 @@ body::before {
   box-shadow:
     inset 1px 1px 0 rgba(255,255,255,0.55),
     inset -1px -1px 0 rgba(58,48,36,0.10),
-    0 1px 2px rgba(58,48,36,0.18),
-    0 2px 4px rgba(58,48,36,0.08);
+    0 8px 24px rgba(26,31,46,0.35),
+    0 4px 10px rgba(26,31,46,0.22),
+    0 0 0 1px rgba(58,48,36,0.18);
+  transform: translateZ(0.1px); /* thickness illusion */
 }
 .char-detail-front.learned { background: var(--gold); }
 .char-detail-front.current { background: var(--vermilion); }
 .char-detail-front .char {
-  font-size: clamp(32px, 14vw, 156px);
+  font-size: 38cqw; /* 38% of tile width — proportional to tile size */
   color: var(--muted);
   opacity: 0.3;
   font-weight: 500;
