@@ -980,23 +980,50 @@ body::before {
   position: fixed;
   left: 0;
   right: 0;
-  height: 110px;
+  height: 150px;
   pointer-events: none;
   z-index: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><g fill='none' stroke='%232a3f5f' stroke-width='1'><circle cx='0' cy='0' r='20'/><circle cx='0' cy='0' r='14'/><circle cx='0' cy='0' r='8'/><circle cx='40' cy='0' r='20'/><circle cx='40' cy='0' r='14'/><circle cx='40' cy='0' r='8'/><circle cx='20' cy='40' r='20'/><circle cx='20' cy='40' r='14'/><circle cx='20' cy='40' r='8'/></g></svg>");
-  background-size: 40px 40px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><g fill='none' stroke='%232a3f5f' stroke-width='1.1'><circle cx='0' cy='0' r='20'/><circle cx='0' cy='0' r='14'/><circle cx='0' cy='0' r='8'/><circle cx='40' cy='0' r='20'/><circle cx='40' cy='0' r='14'/><circle cx='40' cy='0' r='8'/><circle cx='20' cy='40' r='20'/><circle cx='20' cy='40' r='14'/><circle cx='20' cy='40' r='8'/></g></svg>");
+  background-size: 44px 44px;
   background-repeat: repeat;
-  opacity: 0.18;
+  opacity: 0.34;
 }
 .deco-band.top {
   top: 0;
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 35%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, black 35%, transparent 100%);
 }
 .deco-band.bottom {
   bottom: 0;
-  -webkit-mask-image: linear-gradient(to top, black 0%, transparent 100%);
-  mask-image: linear-gradient(to top, black 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 35%, transparent 100%);
+  mask-image: linear-gradient(to top, black 0%, black 35%, transparent 100%);
+}
+
+/* DECORATIVE SIDE PANELS — asanoha (hemp leaf) pattern in the gutters */
+.deco-side {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: calc((100vw - 1180px) / 2);
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='31.18' height='54' viewBox='0 0 31.18 54'><g fill='none' stroke='%233a2f25'><g stroke-width='0.6' opacity='0.85'><line x1='0' y1='-9' x2='15.59' y2='0'/><line x1='15.59' y1='0' x2='15.59' y2='18'/><line x1='15.59' y1='18' x2='0' y2='27'/><line x1='0' y1='27' x2='-15.59' y2='18'/><line x1='-15.59' y1='18' x2='-15.59' y2='0'/><line x1='-15.59' y1='0' x2='0' y2='-9'/><line x1='15.59' y1='18' x2='31.18' y2='27'/><line x1='31.18' y1='27' x2='31.18' y2='45'/><line x1='31.18' y1='45' x2='15.59' y2='54'/><line x1='15.59' y1='54' x2='0' y2='45'/><line x1='0' y1='45' x2='0' y2='27'/></g><g stroke-width='0.7'><line x1='0' y1='9' x2='0' y2='-9'/><line x1='0' y1='9' x2='15.59' y2='0'/><line x1='0' y1='9' x2='15.59' y2='18'/><line x1='0' y1='9' x2='0' y2='27'/><line x1='0' y1='9' x2='-15.59' y2='18'/><line x1='0' y1='9' x2='-15.59' y2='0'/><line x1='15.59' y1='36' x2='15.59' y2='18'/><line x1='15.59' y1='36' x2='31.18' y2='27'/><line x1='15.59' y1='36' x2='31.18' y2='45'/><line x1='15.59' y1='36' x2='15.59' y2='54'/><line x1='15.59' y1='36' x2='0' y2='45'/><line x1='15.59' y1='36' x2='0' y2='27'/></g></g></svg>");
+  background-size: 62px 108px;
+  background-repeat: repeat;
+  opacity: 0.22;
+}
+.deco-side.left {
+  left: 0;
+  -webkit-mask-image: linear-gradient(to right, black 0%, black 50%, transparent 100%);
+  mask-image: linear-gradient(to right, black 0%, black 50%, transparent 100%);
+}
+.deco-side.right {
+  right: 0;
+  -webkit-mask-image: linear-gradient(to left, black 0%, black 50%, transparent 100%);
+  mask-image: linear-gradient(to left, black 0%, black 50%, transparent 100%);
+}
+@media (max-width: 1240px) {
+  .deco-side { display: none; }
 }
 
 /* HANKO — vermilion seal stamp */
@@ -1004,8 +1031,8 @@ body::before {
 .hanko {
   position: absolute;
   top: 50%;
-  left: calc(50% - 200px);
-  transform: translateY(-50%) rotate(-6deg);
+  left: calc(50% - 206px);
+  transform: translateY(calc(-50% + 5px)) rotate(-6deg);
   width: 64px;
   height: 64px;
   pointer-events: none;
@@ -1016,14 +1043,12 @@ body::before {
   .hanko { display: none; }
 }
 </style>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 </head>
 <body>
 <div class="deco-band top"></div>
 <div class="deco-band bottom"></div>
+<div class="deco-side left"></div>
+<div class="deco-side right"></div>
 <div class="wrapper">
 
 <header class="masthead">
