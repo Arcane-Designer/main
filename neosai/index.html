@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Neosai — Captain's Japanese Learning Dashboard</title>
+<title>Neosai</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Shippori+Mincho:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -15,16 +15,12 @@
   --vermilion: #c8443c;
   --vermilion-deep: #9c2b24;
   --gold: #b08438;
-  --indigo: #2a3f5f;
   --rule: #3a3024;
   --muted: #6b6356;
   --mark-known: #5a8c4a;
 }
-
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 html { scroll-behavior: smooth; }
-
 body {
   font-family: 'Fraunces', Georgia, serif;
   background: var(--paper);
@@ -36,8 +32,6 @@ body {
     radial-gradient(ellipse at bottom right, rgba(42,63,95,0.05), transparent 50%);
   min-height: 100vh;
 }
-
-/* Subtle paper grain */
 body::before {
   content: "";
   position: fixed;
@@ -47,7 +41,6 @@ body::before {
   z-index: 0;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-
 .wrapper {
   position: relative;
   z-index: 1;
@@ -56,60 +49,28 @@ body::before {
   padding: 60px 40px 120px;
 }
 
-/* MASTHEAD */
+/* MASTHEAD - simplified, just the wordmark */
 .masthead {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: end;
-  border-bottom: 3px double var(--rule);
-  padding-bottom: 24px;
-  margin-bottom: 48px;
-  gap: 24px;
+  text-align: center;
+  margin-bottom: 24px;
 }
-.masthead .meta-left,
-.masthead .meta-right {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.masthead .meta-right { text-align: right; }
 .masthead h1 {
   font-family: 'Shippori Mincho', serif;
   font-weight: 800;
-  font-size: clamp(48px, 7vw, 88px);
+  font-size: clamp(56px, 8vw, 96px);
   line-height: 0.95;
   letter-spacing: -0.02em;
-  text-align: center;
-}
-.masthead h1 .jp {
-  display: block;
-  font-size: 0.6em;
-  color: var(--vermilion);
-  margin-bottom: 8px;
-  font-weight: 500;
-}
-
-/* SUBTITLE */
-.subtitle {
-  text-align: center;
-  font-style: italic;
-  color: var(--muted);
-  font-size: 17px;
-  margin-bottom: 60px;
-  font-family: 'Fraunces', serif;
+  color: var(--ink);
 }
 
 /* TAB NAV */
 .tabs {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
   margin-bottom: 48px;
   flex-wrap: wrap;
   border-bottom: 1px solid var(--rule);
-  padding-bottom: 0;
 }
 .tab {
   background: transparent;
@@ -165,7 +126,7 @@ body::before {
 /* OVERVIEW STATS */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1px;
   background: var(--rule);
   margin-bottom: 60px;
@@ -284,7 +245,25 @@ body::before {
   border-color: var(--vermilion);
 }
 
-/* CHARACTER MAP */
+/* CHARACTER GRID - now broken into three sections */
+.char-section { margin-bottom: 48px; }
+.char-section-title {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+.char-section-title .count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 400;
+}
 .char-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
@@ -292,6 +271,9 @@ body::before {
   background: var(--rule);
   border: 1px solid var(--rule);
   padding: 1px;
+}
+.char-grid.kanji {
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
 }
 .char-cell {
   aspect-ratio: 1;
@@ -311,6 +293,7 @@ body::before {
   opacity: 0.3;
   font-weight: 500;
 }
+.char-cell.kanji-cell .char { font-size: 28px; }
 .char-cell .romaji {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
@@ -320,7 +303,7 @@ body::before {
   letter-spacing: 0.05em;
 }
 .char-cell.learned {
-  background: var(--vermilion);
+  background: var(--gold);
 }
 .char-cell.learned .char {
   color: var(--paper);
@@ -332,19 +315,40 @@ body::before {
   opacity: 0.85;
 }
 .char-cell.current {
-  background: var(--ink);
+  background: var(--vermilion);
 }
 .char-cell.current .char,
 .char-cell.current .romaji {
   color: var(--paper);
   opacity: 1;
+  font-weight: 700;
 }
 .char-cell.current::after {
   content: "";
   position: absolute;
   inset: 4px;
-  border: 1px solid var(--vermilion);
+  border: 1px solid var(--paper);
   pointer-events: none;
+  opacity: 0.4;
+}
+.legend {
+  display: flex;
+  gap: 24px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex-wrap: wrap;
+}
+.legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  margin-right: 6px;
+  border: 1px solid var(--rule);
 }
 
 /* WORDS LIST */
@@ -391,7 +395,7 @@ body::before {
   font-size: 22px;
   font-weight: 600;
 }
-.week-header .week-date {
+.week-header .week-meta {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--muted);
@@ -409,7 +413,7 @@ body::before {
 }
 .word-row:last-child { border-bottom: none; }
 .word-row.is-funword { background: rgba(176,132,56,0.08); }
-.word-row.is-known { opacity: 0.55; }
+.word-row.is-user { background: rgba(90,140,74,0.06); }
 .word-row .slot-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
@@ -435,6 +439,14 @@ body::before {
   font-style: italic;
   color: var(--ink);
 }
+.word-row .word-translation .word-notes {
+  display: block;
+  font-style: normal;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
 .word-row .word-actions { display: flex; gap: 8px; }
 .btn-mini {
   background: transparent;
@@ -453,24 +465,17 @@ body::before {
   color: var(--paper);
   border-color: var(--ink);
 }
-.btn-mini.active {
-  background: var(--mark-known);
-  color: var(--paper);
-  border-color: var(--mark-known);
+.btn-mini.danger:hover {
+  background: var(--vermilion-deep);
+  border-color: var(--vermilion-deep);
 }
 
 /* MANAGE PANEL */
-.manage-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  margin-bottom: 48px;
-}
-@media (max-width: 800px) { .manage-grid { grid-template-columns: 1fr; } }
 .manage-card {
   border: 1px solid var(--rule);
   background: var(--paper);
   padding: 28px;
+  margin-bottom: 32px;
 }
 .manage-card h3 {
   font-family: 'Shippori Mincho', serif;
@@ -482,6 +487,12 @@ body::before {
   font-size: 14px;
   margin-bottom: 20px;
   line-height: 1.5;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 .form-field { margin-bottom: 14px; }
 .form-field label {
@@ -504,6 +515,7 @@ body::before {
   color: var(--ink);
   border-radius: 0;
 }
+.form-field textarea { min-height: 70px; resize: vertical; }
 .form-field input:focus,
 .form-field textarea:focus {
   outline: 2px solid var(--vermilion);
@@ -522,142 +534,18 @@ body::before {
   transition: background 0.15s ease;
 }
 .btn-primary:hover { background: var(--vermilion); }
-
-.list-managed {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
-}
-.list-managed-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 14px;
-  background: var(--paper-warm);
-  border: 1px solid var(--rule);
-  font-size: 14px;
-}
-.list-managed-item .word { font-family: 'Shippori Mincho', serif; font-size: 17px; font-weight: 600; }
-.list-managed-item .reading { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); margin-left: 8px; }
-.list-managed-item button {
-  background: transparent;
-  border: none;
-  color: var(--vermilion-deep);
-  cursor: pointer;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.list-managed-item button:hover { color: var(--ink); }
-
-.export-zone {
-  border: 2px dashed var(--rule);
-  padding: 24px;
-  margin-top: 32px;
-  background: var(--paper-warm);
-}
-.export-zone h4 {
-  font-family: 'Shippori Mincho', serif;
-  font-size: 18px;
-  margin-bottom: 8px;
-}
-.export-zone p {
-  font-size: 13px;
-  color: var(--muted);
-  margin-bottom: 16px;
-}
-.export-zone pre {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  background: var(--ink);
-  color: var(--paper);
-  padding: 14px;
-  overflow-x: auto;
-  max-height: 280px;
-  line-height: 1.5;
+.btn-primary:disabled {
+  background: var(--muted);
+  cursor: not-allowed;
 }
 
-/* SETTINGS */
-.settings-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 18px 0;
-  border-bottom: 1px solid rgba(58,48,36,0.15);
-}
-.settings-row:last-child { border-bottom: none; }
-.settings-row label {
-  font-family: 'Fraunces', serif;
-  font-size: 16px;
-  flex: 1;
-}
-.settings-row .hint {
-  display: block;
-  font-size: 13px;
-  color: var(--muted);
-  font-style: italic;
-  margin-top: 4px;
-}
-
-/* TOGGLE SWITCH */
-.toggle {
-  position: relative;
-  width: 52px;
-  height: 28px;
-  background: var(--rule);
-  border-radius: 14px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  flex-shrink: 0;
-}
-.toggle::after {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 22px;
-  height: 22px;
-  background: var(--paper);
-  border-radius: 50%;
-  transition: left 0.2s ease;
-}
-.toggle.on { background: var(--vermilion); }
-.toggle.on::after { left: 27px; }
-
-/* SPOILER ZONE */
-.spoiler-warning {
-  background: var(--ink);
-  color: var(--paper);
-  padding: 28px;
-  text-align: center;
-  margin: 32px 0;
-}
-.spoiler-warning h4 {
-  font-family: 'Shippori Mincho', serif;
-  font-size: 22px;
-  margin-bottom: 10px;
-  color: var(--vermilion);
-}
-
-.upcoming-block {
-  margin-top: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.upcoming-block .week-block { opacity: 0.95; }
-
-/* EMPTY STATES */
+/* EMPTY/STATUS STATES */
 .empty-state {
   text-align: center;
   padding: 60px 20px;
   color: var(--muted);
   font-style: italic;
 }
-
-/* LOADING */
 .loading-state {
   text-align: center;
   padding: 80px 20px;
@@ -667,72 +555,108 @@ body::before {
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
-
-/* FOOTER */
-.dashboard-footer {
-  text-align: center;
-  margin-top: 80px;
-  padding-top: 32px;
-  border-top: 1px solid var(--rule);
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 14px 20px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.15em;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--vermilion);
+  z-index: 100;
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.toast.error { border-color: var(--vermilion-deep); background: var(--vermilion-deep); }
+.toast.success { border-color: var(--mark-known); }
+
+/* EDIT MODAL */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26,31,46,0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 32px;
+  max-width: 520px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal h3 {
+  font-family: 'Shippori Mincho', serif;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+.btn-secondary {
+  background: transparent;
   color: var(--muted);
+  border: 1px solid var(--rule);
+  padding: 12px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  cursor: pointer;
   text-transform: uppercase;
 }
+.btn-secondary:hover { color: var(--ink); border-color: var(--ink); }
 
 /* MOBILE */
 @media (max-width: 700px) {
   .wrapper { padding: 32px 20px 80px; }
-  .masthead { grid-template-columns: 1fr; text-align: center; }
-  .masthead .meta-left, .masthead .meta-right { text-align: center; }
   .current-week { grid-template-columns: 1fr; text-align: center; padding: 24px; }
   .char-seal { margin: 0 auto; width: 110px; height: 110px; font-size: 64px; }
   .word-row { grid-template-columns: 1fr; gap: 8px; }
   .word-row .slot-label { font-size: 9px; }
+  .form-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 <div class="wrapper">
 
-<!-- MASTHEAD -->
 <header class="masthead">
-  <div class="meta-left">
-    <div>Vol. <span id="meta-week">—</span></div>
-    <div id="meta-date">—</div>
-  </div>
-  <h1>
-    <span class="jp">日本語の旅</span>
-    Neosai
-  </h1>
-  <div class="meta-right">
-    <div>Captain</div>
-    <div>Arcane Designer</div>
-  </div>
+  <h1>Neosai</h1>
 </header>
 
-<p class="subtitle">A daily ritual in five characters and one word at a time.</p>
-
-<!-- TABS -->
 <nav class="tabs">
   <button class="tab active" data-tab="overview">Overview</button>
   <button class="tab" data-tab="words">All Words</button>
   <button class="tab" data-tab="characters">Characters</button>
-  <button class="tab" data-tab="manage">Manage Lists</button>
-  <button class="tab" data-tab="upcoming">Upcoming</button>
-  <button class="tab" data-tab="settings">Settings</button>
+  <button class="tab" data-tab="manage">Manage</button>
 </nav>
 
-<!-- LOADING -->
-<div id="loading" class="loading-state">Loading from GitHub…</div>
+<div id="loading" class="loading-state">Loading…</div>
 
 <!-- ====== OVERVIEW ====== -->
 <section class="panel" data-panel="overview">
   <div class="stats-grid" id="stats-grid"></div>
   <div id="current-week-panel"></div>
   <div class="section-header">
-    <h2>This Week's Five</h2>
+    <h2>This Week</h2>
     <span class="kicker">Live</span>
   </div>
   <div id="current-week-words" class="weeks-list"></div>
@@ -741,15 +665,15 @@ body::before {
 <!-- ====== ALL WORDS ====== -->
 <section class="panel" data-panel="words">
   <div class="section-header">
-    <h2>Every Word, Every Week</h2>
+    <h2>All Words</h2>
     <span class="kicker">Archive</span>
   </div>
   <div class="filter-bar">
     <input type="text" id="word-search" placeholder="Search Japanese, romaji, or meaning…">
     <select id="word-filter">
       <option value="all">All words</option>
-      <option value="active">Active only (hide known)</option>
-      <option value="known">Marked as known</option>
+      <option value="routine">Routine words only</option>
+      <option value="user">My added words only</option>
       <option value="funword">Funwords only</option>
     </select>
   </div>
@@ -759,126 +683,99 @@ body::before {
 <!-- ====== CHARACTERS ====== -->
 <section class="panel" data-panel="characters">
   <div class="section-header">
-    <h2>Hiragana Acquired</h2>
+    <h2>Characters</h2>
     <span class="kicker">Map</span>
   </div>
-  <p style="color: var(--muted); font-style: italic; margin-bottom: 24px;">Standard hiragana chart. Vermilion squares are characters you've covered. The dark square is this week's focus. Empty squares are still ahead.</p>
-  <div id="char-grid" class="char-grid"></div>
+  <div class="legend">
+    <span><span class="legend-swatch" style="background:var(--paper-warm);"></span>Not yet learned</span>
+    <span><span class="legend-swatch" style="background:var(--gold);"></span>Learned</span>
+    <span><span class="legend-swatch" style="background:var(--vermilion);"></span>This week</span>
+  </div>
+  <div class="char-section">
+    <div class="char-section-title">Hiragana <span class="count" id="hiragana-count"></span></div>
+    <div id="hiragana-grid" class="char-grid"></div>
+  </div>
+  <div class="char-section">
+    <div class="char-section-title">Katakana <span class="count" id="katakana-count"></span></div>
+    <div id="katakana-grid" class="char-grid"></div>
+  </div>
+  <div class="char-section">
+    <div class="char-section-title">Kanji (starter set) <span class="count" id="kanji-count"></span></div>
+    <div id="kanji-grid" class="char-grid kanji"></div>
+  </div>
 </section>
 
 <!-- ====== MANAGE ====== -->
 <section class="panel" data-panel="manage">
   <div class="section-header">
-    <h2>Your Personal Lists</h2>
-    <span class="kicker">Manage</span>
+    <h2>Manage</h2>
+    <span class="kicker">Personal</span>
   </div>
-  <div class="manage-grid">
-    <div class="manage-card">
-      <h3>Already-Known Words</h3>
-      <p>Mark words you've learned elsewhere so the system skips them when picking new ones. The routine reads this list before delivering each day.</p>
-      <div class="form-field">
-        <label>Japanese (hiragana/katakana)</label>
-        <input type="text" id="known-jp" placeholder="e.g. ありがとう">
-      </div>
-      <div class="form-field">
-        <label>Reading (romaji)</label>
-        <input type="text" id="known-romaji" placeholder="e.g. arigatou">
-      </div>
-      <div class="form-field">
-        <label>Translation</label>
-        <input type="text" id="known-translation" placeholder="e.g. thank you">
-      </div>
-      <button class="btn-primary" onclick="addKnown()">+ Add to known list</button>
-      <div class="list-managed" id="known-list"></div>
-    </div>
 
-    <div class="manage-card">
-      <h3>Words You've Added</h3>
-      <p>Words you've learned outside the system that you want tracked. These appear in the Sunday master recap with a + marker.</p>
+  <div class="manage-card">
+    <h3>Add a word</h3>
+    <p>Words you've learned outside the system. They'll appear in your archive and the Sunday master recap.</p>
+    <div class="form-grid">
       <div class="form-field">
         <label>Japanese</label>
-        <input type="text" id="add-jp" placeholder="e.g. すし">
+        <input type="text" id="add-jp" placeholder="e.g. ありがとう">
       </div>
       <div class="form-field">
         <label>Reading (romaji)</label>
-        <input type="text" id="add-romaji" placeholder="e.g. sushi">
+        <input type="text" id="add-romaji" placeholder="e.g. arigatou">
       </div>
-      <div class="form-field">
-        <label>Translation</label>
-        <input type="text" id="add-translation" placeholder="e.g. sushi">
-      </div>
-      <div class="form-field">
-        <label>Where you learned it (optional)</label>
-        <input type="text" id="add-source" placeholder="e.g. restaurant menu">
-      </div>
-      <button class="btn-primary" onclick="addCustom()">+ Add this word</button>
-      <div class="list-managed" id="custom-list"></div>
     </div>
-  </div>
-
-  <div class="export-zone">
-    <h4>Sync to GitHub</h4>
-    <p>This dashboard reads from GitHub but can't write to it. To save your changes, copy this JSON and commit it to <code>user-lists.json</code> in your repo.</p>
-    <button class="btn-primary" onclick="copyExport()" style="margin-bottom: 16px;">📋 Copy to clipboard</button>
-    <pre id="export-json">{}</pre>
-  </div>
-</section>
-
-<!-- ====== UPCOMING ====== -->
-<section class="panel" data-panel="upcoming">
-  <div class="section-header">
-    <h2>What's Coming</h2>
-    <span class="kicker">Spoilers</span>
-  </div>
-  <div id="upcoming-content">
-    <div class="spoiler-warning" id="spoiler-warning">
-      <h4>⚠ Spoiler zone</h4>
-      <p>You said you didn't want to see upcoming words. This is hidden by default. Toggle on in Settings if you ever want to peek.</p>
+    <div class="form-field">
+      <label>Translation</label>
+      <input type="text" id="add-translation" placeholder="e.g. thank you">
     </div>
+    <div class="form-field">
+      <label>Notes (optional)</label>
+      <textarea id="add-notes" placeholder="anything you want to remember about this word"></textarea>
+    </div>
+    <button class="btn-primary" id="add-btn" onclick="addUserWord()">+ Add word</button>
+  </div>
+
+  <div class="manage-card">
+    <h3>Your added words</h3>
+    <p>Click any word to edit its details or remove it.</p>
+    <div id="user-words-list"></div>
   </div>
 </section>
-
-<!-- ====== SETTINGS ====== -->
-<section class="panel" data-panel="settings">
-  <div class="section-header">
-    <h2>Preferences</h2>
-    <span class="kicker">Config</span>
-  </div>
-  <div class="settings-row">
-    <label>
-      Show upcoming curriculum
-      <span class="hint">Default off. Turn on if you want to peek at the next weeks of words.</span>
-    </label>
-    <div class="toggle" id="toggle-spoilers" onclick="toggleSetting('show_spoilers', this)"></div>
-  </div>
-  <div class="settings-row">
-    <label>
-      Hide known-marked words from main lists
-      <span class="hint">Cleaner view of what's still being learned.</span>
-    </label>
-    <div class="toggle on" id="toggle-hide-known" onclick="toggleSetting('hide_known', this)"></div>
-  </div>
-  <div class="settings-row">
-    <label>
-      Repo location
-      <span class="hint" id="repo-hint">Where this dashboard reads its data from.</span>
-    </label>
-    <input type="text" id="repo-input" style="font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px;border:1px solid var(--rule);background:var(--paper-warm);min-width:280px;">
-  </div>
-  <div class="settings-row">
-    <label>
-      Refresh data
-      <span class="hint">Force re-read from GitHub. Useful after a routine just fired.</span>
-    </label>
-    <button class="btn-primary" onclick="loadData()">↻ Refresh now</button>
-  </div>
-</section>
-
-<footer class="dashboard-footer">
-  Arcane Designer LLC · Built for Captain · 日本語
-</footer>
 
 </div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <h3>Edit word</h3>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Japanese</label>
+        <input type="text" id="edit-jp" disabled>
+      </div>
+      <div class="form-field">
+        <label>Reading (romaji)</label>
+        <input type="text" id="edit-romaji">
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Translation</label>
+      <input type="text" id="edit-translation">
+    </div>
+    <div class="form-field">
+      <label>Notes</label>
+      <textarea id="edit-notes"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-mini danger" onclick="deleteCurrentWord()">Delete</button>
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script src="dashboard.js"></script>
 </body>
