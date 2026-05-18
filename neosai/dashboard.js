@@ -558,12 +558,28 @@ async function toggleCharacterLearned(charAttr) {
   // Decode in case it came through escapeAttr
   const char = charAttr.replace(/&apos;/g, "'").replace(/&quot;/g, '"');
 
-  const learnedSet = new Set(state.all_characters_learned || []);
-  const wasLearned = learnedSet.has(char);
-  const wasCurrent = state.current_character === char;
+  // CRITICAL: re-fetch the LATEST state before mutating, so we never clobber
+  // a routine write that landed between our last load and this toggle.
+  // Without this, if a routine commits a new word after the dashboard loaded,
+  // our PUT here sends the stale local state up and wipes the routine's write.
+  const btn = document.querySelector('.toggle-learned-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
 
-  // Build a fresh state copy to PUT
-  const next = JSON.parse(JSON.stringify(state));
+  let fresh;
+  try {
+    fresh = await fetchStateWithFallback();
+  } catch (err) {
+    showToast('Could not fetch latest state. Try again.', 'error');
+    if (btn) { btn.disabled = false; }
+    return;
+  }
+
+  const learnedSet = new Set(fresh.all_characters_learned || []);
+  const wasLearned = learnedSet.has(char);
+  const wasCurrent = fresh.current_character === char;
+
+  // Build a fresh state copy to PUT (mutating the fresh fetch, not stale local)
+  const next = JSON.parse(JSON.stringify(fresh));
   next.all_characters_learned = next.all_characters_learned || [];
 
   if (wasLearned) {
@@ -593,9 +609,7 @@ async function toggleCharacterLearned(charAttr) {
     }
   }
 
-  // Persist
-  const btn = document.querySelector('.toggle-learned-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  // Persist (btn already declared+disabled above before the fresh fetch)
   try {
     await workerCall('/state', 'PUT', next);
     state = next;
