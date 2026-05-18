@@ -68,37 +68,46 @@ async function loadData() {
   document.getElementById('loading').style.display = 'block';
   document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
 
-  try {
-    // Add a cache buster to ensure fresh data
-    const cacheBuster = `?t=${Date.now()}`;
-    const [stateRes, orderRes] = await Promise.allSettled([
-      fetch(rawUrl('state.json') + cacheBuster, { cache: 'no-cache' }),
-      fetch(rawUrl('character-order.json') + cacheBuster, { cache: 'no-cache' }),
-    ]);
-
-    if (stateRes.status === 'fulfilled' && stateRes.value.ok) {
-      state = await stateRes.value.json();
-    } else {
-      state = makeEmptyState();
-      showToast('Could not load state. Showing empty defaults.', 'error');
-    }
-
-    if (orderRes.status === 'fulfilled' && orderRes.value.ok) {
-      characterOrder = await orderRes.value.json();
-    } else {
-      characterOrder = { order: [] };
-    }
-  } catch (err) {
-    console.error('Load error:', err);
-    state = makeEmptyState();
-    showToast('Network error loading data.', 'error');
-  }
+  // Try the Worker first (GitHub API, no CDN cache → always fresh after a routine write).
+  // Fall back to raw.githubusercontent.com if the Worker is unreachable.
+  state = await fetchStateWithFallback();
+  characterOrder = await fetchOrderWithFallback();
 
   document.getElementById('loading').style.display = 'none';
   document.querySelectorAll('.panel').forEach(p => {
     if (p.classList.contains('active')) p.style.display = 'block';
   });
   renderAll();
+}
+
+async function fetchStateWithFallback() {
+  // Primary: Worker /state (no CDN cache)
+  try {
+    const res = await fetch(`${CONFIG.workerUrl}/state?t=${Date.now()}`, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      // Worker returns the parsed state directly
+      if (data && typeof data === 'object' && 'current_week_number' in data) return data;
+    }
+  } catch (_) { /* fall through */ }
+
+  // Fallback: raw URL (CDN-cached, may be stale right after a routine write)
+  try {
+    const res = await fetch(rawUrl('state.json') + `?t=${Date.now()}`, { cache: 'no-cache' });
+    if (res.ok) return await res.json();
+  } catch (_) { /* fall through */ }
+
+  showToast('Could not load state. Showing empty defaults.', 'error');
+  return makeEmptyState();
+}
+
+async function fetchOrderWithFallback() {
+  // character-order.json rarely changes so CDN cache is fine for this one
+  try {
+    const res = await fetch(rawUrl('character-order.json') + `?t=${Date.now()}`, { cache: 'no-cache' });
+    if (res.ok) return await res.json();
+  } catch (_) { /* ignore */ }
+  return { order: [] };
 }
 
 function makeEmptyState() {
