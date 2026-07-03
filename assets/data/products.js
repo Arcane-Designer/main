@@ -480,7 +480,7 @@ window.ARCANE = (function () {
       category: 'prompts',
       skillLevel: 'apprentice',
       flags: ['new'],
-      permalink: '',
+      permalink: 'ai-quickstart',
       cover: { grad: 'blue-teal', icon: 'playbook' },
       blurb: "New to AI, or still getting mediocre results out of it? This is the shortcut. 51 tips across six areas: getting started, prompting, sharper output, picking the right tool, working smart without the risks, and getting real work out of agents and coding. No fluff, no version-chasing. We keep it current, so the advice still holds as the tools change.",
       outcomes: [
