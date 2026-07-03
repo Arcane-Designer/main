@@ -27,8 +27,7 @@
     sparkle:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.6L19 9l-4.2 3 1.6 5.6L12 14.8 7.6 17.6 9.2 12 5 9l5.2-1.4z"/></svg>',
     target:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>',
     clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>',
-    linkedin:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0zM.4 8.02h4.15V24H.4zM8.34 8.02h3.98v2.18h.06c.55-1.05 1.9-2.16 3.92-2.16 4.2 0 4.98 2.76 4.98 6.35V24h-4.15v-7.08c0-1.69-.03-3.86-2.35-3.86-2.36 0-2.72 1.84-2.72 3.74V24H8.34z"/></svg>',
-    instagram:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>'
+    linkedin:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0zM.4 8.02h4.15V24H.4zM8.34 8.02h3.98v2.18h.06c.55-1.05 1.9-2.16 3.92-2.16 4.2 0 4.98 2.76 4.98 6.35V24h-4.15v-7.08c0-1.69-.03-3.86-2.35-3.86-2.36 0-2.72 1.84-2.72 3.74V24H8.34z"/></svg>'
   };
 
   /* Product-cover glyphs (larger, centered on the cover) */
@@ -142,7 +141,7 @@
   }
 
   function starsHTML(p) {
-    if (!p.rating) return '<span class="stars-new">New</span>';
+    if (!p.rating) return '';
     var full = Math.round(p.rating);
     var icons = '';
     for (var i = 0; i < 5; i++) icons += (i < full ? '★' : '☆');
@@ -435,7 +434,7 @@
       name: 'Arcane Designer LLC', slogan: 'Where Strategy Meets Sorcery',
       url: location.origin + location.pathname.replace(/index\.html$/, ''),
       logo: location.origin + '/assets/images/LOGO.png',
-      sameAs: ['https://www.linkedin.com/company/arcane-designer/', 'https://www.instagram.com/arcanedesigner']
+      sameAs: ['https://www.linkedin.com/company/arcane-designer/']
     };
   }
   function productSchema(p) {

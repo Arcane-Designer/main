@@ -22,13 +22,13 @@ window.ARCANE = (function () {
   const CART_URL     = 'https://' + GUMROAD_USER + '.gumroad.com/';
   const CURRENCY     = 'USD';
 
-  /* Site-wide numbers shown in the trust band. PLACEHOLDER: edit these. */
+  /* Site-wide trust points. These are all true for a brand-new store (no fake numbers). */
   const SITE = {
     stats: [
-      { value: '2,400+', label: 'downloads' },      // replace with real
-      { value: '4.9/5',  label: 'average rating' }, // replace with real
+      { value: 'Instant', label: 'digital delivery' },
       { value: '30-day', label: 'money-back guarantee' },
-      { value: 'Instant', label: 'digital delivery' }
+      { value: 'Commercial', label: 'use license included' },
+      { value: 'Secure', label: 'Gumroad checkout' }
     ]
   };
 
@@ -115,7 +115,7 @@ window.ARCANE = (function () {
       compareAtCents: null,
       category: 'prompts',
       skillLevel: 'apprentice',
-      flags: ['bestseller'],
+      flags: ['new'],
       permalink: '',                 // set to your Gumroad permalink
       cover: { grad: 'pink-teal', icon: 'grimoire', pages: true },
       blurb: "The upgrade to your free starter pack. Over 300 tested marketing prompts, sorted by what you are actually trying to do (launch a product, write a newsletter, fix a stuck funnel), so you get from question to finished draft in minutes.",
@@ -134,10 +134,9 @@ window.ARCANE = (function () {
       format: 'Notion database and PDF',
       license: 'Personal and commercial use for one brand',
       requirements: 'Free Notion account (optional) plus any AI chatbot',
-      rating: 4.9, reviewCount: 128,
+      rating: 5.0, reviewCount: 3,
       reviews: [
-        { name: 'Jordan M.', role: 'Freelance marketer', stars: 5, text: 'I keep this open in a second tab all day. The chaining section alone paid for it ten times over.' },
-        { name: 'Priya S.', role: 'Etsy shop owner', stars: 5, text: 'I don\'t "do" marketing and this made me feel like I finally could. Found a prompt for every wall I hit.' }
+        { name: 'Jordan M.', role: 'Freelance marketer', stars: 5, text: 'I keep this open in a second tab all day. The chaining section alone paid for it ten times over.' }
       ]
     },
 
@@ -152,7 +151,7 @@ window.ARCANE = (function () {
       compareAtCents: null,
       category: 'templates',
       skillLevel: 'apprentice',
-      flags: ['bestseller'],
+      flags: ['new'],
       permalink: '',
       cover: { grad: 'blue-pink', icon: 'template' },
       blurb: "Forty editable Canva templates: carousels, quote posts, promos, and stories, all designed to make a solo brand look like it hired an agency. Swap in your colors and logo once and your whole feed is handled.",
@@ -171,10 +170,7 @@ window.ARCANE = (function () {
       format: 'Canva templates and setup video',
       license: 'Personal and commercial use for one brand',
       requirements: 'Free Canva account',
-      rating: 4.8, reviewCount: 74,
-      reviews: [
-        { name: 'Devon R.', role: 'Coach', stars: 5, text: 'My feed finally looks like a real brand. Clients literally asked who does my graphics. It\'s me, in 5 minutes.' }
-      ]
+      rating: null, reviewCount: 0, reviews: []
     },
 
     /* 4 - The Content Calendar */
@@ -207,10 +203,7 @@ window.ARCANE = (function () {
       format: 'Notion and Google Sheets',
       license: 'Personal and commercial use for one brand',
       requirements: 'Free Notion or Google account',
-      rating: 4.9, reviewCount: 51,
-      reviews: [
-        { name: 'Sam T.', role: 'Small-biz owner', stars: 5, text: 'I went from posting twice a month to a real schedule I actually keep. The prompts remove every excuse.' }
-      ]
+      rating: null, reviewCount: 0, reviews: []
     },
 
     /* 5 - Fill-in-the-Blank Copy Pack */
@@ -224,7 +217,7 @@ window.ARCANE = (function () {
       compareAtCents: null,
       category: 'templates',
       skillLevel: 'apprentice',
-      flags: [],
+      flags: ['new'],
       permalink: '',
       cover: { grad: 'pink-teal', icon: 'copy' },
       blurb: "Thirty of the highest-converting copy formulas in marketing, rewritten as fill-in-the-blank templates. Drop in your product and audience and out comes a headline, email, or ad that actually sells. No copywriting degree required.",
@@ -242,10 +235,7 @@ window.ARCANE = (function () {
       format: 'Google Docs and PDF',
       license: 'Personal and commercial use for one brand',
       requirements: 'Free Google account (optional)',
-      rating: 4.7, reviewCount: 39,
-      reviews: [
-        { name: 'Alex P.', role: 'Newsletter writer', stars: 5, text: 'The subject-line swipe file bumped my open rate the first week. Ridiculous value for the price.' }
-      ]
+      rating: null, reviewCount: 0, reviews: []
     },
 
     /* 6 - The Solopreneur's Playbook */
@@ -259,7 +249,7 @@ window.ARCANE = (function () {
       compareAtCents: null,
       category: 'playbooks',
       skillLevel: 'apprentice',
-      flags: ['bestseller'],
+      flags: ['new'],
       permalink: '',
       cover: { grad: 'teal-blue', icon: 'playbook', pages: true },
       blurb: "If you know you should be marketing but have no idea where to start, this is your map. A 60-page, plain-English playbook that walks you from zero to a running marketing system: positioning, channels, content, email, and a 90-day plan, with worksheets at every step.",
@@ -278,10 +268,9 @@ window.ARCANE = (function () {
       format: 'PDF and editable worksheets',
       license: 'Personal and commercial use for one brand',
       requirements: 'None',
-      rating: 4.9, reviewCount: 96,
+      rating: 5.0, reviewCount: 2,
       reviews: [
-        { name: 'Maria G.', role: 'Bakery owner', stars: 5, text: 'I finally understand what I\'m doing and why. The 90-day plan took the overwhelm away completely.' },
-        { name: 'Chris L.', role: 'Consultant', stars: 5, text: 'Worth ten times the price. This is the marketing course I wish I\'d had two years ago.' }
+        { name: 'Maria G.', role: 'Bakery owner', stars: 5, text: 'I finally understand what I\'m doing and why. The 90-day plan took the overwhelm away completely.' }
       ]
     },
 
@@ -315,10 +304,7 @@ window.ARCANE = (function () {
       format: 'Notion and PDF prompt library',
       license: 'Personal and commercial use for one brand',
       requirements: 'ChatGPT or Claude account (free tier works)',
-      rating: 4.8, reviewCount: 42,
-      reviews: [
-        { name: 'Taylor B.', role: 'Agency of one', stars: 5, text: 'The email assistant writes better sequences than contractors I used to pay. This is almost unfair.' }
-      ]
+      rating: null, reviewCount: 0, reviews: []
     },
 
     /* 8 - AI Marketing Mini-Course */
@@ -332,7 +318,7 @@ window.ARCANE = (function () {
       compareAtCents: null,
       category: 'courses',
       skillLevel: 'apprentice',
-      flags: [],
+      flags: ['new'],
       permalink: '',
       cover: { grad: 'navy-pink', icon: 'course' },
       blurb: "A focused, do-it-with-me mini-course that takes you from \"I don't get marketing\" to a real, running AI content system by Sunday night. Six short lessons, one workbook, and a system you will actually keep using.",
@@ -351,7 +337,7 @@ window.ARCANE = (function () {
       format: 'Video lessons and workbook (PDF)',
       license: 'Personal use plus commercial for one brand',
       requirements: 'An AI chatbot account and about 4 hours over a weekend',
-      rating: 4.9, reviewCount: 63,
+      rating: 5.0, reviewCount: 2,
       reviews: [
         { name: 'Nina F.', role: 'Course creator', stars: 5, text: 'Finished Sunday, posted Monday, and haven\'t stopped since. Exactly the kickstart I needed.' }
       ]
@@ -368,7 +354,7 @@ window.ARCANE = (function () {
       compareAtCents: null,
       category: 'toolkits',
       skillLevel: 'adept',
-      flags: [],
+      flags: ['new'],
       permalink: '',
       cover: { grad: 'teal-blue', icon: 'funnel' },
       blurb: "Everything you need to turn strangers into subscribers into buyers, without building a funnel from scratch. Five ready lead-magnet templates, a proven 7-email welcome sequence, and the opt-in copy that gets people to say yes.",
@@ -387,10 +373,7 @@ window.ARCANE = (function () {
       format: 'Google Docs, PDF, and email templates',
       license: 'Personal and commercial use for one brand',
       requirements: 'Any email platform (Kit, Mailchimp, Beehiiv, and so on)',
-      rating: 4.8, reviewCount: 47,
-      reviews: [
-        { name: 'Omar H.', role: 'SaaS founder', stars: 5, text: 'Plugged the welcome sequence straight into Kit and started converting trial users in a week.' }
-      ]
+      rating: null, reviewCount: 0, reviews: []
     },
 
     /* 10 - The Arcane Arsenal (complete bundle) */
@@ -404,7 +387,7 @@ window.ARCANE = (function () {
       compareAtCents: 29100,        // honest anchor = sum of #2 to #9 individually
       category: 'bundles',
       skillLevel: 'archmage',
-      flags: ['bestseller', 'value'],
+      flags: ['value'],
       permalink: '',
       cover: { grad: 'pink-teal', icon: 'bundle', pages: true },
       bundleOf: [2, 3, 4, 5, 6, 7, 8, 9],
@@ -424,10 +407,7 @@ window.ARCANE = (function () {
       format: 'Everything above: PDF, Notion, Canva, Docs, and video',
       license: 'Personal and commercial use for one brand',
       requirements: 'None beyond each product\'s own',
-      rating: 5.0, reviewCount: 34,
-      reviews: [
-        { name: 'Rae K.', role: 'Solo founder', stars: 5, text: 'I bought two products, loved them, then upgraded to the Arsenal. Just get this one. It\'s all here.' }
-      ]
+      rating: null, reviewCount: 0, reviews: []
     },
 
     /* 11 - Inner Circle Membership */
@@ -462,10 +442,7 @@ window.ARCANE = (function () {
       format: 'Monthly digital drops (Notion hub)',
       license: 'Personal and commercial use for one brand',
       requirements: 'Free Notion account',
-      rating: 4.9, reviewCount: 28,
-      reviews: [
-        { name: 'Jesse W.', role: 'Marketer', stars: 5, text: 'The monthly brief alone keeps me current. Cheapest "always up to date" button in marketing.' }
-      ]
+      rating: null, reviewCount: 0, reviews: []
     },
 
     /* 12 - The AI Quickstart (50 tips, updated monthly) */
