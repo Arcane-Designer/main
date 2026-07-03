@@ -3,24 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Arcane Vault: Shop AI Marketing Products | Arcane Designer</title>
-  <meta name="description" content="Browse instant-download AI marketing spellbooks: prompt packs, templates, playbooks, toolkits, mini-courses & bundles. Filter by category, level, and price.">
-  <link rel="canonical" href="https://arcanedesigner.com/shop.html">
+  <title>Free: The Marketer’s Spellbook, 25 AI Prompts | Arcane Designer</title>
+  <meta name="description" content="Get 25 free plug-and-play AI marketing prompts that turn a blank page into a week of content. Instant delivery to your inbox.">
+  <link rel="canonical" href="https://arcanedesigner.com/free.html">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="The Arcane Vault: Shop AI Marketing Products">
-  <meta property="og:description" content="Instant-download prompt packs, templates, playbooks & mini-courses for solo marketers.">
+  <meta property="og:title" content="Free: The Marketer’s Spellbook, 25 AI Prompts">
+  <meta property="og:description" content="25 free AI prompts that turn a blank page into a week of content.">
   <meta property="og:image" content="https://arcanedesigner.com/assets/images/Arcane_Header.png">
-  <meta property="og:url" content="https://arcanedesigner.com/shop.html">
+  <meta property="og:url" content="https://arcanedesigner.com/free.html">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/images/LOGO.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://gumroad.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body data-page="shop">
+<body data-page="free">
   <a class="skip-link" href="#main">Skip to content</a>
 
   <nav class="site-nav" role="navigation" aria-label="Main navigation">
@@ -29,16 +28,16 @@
         <img src="assets/images/LOGO.png" alt="Arcane Designer logo: three overlapping hexagons in blue, pink, and green" width="120" height="42">
       </a>
       <div class="nav-links" id="navLinks">
-        <a href="shop.html" class="active">Shop</a>
-        <a href="free.html">Free Spellbook</a>
+        <a href="shop.html">Shop</a>
+        <a href="free.html" class="active">Free Spellbook</a>
         <a href="blog.html">Blog</a>
         <a href="about.html">About</a>
         <a href="contact.html">Support</a>
-        <a class="btn btn-primary btn-sm nav-cta-mobile" href="free.html">Get the Free Spellbook</a>
+        <a class="btn btn-primary btn-sm nav-cta-mobile" href="#claim">Get the Free Spellbook</a>
       </div>
       <div class="nav-actions">
         <a class="nav-cart" data-cart-link href="#" aria-label="Your Gumroad library"><span data-icon="cart"></span></a>
-        <a class="btn btn-primary btn-sm nav-cta-desktop" href="free.html">Free Spellbook</a>
+        <a class="btn btn-primary btn-sm nav-cta-desktop" href="#claim">Get it free</a>
         <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
           <span></span><span></span><span></span>
         </button>
@@ -47,56 +46,53 @@
   </nav>
 
   <main id="main">
-  <section class="page-hero">
+  <section class="page-hero" style="padding-bottom:48px">
     <div class="hex-bg" aria-hidden="true"><div class="hex"></div><div class="hex"></div><div class="hex"></div><div class="hex"></div></div>
-    <p class="eyebrow">Instant-download digital products</p>
-    <h1>The Arcane Vault</h1>
-    <p class="tagline">Prompt packs, templates, playbooks, and mini-courses. Buy once, download instantly, keep forever.</p>
+    <p class="eyebrow">Your first pack, on the house</p>
+    <h1>The Marketer’s Spellbook</h1>
+    <p class="tagline">25 plug-and-play AI prompts that turn a blank page into a week of content, in one afternoon.</p>
   </section>
 
-  <!-- Sticky filter/sort bar (built by JS) -->
-  <div class="shop-toolbar" id="shop-toolbar" role="region" aria-label="Filter and sort products">
-    <div class="toolbar-inner"></div>
-  </div>
-
-  <section class="section-dark2" style="padding-top:8px">
+  <section class="section-dark2" style="padding-top:48px">
     <div class="container">
-      <p class="shop-count" id="shop-count" role="status" aria-live="polite"></p>
-      <div class="product-grid" id="shop-grid">
-        <noscript><p style="text-align:center">Enable JavaScript to browse and filter the vault.</p></noscript>
-      </div>
-    </div>
-  </section>
+      <div class="product-detail" style="align-items:center">
+        <div class="pd-gallery fade-in">
+          <div class="pd-gallery-main" id="magnet-cover"></div>
+        </div>
+        <div class="fade-in">
+          <h2 style="color:var(--white);font-size:1.5rem;margin-bottom:18px">What’s inside your free grimoire</h2>
+          <ul class="whats-inside" style="margin-bottom:28px">
+            <li><span data-icon="check" style="color:var(--teal);width:22px;height:22px;display:inline-flex"></span><span>25 categorized, copy-and-paste AI prompts: social, email, blog, and ads</span></li>
+            <li><span data-icon="check" style="color:var(--teal);width:22px;height:22px;display:inline-flex"></span><span>A “how to prompt like a marketer” one-pager</span></li>
+            <li><span data-icon="check" style="color:var(--teal);width:22px;height:22px;display:inline-flex"></span><span>Fill-in-the-blank variables so every prompt fits your brand</span></li>
+            <li><span data-icon="check" style="color:var(--teal);width:22px;height:22px;display:inline-flex"></span><span>Works with ChatGPT, Claude, or Gemini, free tiers included</span></li>
+          </ul>
 
-  <!-- Free magnet strip -->
-  <section class="dark-section" style="padding-top:56px;padding-bottom:56px">
-    <div class="container">
-      <div class="magnet fade-in">
-        <div class="magnet-inner">
-          <div class="magnet-text">
-            <p class="eyebrow">Not sure where to start?</p>
-            <h2>Grab the free Marketer’s Spellbook</h2>
-            <p>25 AI prompts that turn a blank page into a week of content, free. The easiest way to try it before you buy.</p>
+          <div class="magnet" id="claim" style="padding:32px 30px">
+            <p class="eyebrow" style="color:var(--pink)">Instant delivery</p>
+            <h2 style="font-size:1.5rem;color:var(--white);margin-bottom:12px">Send me the Spellbook</h2>
             <form class="email-form" data-arcane-form action="#" data-redirect="thank-you.html" novalidate>
-              <label for="magnet-email-shop" class="skip-link">Email address</label>
-              <input type="email" id="magnet-email-shop" name="email" placeholder="your@email.com" required autocomplete="email">
+              <label for="magnet-email-free" class="skip-link">Email address</label>
+              <input type="email" id="magnet-email-free" name="email" placeholder="your@email.com" required autocomplete="email">
               <input type="text" name="_gotcha" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
-              <button type="submit" class="btn btn-primary">Send it to me</button>
+              <button type="submit" class="btn btn-primary">Get my free prompts</button>
             </form>
-            <p class="form-consent">No spam, ever. Unsubscribe anytime.</p>
+            <p class="form-consent">Join 2,400+ marketers. No spam, unsubscribe anytime. <a href="contact.html#faq">How your data is used</a>.</p>
             <p class="form-status" role="status" aria-live="polite"></p>
           </div>
-          <div class="magnet-art" aria-hidden="true"><img src="assets/images/Arc_Hands_Up___Presents_Above.png" alt="" width="170" height="170" loading="lazy"></div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="cta-banner">
-    <div class="hex-bg" aria-hidden="true"><div class="hex"></div><div class="hex"></div><div class="hex"></div><div class="hex"></div></div>
-    <h2 class="fade-in">Everything, at the best price.</h2>
-    <p class="fade-in">Get the entire vault in one bundle and save more than half.</p>
-    <a href="product.html?p=arcane-arsenal" class="btn btn-pink btn-lg fade-in">See the Arcane Arsenal</a>
+  <!-- Tripwire -->
+  <section class="dark-section">
+    <div class="container-narrow" style="text-align:center">
+      <p class="eyebrow">Ready for the full spellbook?</p>
+      <h2 class="section-title on-dark" style="text-align:center">Loved the free 25? There are 300 more.</h2>
+      <p class="section-subtitle on-dark">The Grand Prompt Grimoire picks up where the freebie ends, with 300+ prompts sorted by exactly what you’re trying to do.</p>
+      <div class="product-callout" data-callout-slug="grand-prompt-grimoire" style="max-width:560px;margin:0 auto;text-align:left"></div>
+    </div>
   </section>
   </main>
 
@@ -134,5 +130,15 @@
 
   <script src="assets/data/products.js"></script>
   <script src="js/main.js"></script>
+  <script>
+    // Render the free product's cover into the gallery
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.ARCANE && window.ARCANE_UI) {
+        var p = window.ARCANE.bySlug('marketers-spellbook');
+        var holder = document.getElementById('magnet-cover');
+        if (p && holder) holder.innerHTML = window.ARCANE_UI.coverSVG(p);
+      }
+    });
+  </script>
 </body>
 </html>

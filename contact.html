@@ -3,123 +3,170 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contact — Arcane Designer</title>
-  <meta name="description" content="Get in touch with Arcane Designer LLC — let's talk about your marketing needs.">
+  <title>Support &amp; FAQ | Arcane Designer</title>
+  <meta name="description" content="Need help with a download, order, or refund? Get support from Arcane Designer, plus answers to common questions about delivery, licensing, and formats.">
+  <link rel="canonical" href="https://arcanedesigner.com/contact.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Support & FAQ | Arcane Designer">
+  <meta property="og:description" content="Download help, refunds, licensing, and answers to common questions.">
+  <meta property="og:image" content="https://arcanedesigner.com/assets/images/Arcane_Header.png">
+  <meta property="og:url" content="https://arcanedesigner.com/contact.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/images/LOGO.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 </head>
-<body>
+<body data-page="contact">
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  <!-- ===== NAVIGATION ===== -->
   <nav class="site-nav" role="navigation" aria-label="Main navigation">
     <div class="nav-inner">
       <a href="index.html" class="nav-logo" aria-label="Arcane Designer home">
-        <img src="assets/images/LOGO.png" alt="Arcane Designer logo — three overlapping hexagons in blue, pink, and green">
+        <img src="assets/images/LOGO.png" alt="Arcane Designer logo: three overlapping hexagons in blue, pink, and green" width="120" height="42">
       </a>
       <div class="nav-links" id="navLinks">
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="blog.html">Blog</a>
         <a href="shop.html">Shop</a>
-        <a href="contact.html" class="active">Contact</a>
+        <a href="free.html">Free Spellbook</a>
+        <a href="blog.html">Blog</a>
+        <a href="about.html">About</a>
+        <a href="contact.html" class="active">Support</a>
+        <a class="btn btn-primary btn-sm nav-cta-mobile" href="free.html">Get the Free Spellbook</a>
       </div>
-      <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+      <div class="nav-actions">
+        <a class="nav-cart" data-cart-link href="#" aria-label="Your Gumroad library"><span data-icon="cart"></span></a>
+        <a class="btn btn-primary btn-sm nav-cta-desktop" href="free.html">Free Spellbook</a>
+        <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
   </nav>
 
-  <!-- ===== PAGE HERO ===== -->
+  <main id="main">
   <section class="page-hero">
-    <div class="hex-bg" aria-hidden="true">
-      <div class="hex"></div><div class="hex"></div><div class="hex"></div><div class="hex"></div>
-    </div>
-    <h1>Let's Talk</h1>
-    <p class="tagline">Got a question, a project idea, or just want to say hey?</p>
+    <div class="hex-bg" aria-hidden="true"><div class="hex"></div><div class="hex"></div><div class="hex"></div><div class="hex"></div></div>
+    <p class="eyebrow">We’ve got you</p>
+    <h1>Support &amp; questions</h1>
+    <p class="tagline">Download trouble, a question before you buy, or a refund? Send a note and you’ll hear back within one business day.</p>
   </section>
 
-  <!-- ===== CONTACT SECTION ===== -->
-  <section class="dark-section">
+  <section class="section-dark2">
     <div class="container">
       <div class="contact-wrapper">
-
         <div class="contact-form fade-in">
-          <!-- TODO: Connect form to Formspree, Netlify Forms, or similar service -->
-          <form action="#" method="post">
+          <!-- TO GO LIVE: set action to your Formspree/Netlify endpoint (see README). Demo mode shows a success message. -->
+          <form data-arcane-form action="#" method="POST" novalidate>
             <div class="form-group">
               <label for="name">Name</label>
-              <input type="text" id="name" name="name" placeholder="Your name" required>
+              <input type="text" id="name" name="name" placeholder="Your name" required autocomplete="name">
             </div>
             <div class="form-group">
               <label for="email">Email</label>
-              <input type="email" id="email" name="email" placeholder="your@email.com" required>
+              <input type="email" id="email" name="email" placeholder="your@email.com" required autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label for="topic">What’s this about?</label>
+              <select id="topic" name="topic">
+                <option>Download / order help</option>
+                <option>Question before I buy</option>
+                <option>Refund request</option>
+                <option>Something else</option>
+              </select>
             </div>
             <div class="form-group">
               <label for="message">Message</label>
-              <textarea id="message" name="message" placeholder="Tell me about your project, ask a question, or just say hello..." required></textarea>
+              <textarea id="message" name="message" placeholder="Tell me what you need a hand with…" required></textarea>
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;">Send Message</button>
+            <input type="text" name="_gotcha" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <button type="submit" class="btn btn-primary btn-block">Send message</button>
+            <p class="form-status" role="status" aria-live="polite"></p>
           </form>
 
           <div class="contact-alt">
             <p>Or reach out directly:</p>
-            <p>
-              <a href="https://www.linkedin.com/company/arcane-designer/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in"></i> Arcane Designer on LinkedIn</a>
-            </p>
+            <p><a href="https://www.linkedin.com/company/arcane-designer/" target="_blank" rel="noopener noreferrer"><span data-icon="linkedin"></span> Arcane Designer on LinkedIn</a></p>
+            <p><a href="https://www.instagram.com/arcanedesigner" target="_blank" rel="noopener noreferrer"><span data-icon="instagram"></span> @arcanedesigner on Instagram</a></p>
           </div>
         </div>
 
         <div class="contact-image fade-in">
-          <img src="assets/images/Arc_PresentsSpeaks_with_Floor.png" alt="Arc mascot presenting with hands out, standing on platform" loading="lazy">
+          <img src="assets/images/Arc_Presents_Speaks.png" alt="Arc, the Arcane Designer mascot, presenting with open hands" width="280" height="360" loading="lazy">
         </div>
-
       </div>
     </div>
   </section>
 
-  <!-- ===== FOOTER ===== -->
+  <!-- FAQ -->
+  <section class="dark-section" id="faq">
+    <div class="container">
+      <h2 class="section-title on-dark">Frequently asked</h2>
+      <p class="section-subtitle on-dark">The quick answers. Most support questions live here.</p>
+      <div class="faq">
+        <details open>
+          <summary>How do I get my files after buying?</summary>
+          <p>The moment your payment clears, Gumroad emails you a secure download link and adds the product to your Gumroad library. It’s a digital download, so no shipping and no waiting.</p>
+        </details>
+        <details>
+          <summary>I lost my download / didn’t get the email.</summary>
+          <p>Check your spam and “Promotions” folders first. Every purchase also lives in your Gumroad library at <a href="#" data-cart-link>your library</a>. Log in with the email you bought with. Still stuck? Send a note above and we’ll re-send it.</p>
+        </details>
+        <details>
+          <summary>What’s your refund policy?</summary>
+          <p>Every product comes with a 30-day, no-questions-asked money-back guarantee. If it doesn’t help, reply to your receipt or use the form above and you’ll get a full refund.</p>
+        </details>
+        <details>
+          <summary>Can I use these for client work?</summary>
+          <p>Yes. Each product includes a personal + commercial license for one brand or business. Use it for your own marketing or a client’s. You just can’t resell or redistribute the raw files.</p>
+        </details>
+        <details>
+          <summary>What format are the products in?</summary>
+          <p>Most are a mix of PDF guides plus editable Notion, Google Docs, or Canva templates. Each product page lists its exact formats and requirements under “The fine print.”</p>
+        </details>
+        <details>
+          <summary>Do I need paid AI tools to use these?</summary>
+          <p>No. Everything is built to work with the free tiers of ChatGPT, Claude, or Gemini. If a product needs anything specific, it’s listed under its requirements.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+  </main>
+
   <footer class="site-footer">
     <div class="footer-inner">
       <div class="footer-brand">
-        <img src="assets/images/LOGO.png" alt="Arcane Designer logo">
-        <p>AI-powered digital marketing that blends creative strategy with cutting-edge automation.</p>
-      </div>
-      <div class="footer-links">
-        <h4>Quick Links</h4>
-        <nav class="footer-links-row" aria-label="Footer navigation">
-          <a href="index.html">Home</a>
-          <span class="footer-divider" aria-hidden="true"></span>
-          <a href="about.html">About</a>
-          <span class="footer-divider" aria-hidden="true"></span>
-          <a href="blog.html">Blog</a>
-          <span class="footer-divider" aria-hidden="true"></span>
-          <a href="shop.html">Shop</a>
-          <span class="footer-divider" aria-hidden="true"></span>
-          <a href="contact.html">Contact</a>
-        </nav>
-      </div>
-      <div class="footer-social">
-        <h4>Connect</h4>
+        <img src="assets/images/LOGO.png" alt="Arcane Designer logo" width="120" height="40">
+        <p>AI-powered marketing tools, templates, and playbooks that let one person market like a full agency.</p>
         <div class="footer-social-icons">
-          <a href="https://www.linkedin.com/company/arcane-designer/" target="_blank" rel="noopener noreferrer" aria-label="Arcane Designer on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-        </div>
-        <div class="footer-arc-centered" aria-hidden="true">
-          <img src="assets/images/Arc_Hands_Up___Presents_Above.png" alt="" loading="lazy">
+          <a href="https://www.linkedin.com/company/arcane-designer/" target="_blank" rel="noopener noreferrer" aria-label="Arcane Designer on LinkedIn"><span data-icon="linkedin"></span></a>
+          <a href="https://www.instagram.com/arcanedesigner" target="_blank" rel="noopener noreferrer" aria-label="Arcane Designer on Instagram"><span data-icon="instagram"></span></a>
         </div>
       </div>
+      <div class="footer-col"><h4>Shop</h4><ul>
+        <li><a href="shop.html?category=prompts">Prompts</a></li>
+        <li><a href="shop.html?category=templates">Templates</a></li>
+        <li><a href="shop.html?category=playbooks">Playbooks</a></li>
+        <li><a href="shop.html?category=bundles">Bundles</a></li>
+      </ul></div>
+      <div class="footer-col"><h4>Explore</h4><ul>
+        <li><a href="free.html">Free Spellbook</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Support</a></li>
+      </ul></div>
+      <div class="footer-col"><h4>Support</h4><ul>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="contact.html#faq">Delivery &amp; refunds</a></li>
+        <li><a href="contact.html#faq">License</a></li>
+        <li><a href="contact.html#faq">FAQ</a></li>
+      </ul></div>
     </div>
-    <div class="footer-bottom">
-      &copy; 2026 Arcane Designer LLC. All rights reserved.
-    </div>
+    <div class="footer-bottom">&copy; 2026 Arcane Designer LLC · Where Strategy Meets Sorcery</div>
   </footer>
 
+  <script src="assets/data/products.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
