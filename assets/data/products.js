@@ -473,8 +473,8 @@ window.ARCANE = (function () {
       id: 12,
       slug: 'ai-quickstart',
       name: 'The AI Quickstart',
-      kicker: '60 tips to start smart',
-      tagline: '60 plain-English tips to get real work out of AI: content, prompting, tools, and agentic work.',
+      kicker: '51 tips to start smart',
+      tagline: '51 plain-English tips to get real work out of AI: content, prompting, tools, and agentic work.',
       priceCents: 999,
       compareAtCents: null,
       category: 'prompts',
@@ -482,14 +482,14 @@ window.ARCANE = (function () {
       flags: ['new'],
       permalink: '',
       cover: { grad: 'blue-teal', icon: 'playbook' },
-      blurb: "New to AI, or still getting mediocre results out of it? This is the shortcut. 60 tips across six areas: getting started, prompting, sharper output, picking the right tool, working smart without the risks, and getting real work out of agents and coding. No fluff, no version-chasing. We keep it current, so the advice still holds as the tools change.",
+      blurb: "New to AI, or still getting mediocre results out of it? This is the shortcut. 51 tips across six areas: getting started, prompting, sharper output, picking the right tool, working smart without the risks, and getting real work out of agents and coding. No fluff, no version-chasing. We keep it current, so the advice still holds as the tools change.",
       outcomes: [
         'Get useful output from AI on day one',
         'Stop settling for generic, robotic results',
         'Know which tool to reach for and when'
       ],
       whatsInside: [
-        '60 tips across 6 categories, 10 tips each',
+        '51 tips across 6 categories',
         'Getting started, prompting, better output, picking the right tool, staying safe, and agentic/coding work',
         'Insider habits most people have not caught onto yet, like handing an agent the goal and letting it pick the route',
         'Plain examples you can copy and use today',
