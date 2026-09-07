@@ -353,10 +353,12 @@ body.ready .scroll { opacity: 1; transform: none; }
 .btn-edit:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
 .filter-bar { display: flex; gap: 10px; margin-bottom: 18px; }
-.btn-add { white-space: nowrap; }
+.btn-add { white-space: nowrap; flex: none; display: inline-flex; align-items: center; gap: 6px; }
+.btn-add .plus { display: inline-block; font-size: 20px; line-height: 1; transition: transform .25s cubic-bezier(.3,.8,.3,1); }
+.btn-add[aria-expanded="true"] .plus { transform: rotate(45deg); }
 .manage-card { animation: fadeIn .25s ease; }
 .filter-bar input {
-  flex: 1; font-family: 'Fraunces', serif; font-size: 16px; padding: 11px 14px; color: var(--ink);
+  flex: 1; min-width: 0; font-family: 'Fraunces', serif; font-size: 16px; padding: 11px 14px; color: var(--ink);
   background: rgba(255,255,255,.45); border: 1px solid rgba(60,45,30,.2); border-radius: 4px; outline: none;
 }
 .filter-bar input:focus { border-color: var(--vermilion); box-shadow: 0 0 0 3px rgba(200,68,60,.14); background: #fff; }
@@ -571,6 +573,8 @@ body.ready .scroll { opacity: 1; transform: none; }
   .word-notes { font-size: 12.5px; }
   .word-side { align-self: center; }
   .filter-bar { flex-wrap: nowrap; }
+  .btn-add { width: 48px; height: 48px; padding: 0; justify-content: center; border-radius: 6px; }
+  .btn-add .label { display: none; }
   .section-header { flex-wrap: wrap; }
   .char-title { flex-wrap: wrap; }
   .progress { min-width: 100%; }
@@ -826,7 +830,7 @@ body.ready .scroll { opacity: 1; transform: none; }
 
         <div class="filter-bar">
           <input type="search" id="word-search" placeholder="Search…" autocomplete="off">
-          <button class="btn-primary btn-add" id="add-toggle" type="button" aria-expanded="false" aria-controls="add-card">+ Add word</button>
+          <button class="btn-primary btn-add" id="add-toggle" type="button" aria-expanded="false" aria-controls="add-card" aria-label="Add word"><span class="plus">+</span><span class="label">Add word</span></button>
         </div>
         <div class="manage-card" id="add-card" hidden>
           <h3>New word</h3>

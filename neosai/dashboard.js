@@ -676,7 +676,8 @@ function initUI() {
   const setAddOpen = (open) => {
     addCard.hidden = !open;
     addToggle.setAttribute('aria-expanded', String(open));
-    addToggle.textContent = open ? 'Adding…' : '+ Add word';
+    addToggle.querySelector('.label').textContent = open ? 'Close' : 'Add word';
+    addToggle.setAttribute('aria-label', open ? 'Close' : 'Add word');
     if (open) setTimeout(() => $('add-jp').focus(), 30);
   };
   addToggle.addEventListener('click', () => setAddOpen(addCard.hidden));
