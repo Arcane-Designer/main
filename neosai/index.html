@@ -6,11 +6,13 @@
 <title>Neosai</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#161c2e">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="icon" type="image/x-icon" href="favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=2">
+<link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Neosai">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Shippori+Mincho:wght@700;800&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
@@ -41,7 +43,7 @@
   --s: 440px; /* detail box size, set by JS */
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: clip; }
 body {
   font-family: 'Fraunces', Georgia, serif;
   background: var(--indigo);
@@ -49,7 +51,7 @@ body {
   line-height: 1.5;
   font-size: 17px;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 body.detail-open { overflow: hidden; }
 button { font: inherit; color: inherit; }
@@ -317,7 +319,7 @@ body.ready .scroll { opacity: 1; transform: none; }
 /* FORM */
 .manage-card {
   background: rgba(255,255,255,.42); border: 1px solid rgba(60,45,30,.18); border-radius: 8px;
-  padding: 22px 26px 24px; margin-bottom: 30px; box-shadow: inset 0 1px 0 #fff, 0 1px 0 rgba(60,45,30,.06);
+  padding: 22px 26px 24px; margin-bottom: 22px; box-shadow: inset 0 1px 0 #fff, 0 1px 0 rgba(60,45,30,.06);
 }
 .manage-card h3 { font-family: 'Shippori Mincho', serif; font-size: 20px; margin-bottom: 4px; }
 .manage-card p { font-size: 14px; color: var(--muted); font-style: italic; margin-bottom: 16px; }
@@ -333,7 +335,7 @@ body.ready .scroll { opacity: 1; transform: none; }
 .form-field textarea { min-height: 72px; resize: vertical; }
 .form-field input:focus, .form-field textarea:focus { border-color: var(--vermilion); box-shadow: 0 0 0 3px rgba(200,68,60,.14); background: #fff; }
 #add-jp, #edit-jp { font-family: 'Noto Sans JP', sans-serif; font-size: 20px; }
-.form-actions { display: flex; align-items: center; gap: 14px; }
+.form-actions { display: flex; align-items: center; gap: 10px; }
 
 .btn-primary, .btn-secondary, .btn-edit, .btn-danger {
   border: 1px solid transparent; border-radius: 4px; padding: 10px 20px; font-family: 'Fraunces', serif; font-weight: 500;
@@ -347,10 +349,12 @@ body.ready .scroll { opacity: 1; transform: none; }
 .btn-secondary:hover { background: rgba(60,45,30,.06); }
 .btn-danger { background: transparent; color: var(--vermilion-deep); border-color: rgba(156,43,36,.35); margin-right: auto; }
 .btn-danger:hover { background: rgba(156,43,36,.08); }
-.btn-edit { padding: 6px 14px; font-size: 13px; background: rgba(255,255,255,.5); color: var(--ink-soft); border-color: rgba(60,45,30,.22); }
+.btn-edit { width: 32px; height: 32px; padding: 0; border-radius: 50%; font-size: 15px; line-height: 1; background: rgba(255,255,255,.45); color: var(--muted); border-color: rgba(60,45,30,.2); }
 .btn-edit:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
-.filter-bar { display: flex; gap: 12px; margin-bottom: 18px; }
+.filter-bar { display: flex; gap: 10px; margin-bottom: 18px; }
+.btn-add { white-space: nowrap; }
+.manage-card { animation: fadeIn .25s ease; }
 .filter-bar input {
   flex: 1; font-family: 'Fraunces', serif; font-size: 16px; padding: 11px 14px; color: var(--ink);
   background: rgba(255,255,255,.45); border: 1px solid rgba(60,45,30,.2); border-radius: 4px; outline: none;
@@ -555,13 +559,18 @@ body.ready .scroll { opacity: 1; transform: none; }
   .scroll { padding: 0 10px 60px; }
   .mount { padding: 10px; }
   .paper { padding: 28px 18px 40px; }
-  .rod { margin: 0 -8px; }
+  .rod { margin: 0; }
+  .rod::before { left: -6px; } .rod::after { right: -6px; }
   .hanko { display: none; }
   .tabs { gap: 12px; }
   .tab { padding: 10px 16px 9px; font-size: 15px; }
   .form-grid { grid-template-columns: 1fr; gap: 0; }
-  .word-card { grid-template-columns: 1fr; gap: 6px; }
-  .word-side { justify-content: space-between; }
+  .word-card { grid-template-columns: auto 1fr auto; gap: 4px 14px; padding: 12px 12px 12px 14px; align-items: center; }
+  .word-jp { font-size: 24px; }
+  .word-translation { font-size: 16px; }
+  .word-notes { font-size: 12.5px; }
+  .word-side { align-self: center; }
+  .filter-bar { flex-wrap: nowrap; }
   .section-header { flex-wrap: wrap; }
   .char-title { flex-wrap: wrap; }
   .progress { min-width: 100%; }
@@ -815,8 +824,12 @@ body.ready .scroll { opacity: 1; transform: none; }
           <span class="meta"><span id="word-count">0</span> words</span>
         </div>
 
-        <div class="manage-card">
-          <h3>Add a word</h3>
+        <div class="filter-bar">
+          <input type="search" id="word-search" placeholder="Search…" autocomplete="off">
+          <button class="btn-primary btn-add" id="add-toggle" type="button" aria-expanded="false" aria-controls="add-card">+ Add word</button>
+        </div>
+        <div class="manage-card" id="add-card" hidden>
+          <h3>New word</h3>
           <p>Words you've met. Each one lights up the characters it uses.</p>
           <div class="form-grid">
             <div class="form-field"><label for="add-jp">Japanese</label><input type="text" id="add-jp" placeholder="ありがとう" autocomplete="off"></div>
@@ -824,12 +837,9 @@ body.ready .scroll { opacity: 1; transform: none; }
           </div>
           <div class="form-field"><label for="add-translation">Translation</label><input type="text" id="add-translation" placeholder="thank you" autocomplete="off"></div>
           <div class="form-field"><label for="add-notes">Notes (optional)</label><textarea id="add-notes" placeholder="anything worth remembering"></textarea></div>
-          <div class="form-actions"><button class="btn-primary" id="add-btn" type="button">+ Add word</button></div>
+          <div class="form-actions"><button class="btn-primary" id="add-btn" type="button">Save word</button><button class="btn-secondary" id="add-cancel" type="button">Close</button></div>
         </div>
 
-        <div class="filter-bar">
-          <input type="search" id="word-search" placeholder="Search Japanese, romaji, or meaning…" autocomplete="off">
-        </div>
 
         <div id="words-list" class="words-list"></div>
       </section>

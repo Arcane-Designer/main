@@ -212,7 +212,7 @@ function renderWords() {
           ${w.notes ? `<div class="word-notes">${escapeHtml(w.notes)}</div>` : ''}
         </div>
         <div class="word-side">
-          <button class="btn-edit" type="button" data-edit="${escapeAttr(w.japanese)}">Edit</button>
+          <button class="btn-edit" type="button" data-edit="${escapeAttr(w.japanese)}" aria-label="Edit ${escapeAttr(w.japanese)}" title="Edit">✎</button>
         </div>
       </article>`;
   }).join('');
@@ -672,6 +672,15 @@ function initUI() {
   } catch (_) {}
 
   // Words
+  const addCard = $('add-card'), addToggle = $('add-toggle');
+  const setAddOpen = (open) => {
+    addCard.hidden = !open;
+    addToggle.setAttribute('aria-expanded', String(open));
+    addToggle.textContent = open ? 'Adding…' : '+ Add word';
+    if (open) setTimeout(() => $('add-jp').focus(), 30);
+  };
+  addToggle.addEventListener('click', () => setAddOpen(addCard.hidden));
+  $('add-cancel').addEventListener('click', () => setAddOpen(false));
   $('add-btn').addEventListener('click', addUserWord);
   ['add-jp', 'add-romaji', 'add-translation'].forEach(id => {
     $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addUserWord(); } });
