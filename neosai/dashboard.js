@@ -304,19 +304,40 @@ function updateCharCounts() {
 // =============================================================
 // WORD ACTIONS — talk to the Worker
 // =============================================================
-async function workerCall(path, method, body) {
+async function workerCall(path, method, body, attempt = 1) {
   if (CONFIG.readOnly) {
     await new Promise(r => setTimeout(r, 250));
     return { ok: true, word: body && { ...body, added_at: new Date().toISOString(), source: 'user' } };
   }
-  const res = await fetch(`${CONFIG.workerUrl}${path}`, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `Worker error ${res.status}`);
+  let res, data;
+  try {
+    res = await fetch(`${CONFIG.workerUrl}${path}`, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    data = await res.json().catch(() => ({}));
+  } catch (_) {
+    if (attempt < 3) { await new Promise(r => setTimeout(r, 600 * attempt)); return workerCall(path, method, body, attempt + 1); }
+    throw new Error('No connection. Check your network and try again.');
+  }
+  if (!res.ok) {
+    // 4xx = our mistake (duplicate, not found): report it. 5xx = GitHub hiccup: retry.
+    if (res.status >= 500 && attempt < 3) { await new Promise(r => setTimeout(r, 600 * attempt)); return workerCall(path, method, body, attempt + 1); }
+    throw new Error(data.error || `Save failed (${res.status})`);
+  }
   return data;
+}
+
+// Prevent double submits: while one save runs, further clicks are ignored.
+let _wordBusy = false;
+async function guarded(buttonIds, fn) {
+  if (_wordBusy) return;
+  _wordBusy = true;
+  const btns = buttonIds.map(id => $(id)).filter(Boolean);
+  btns.forEach(b => { b.disabled = true; b.classList.add('busy'); });
+  try { await fn(); }
+  finally { _wordBusy = false; btns.forEach(b => { b.disabled = false; b.classList.remove('busy'); }); }
 }
 
 async function addUserWord() {
@@ -326,10 +347,7 @@ async function addUserWord() {
   const notes = $('add-notes').value.trim();
   if (!jp) { showToast('Japanese is required', 'error'); $('add-jp').focus(); return; }
   if ((state?.user_words || []).some(w => w.japanese === jp)) { showToast('That word is already in your list', 'error'); return; }
-  const btn = $('add-btn');
-  btn.disabled = true;
-  btn.classList.add('busy');
-  try {
+  await guarded(['add-btn'], async () => {
     const result = await workerCall('/add-word', 'POST', { japanese: jp, reading_romaji: ro, translation: tr, notes });
     const word = result?.word || { japanese: jp, reading_romaji: ro, translation: tr, notes, added_at: new Date().toISOString(), source: 'user' };
     ['add-jp', 'add-romaji', 'add-translation', 'add-notes'].forEach(id => { $(id).value = ''; });
@@ -341,12 +359,7 @@ async function addUserWord() {
     renderWords();
     showToast(`Added ${jp}`, 'success');
     $('add-jp').focus();
-  } catch (err) {
-    showToast(err.message, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.classList.remove('busy');
-  }
+  }).catch(err => showToast(err.message, 'error'));
 }
 
 function openEdit(japanese) {
@@ -379,7 +392,7 @@ async function saveEdit() {
     showToast('Another word already uses that Japanese', 'error');
     return;
   }
-  try {
+  await guarded(['edit-save', 'edit-delete'], async () => {
     await workerCall('/update-word', 'POST', { japanese: targetJp, updates });
     const apply = (w) => { if (w?.japanese === targetJp) Object.assign(w, updates, { updated_at: new Date().toISOString() }); };
     (state.user_words || []).forEach(apply);
@@ -388,16 +401,14 @@ async function saveEdit() {
     closeModal();
     renderWords();
     showToast('Saved', 'success');
-  } catch (err) {
-    showToast(err.message, 'error');
-  }
+  }).catch(err => showToast(err.message, 'error'));
 }
 
 async function deleteCurrentWord() {
   if (!currentEditWord) return;
   const targetJp = currentEditWord.japanese;
   if (!confirm(`Delete "${targetJp}"? This cannot be undone.`)) return;
-  try {
+  await guarded(['edit-save', 'edit-delete'], async () => {
     await workerCall('/delete-word', 'POST', { japanese: targetJp });
     state.user_words = (state.user_words || []).filter(w => w.japanese !== targetJp);
     state.all_words_learned = (state.all_words_learned || []).filter(w => !(w.japanese === targetJp && w.source === 'user'));
@@ -405,9 +416,7 @@ async function deleteCurrentWord() {
     closeModal();
     renderWords();
     showToast('Deleted', 'success');
-  } catch (err) {
-    showToast(err.message, 'error');
-  }
+  }).catch(err => showToast(err.message, 'error'));
 }
 
 // =============================================================
@@ -428,11 +437,10 @@ async function runCharSave() {
   _savePromise = (async () => {
     try {
       if (CONFIG.readOnly) return;
-      // Merge-safe: pull the latest state, replace only the field this tab owns.
-      const fresh = (await fetchStateWithFallback()) || state;
-      const next = { ...fresh, all_characters_learned: localLearned };
-      await workerCall('/state', 'PUT', next);
-      writeCachedState(next);
+      // The Worker merges this into the newest state on GitHub, so a word
+      // edit happening at the same time is never overwritten.
+      await workerCall('/set-characters', 'POST', { all_characters_learned: localLearned });
+      writeCachedState({ ...state, all_characters_learned: localLearned });
       setSaveIndicator('saved');
     } catch (err) {
       setSaveIndicator('error');
