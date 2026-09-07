@@ -1,739 +1,691 @@
-// Neosai dashboard — v3
-// Tabs: Words / Characters / Daily
-// Words = manually-added words + Week 1 routine words (view-only)
-// Characters = manually toggled learned/not, with fast tile-flip animation
-// Daily = chronological funword deliveries from the 3x/week Tue/Fri/Sun routines
+// Neosai dashboard — v4 (manual-only)
+// Tabs: Words / Characters
+// Words      = your personal list (add / edit / delete)
+// Characters = hiragana, katakana, kanji tiles you mark as learned
+// No routines, no automations. State lives in Arcane-Designer/neosai-data/state.json
+// and is written through the neosai-worker.
 
 const CONFIG = {
-repo: 'Arcane-Designer/neosai-data',
-branch: 'main',
-workerUrl: 'https://neosai-worker.nathanagellatly.workers.dev',
+  repo: 'Arcane-Designer/neosai-data',
+  branch: 'main',
+  workerUrl: 'https://neosai-worker.nathanagellatly.workers.dev',
+  // Append ?nosave to the URL to try the UI without writing anything.
+  readOnly: /[?&]nosave\b/.test(location.search),
 };
 
 let state = null;
 let characterOrder = null;
+let kanjiList = [];
 let currentEditWord = null;
 
 // =============================================================
 // CHARACTER REFERENCE DATA
 // =============================================================
 const HIRAGANA = [
-['あ','a'],['い','i'],['う','u'],['え','e'],['お','o'],
-['か','ka'],['き','ki'],['く','ku'],['け','ke'],['こ','ko'],
-['さ','sa'],['し','shi'],['す','su'],['せ','se'],['そ','so'],
-['た','ta'],['ち','chi'],['つ','tsu'],['て','te'],['と','to'],
-['な','na'],['に','ni'],['ぬ','nu'],['ね','ne'],['の','no'],
-['は','ha'],['ひ','hi'],['ふ','fu'],['へ','he'],['ほ','ho'],
-['ま','ma'],['み','mi'],['む','mu'],['め','me'],['も','mo'],
-['や','ya'],['ゆ','yu'],['よ','yo'],
-['ら','ra'],['り','ri'],['る','ru'],['れ','re'],['ろ','ro'],
-['わ','wa'],['を','wo'],['ん','n'],
-['が','ga'],['ぎ','gi'],['ぐ','gu'],['げ','ge'],['ご','go'],
-['ざ','za'],['じ','ji'],['ず','zu'],['ぜ','ze'],['ぞ','zo'],
-['だ','da'],['ぢ','ji'],['づ','zu'],['で','de'],['ど','do'],
-['ば','ba'],['び','bi'],['ぶ','bu'],['べ','be'],['ぼ','bo'],
-['ぱ','pa'],['ぴ','pi'],['ぷ','pu'],['ぺ','pe'],['ぽ','po'],
+  ['あ','a'],['い','i'],['う','u'],['え','e'],['お','o'],
+  ['か','ka'],['き','ki'],['く','ku'],['け','ke'],['こ','ko'],
+  ['さ','sa'],['し','shi'],['す','su'],['せ','se'],['そ','so'],
+  ['た','ta'],['ち','chi'],['つ','tsu'],['て','te'],['と','to'],
+  ['な','na'],['に','ni'],['ぬ','nu'],['ね','ne'],['の','no'],
+  ['は','ha'],['ひ','hi'],['ふ','fu'],['へ','he'],['ほ','ho'],
+  ['ま','ma'],['み','mi'],['む','mu'],['め','me'],['も','mo'],
+  ['や','ya'],['ゆ','yu'],['よ','yo'],
+  ['ら','ra'],['り','ri'],['る','ru'],['れ','re'],['ろ','ro'],
+  ['わ','wa'],['を','wo'],['ん','n'],
+  ['が','ga'],['ぎ','gi'],['ぐ','gu'],['げ','ge'],['ご','go'],
+  ['ざ','za'],['じ','ji'],['ず','zu'],['ぜ','ze'],['ぞ','zo'],
+  ['だ','da'],['ぢ','ji'],['づ','zu'],['で','de'],['ど','do'],
+  ['ば','ba'],['び','bi'],['ぶ','bu'],['べ','be'],['ぼ','bo'],
+  ['ぱ','pa'],['ぴ','pi'],['ぷ','pu'],['ぺ','pe'],['ぽ','po'],
 ];
 
 const KATAKANA = [
-['ア','a'],['イ','i'],['ウ','u'],['エ','e'],['オ','o'],
-['カ','ka'],['キ','ki'],['ク','ku'],['ケ','ke'],['コ','ko'],
-['サ','sa'],['シ','shi'],['ス','su'],['セ','se'],['ソ','so'],
-['タ','ta'],['チ','chi'],['ツ','tsu'],['テ','te'],['ト','to'],
-['ナ','na'],['ニ','ni'],['ヌ','nu'],['ネ','ne'],['ノ','no'],
-['ハ','ha'],['ヒ','hi'],['フ','fu'],['ヘ','he'],['ホ','ho'],
-['マ','ma'],['ミ','mi'],['ム','mu'],['メ','me'],['モ','mo'],
-['ヤ','ya'],['ユ','yu'],['ヨ','yo'],
-['ラ','ra'],['リ','ri'],['ル','ru'],['レ','re'],['ロ','ro'],
-['ワ','wa'],['ヲ','wo'],['ン','n'],
-['ガ','ga'],['ギ','gi'],['グ','gu'],['ゲ','ge'],['ゴ','go'],
-['ザ','za'],['ジ','ji'],['ズ','zu'],['ゼ','ze'],['ゾ','zo'],
-['ダ','da'],['ヂ','ji'],['ヅ','zu'],['デ','de'],['ド','do'],
-['バ','ba'],['ビ','bi'],['ブ','bu'],['ベ','be'],['ボ','bo'],
-['パ','pa'],['ピ','pi'],['プ','pu'],['ペ','pe'],['ポ','po'],
+  ['ア','a'],['イ','i'],['ウ','u'],['エ','e'],['オ','o'],
+  ['カ','ka'],['キ','ki'],['ク','ku'],['ケ','ke'],['コ','ko'],
+  ['サ','sa'],['シ','shi'],['ス','su'],['セ','se'],['ソ','so'],
+  ['タ','ta'],['チ','chi'],['ツ','tsu'],['テ','te'],['ト','to'],
+  ['ナ','na'],['ニ','ni'],['ヌ','nu'],['ネ','ne'],['ノ','no'],
+  ['ハ','ha'],['ヒ','hi'],['フ','fu'],['ヘ','he'],['ホ','ho'],
+  ['マ','ma'],['ミ','mi'],['ム','mu'],['メ','me'],['モ','mo'],
+  ['ヤ','ya'],['ユ','yu'],['ヨ','yo'],
+  ['ラ','ra'],['リ','ri'],['ル','ru'],['レ','re'],['ロ','ro'],
+  ['ワ','wa'],['ヲ','wo'],['ン','n'],
+  ['ガ','ga'],['ギ','gi'],['グ','gu'],['ゲ','ge'],['ゴ','go'],
+  ['ザ','za'],['ジ','ji'],['ズ','zu'],['ゼ','ze'],['ゾ','zo'],
+  ['ダ','da'],['ヂ','ji'],['ヅ','zu'],['デ','de'],['ド','do'],
+  ['バ','ba'],['ビ','bi'],['ブ','bu'],['ベ','be'],['ボ','bo'],
+  ['パ','pa'],['ピ','pi'],['プ','pu'],['ペ','pe'],['ポ','po'],
 ];
+
+const GRADES = [1, 2, 3, 4, 5, 6, 'S'];
+const GRADE_LABEL = { 1: 'Grade 1', 2: 'Grade 2', 3: 'Grade 3', 4: 'Grade 4', 5: 'Grade 5', 6: 'Grade 6', S: 'Secondary' };
+const GRADE_KANJI = { 1: '一年', 2: '二年', 3: '三年', 4: '四年', 5: '五年', 6: '六年', S: '中学' };
+
+// Character metadata lookup (romaji / meaning / script) so the detail card
+// never has to read it back out of the DOM.
+const charMeta = new Map();
 
 // =============================================================
 // LOADING
 // =============================================================
+const $ = (id) => document.getElementById(id);
 
 function rawUrl(file) {
-return `https://raw.githubusercontent.com/${CONFIG.repo}/${CONFIG.branch}/${file}`;
+  return `https://raw.githubusercontent.com/${CONFIG.repo}/${CONFIG.branch}/${file}`;
 }
 
 async function loadData() {
-document.getElementById('loading').style.display = 'block';
-document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-state = await fetchStateWithFallback();
-characterOrder = await fetchOrderWithFallback();
-document.getElementById('loading').style.display = 'none';
-document.querySelectorAll('.panel').forEach(p => {
-if (p.classList.contains('active')) p.style.display = 'block';
-});
-renderAll();
+  $('loading').hidden = false;
+  const [s, o] = await Promise.all([fetchStateWithFallback(), fetchOrderWithFallback()]);
+  state = s;
+  characterOrder = o;
+  kanjiList = (characterOrder?.order || []).filter(c => c.script === 'kanji');
+  for (const [c, r] of HIRAGANA) charMeta.set(c, { romaji: r, script: 'hiragana', meaning: null });
+  for (const [c, r] of KATAKANA) charMeta.set(c, { romaji: r, script: 'katakana', meaning: null });
+  for (const k of kanjiList) charMeta.set(k.char, { romaji: k.romaji || '', script: 'kanji', meaning: k.meaning || null, grade: k.grade || 'S' });
+  $('loading').hidden = true;
+  document.body.classList.add('ready');
+  renderAll();
 }
 
 async function fetchStateWithFallback() {
-try {
-const res = await fetch(`${CONFIG.workerUrl}/state?t=${Date.now()}`, { cache: 'no-store' });
-if (res.ok) {
-const data = await res.json();
-if (data && typeof data === 'object' && ('current_week_number' in data || 'user_words' in data)) return data;
-}
-} catch (_) { /* fall through */ }
-try {
-const res = await fetch(rawUrl('state.json') + `?t=${Date.now()}`, { cache: 'no-cache' });
-if (res.ok) return await res.json();
-} catch (_) { /* fall through */ }
-showToast('Could not load state. Showing empty defaults.', 'error');
-return makeEmptyState();
+  try {
+    const res = await fetch(`${CONFIG.workerUrl}/state?t=${Date.now()}`, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && typeof data === 'object' && ('user_words' in data || 'all_characters_learned' in data)) return data;
+    }
+  } catch (_) { /* fall through */ }
+  try {
+    const res = await fetch(rawUrl('state.json') + `?t=${Date.now()}`, { cache: 'no-cache' });
+    if (res.ok) return await res.json();
+  } catch (_) { /* fall through */ }
+  showToast('Could not load your words. Showing an empty list.', 'error');
+  return makeEmptyState();
 }
 
 async function fetchOrderWithFallback() {
-try {
-const res = await fetch(rawUrl('character-order.json') + `?t=${Date.now()}`, { cache: 'no-cache' });
-if (res.ok) return await res.json();
-} catch (_) { /* ignore */ }
-return { order: [] };
+  try {
+    const res = await fetch(rawUrl('character-order.json'), { cache: 'force-cache' });
+    if (res.ok) return await res.json();
+  } catch (_) { /* ignore */ }
+  return { order: [] };
 }
 
 function makeEmptyState() {
-return {
-schema_version: 3,
-current_week_number: 1,
-current_character: null,
-current_week_words: [],
-delivery_log: [],
-all_words_learned: [],
-all_characters_learned: [],
-user_words: [],
-daily_words: [],
-};
+  return { schema_version: 4, user_words: [], all_words_learned: [], all_characters_learned: [] };
 }
 
 // =============================================================
 // RENDERING
 // =============================================================
-
 function renderAll() {
-renderWords();
-renderCharacters();
-renderDaily();
+  renderWords();
+  renderCharacters();
 }
 
 // -------------------------------------------------------------
-// WORDS TAB — user_words + week 1 routine words in one list
+// WORDS TAB — user_words only
 // -------------------------------------------------------------
+function learnedSet() {
+  return new Set(state?.all_characters_learned || []);
+}
+
+// Render a word's Japanese with each character marked learned / not.
+function renderJapanese(jp, learned) {
+  return Array.from(jp || '').map(ch => {
+    const meta = charMeta.get(ch);
+    if (!meta) return `<span class="ch other">${escapeHtml(ch)}</span>`;
+    const cls = learned.has(ch) ? 'ch learned' : 'ch';
+    return `<span class="${cls}" title="${escapeAttr(ch)} · ${learned.has(ch) ? 'learned' : 'not yet learned'}">${escapeHtml(ch)}</span>`;
+  }).join('');
+}
+
 function renderWords() {
-if (!state) return;
-const search = (document.getElementById('word-search')?.value || '').toLowerCase();
-const filter = document.getElementById('word-filter')?.value || 'all';
+  if (!state) return;
+  const search = ($('word-search')?.value || '').trim().toLowerCase();
+  const learned = learnedSet();
+  let words = (state.user_words || []).slice();
 
-const userWords = (state.user_words || []).map(w => ({ ...w, source: 'user' }));
-// Week 1 routine words: pull from all_words_learned where source=routine AND week_number=1
-const week1Routine = (state.all_words_learned || [])
-.filter(w => w.source === 'routine' && (w.week_number === 1 || w.week_number === '1'))
-.map(w => ({ ...w, source: 'routine' }));
+  if (search) {
+    words = words.filter(w => {
+      const hay = `${w.japanese || ''} ${w.reading_romaji || ''} ${w.translation || ''} ${w.notes || ''}`.toLowerCase();
+      return hay.includes(search);
+    });
+  }
+  words.sort((a, b) => new Date(b.added_at || 0) - new Date(a.added_at || 0));
 
-let combined = [];
-if (filter === 'user') combined = userWords;
-else if (filter === 'week1') combined = week1Routine;
-else combined = [...userWords, ...week1Routine];
+  $('word-count').textContent = `${(state.user_words || []).length}`;
 
-if (search) {
-combined = combined.filter(w => {
-const hay = `${w.japanese || ''} ${w.reading_romaji || ''} ${w.translation || w.english || ''} ${w.notes || ''}`.toLowerCase();
-return hay.includes(search);
-});
-}
+  const container = $('words-list');
+  if (words.length === 0) {
+    container.innerHTML = search
+      ? '<div class="empty-state">Nothing matches that search.</div>'
+      : '<div class="empty-state">No words yet. Add the first one above.</div>';
+    return;
+  }
 
-// Sort: user words newest-first by added_at, then week-1 routine words (by delivered_at)
-combined.sort((a, b) => {
-const ta = new Date(a.added_at || a.delivered_at || 0).getTime();
-const tb = new Date(b.added_at || b.delivered_at || 0).getTime();
-return tb - ta;
-});
-
-const container = document.getElementById('words-list');
-if (!container) return;
-if (combined.length === 0) {
-container.innerHTML = '<div class="empty-state" style="padding:32px;">No words yet. Add one above.</div>';
-return;
-}
-
-container.innerHTML = combined.map(w => {
-const isUser = w.source === 'user';
-const slotText = isUser ? 'Mine' : (w.is_funword ? 'Wk 1 ★' : 'Wk 1');
-const classes = ['word-row'];
-if (w.is_funword) classes.push('is-funword');
-if (isUser) classes.push('is-user');
-else classes.push('is-week1');
-const actions = isUser
-? `<button class="btn-mini" onclick="openEdit('${escapeAttr(w.japanese)}')">Edit</button>`
-: '';
-return `
-<div class="${classes.join(' ')}">
-<div class="slot-label">${slotText}</div>
-<div class="word-jp">${escapeHtml(w.japanese)}<span class="reading">${escapeHtml(w.reading_romaji || '')}</span></div>
-<div class="word-translation">
-${escapeHtml(w.translation || w.english || '')}
-${w.notes ? `<span class="word-notes">${escapeHtml(w.notes)}</span>` : ''}
-</div>
-<div class="word-actions">${actions}</div>
-${renderExample(w)}
-</div>
-`;
-}).join('');
+  container.innerHTML = words.map(w => {
+    const chars = Array.from(w.japanese || '').filter(ch => charMeta.has(ch));
+    const known = chars.filter(ch => learned.has(ch)).length;
+    const progress = chars.length ? `${known}/${chars.length}` : '';
+    return `
+      <article class="word-card" data-jp="${escapeAttr(w.japanese)}">
+        <div class="word-jp">${renderJapanese(w.japanese, learned)}</div>
+        <div class="word-body">
+          <div class="word-reading">${escapeHtml(w.reading_romaji || '')}</div>
+          <div class="word-translation">${escapeHtml(w.translation || '')}</div>
+          ${w.notes ? `<div class="word-notes">${escapeHtml(w.notes)}</div>` : ''}
+        </div>
+        <div class="word-side">
+          ${progress ? `<span class="word-progress" title="characters learned">${progress}</span>` : ''}
+          <button class="btn-edit" type="button" data-edit="${escapeAttr(w.japanese)}">Edit</button>
+        </div>
+      </article>`;
+  }).join('');
 }
 
 // -------------------------------------------------------------
 // CHARACTERS TAB
 // -------------------------------------------------------------
+function cellHtml(char, sub, learned, isKanji, meaning) {
+  let cls = 'tile';
+  if (isKanji) cls += ' kanji';
+  if (learned.has(char)) cls += ' learned';
+  const title = meaning ? `${meaning} · ${sub}` : sub;
+  return `<button type="button" class="${cls}" data-char="${escapeAttr(char)}" title="${escapeAttr(title)}">` +
+    `<span class="ch">${char}</span>` +
+    (isKanji ? '' : `<span class="ro">${sub}</span>`) +
+    `</button>`;
+}
+
+function gridHtml(charset, learned) {
+  return charset.map(([c, r]) => cellHtml(c, r, learned, false, null)).join('');
+}
+
+function kanjiGradeCells(grade, learned) {
+  return kanjiList.filter(k => (k.grade || 'S') == grade)
+    .map(k => cellHtml(k.char, k.romaji || '', learned, true, k.meaning)).join('');
+}
+
 function renderCharacters() {
-const learned = new Set(state?.all_characters_learned || []);
+  const learned = learnedSet();
+  $('hiragana-grid').innerHTML = gridHtml(HIRAGANA, learned);
+  $('katakana-grid').innerHTML = gridHtml(KATAKANA, learned);
 
-const hiraganaHtml = renderHiraganaKatakanaGrid(HIRAGANA, learned);
-const katakanaHtml = renderHiraganaKatakanaGrid(KATAKANA, learned);
+  // Kanji: grades 1–6 rendered now, Secondary rendered the first time it is opened.
+  $('kanji-grid').innerHTML = GRADES.map(g => {
+    const items = kanjiList.filter(k => (k.grade || 'S') == g);
+    if (items.length === 0) return '';
+    const isS = g === 'S';
+    return `
+      <section class="kanji-grade${isS ? ' collapsed' : ''}" data-grade="${g}">
+        <header class="kanji-grade-header" ${isS ? 'data-toggle-grade' : ''}>
+          <span class="grade-kanji">${GRADE_KANJI[g]}</span>
+          <h4>${GRADE_LABEL[g]}</h4>
+          <span class="grade-count" data-grade-count="${g}"></span>
+          ${isS ? '<span class="grade-toggle">Show</span>' : ''}
+        </header>
+        <div class="tile-grid kanji-grid" data-grade-grid="${g}">${isS ? '' : kanjiGradeCells(g, learned)}</div>
+      </section>`;
+  }).join('') || '<div class="empty-state">No kanji configured.</div>';
 
-const kanjiList = (characterOrder?.order || []).filter(c => c.script === 'kanji');
-const gradesOrder = [1, 2, 3, 4, 5, 6, 'S'];
-const gradeLabel = {1: 'Grade 1', 2: 'Grade 2', 3: 'Grade 3', 4: 'Grade 4', 5: 'Grade 5', 6: 'Grade 6', 'S': 'Secondary'};
-const byGrade = {};
-for (const g of gradesOrder) byGrade[g] = [];
-for (const k of kanjiList) {
-const g = k.grade || 'S';
-if (byGrade[g]) byGrade[g].push(k);
-else byGrade['S'].push(k);
-}
-const kanjiHtml = gradesOrder.map(g => {
-const items = byGrade[g];
-if (!items || items.length === 0) return '';
-const isSecondary = g === 'S';
-const gCount = items.filter(k => learned.has(k.char)).length;
-const cellsHtml = items.map(c => renderCell(c.char, c.romaji, learned, true, c.meaning)).join('');
-return `
-<div class="kanji-grade kanji-grade-${g}${isSecondary ? ' collapsed' : ''}" data-grade="${g}">
-<div class="kanji-grade-header" ${isSecondary ? `onclick="toggleKanjiGrade('${g}')"` : ''}>
-<h4>${gradeLabel[g]}</h4>
-<span class="kanji-grade-count">${gCount} / ${items.length}</span>
-${isSecondary ? '<span class="kanji-grade-toggle">Show ▾</span>' : ''}
-</div>
-<div class="char-grid kanji kanji-grade-grid">${cellsHtml}</div>
-</div>
-`;
-}).join('');
-
-document.getElementById('hiragana-grid').innerHTML = hiraganaHtml;
-document.getElementById('katakana-grid').innerHTML = katakanaHtml;
-document.getElementById('kanji-grid').innerHTML = kanjiHtml || '<div class="empty-state" style="grid-column:1/-1;">No kanji configured.</div>';
-
-const hCount = HIRAGANA.filter(([c]) => learned.has(c)).length;
-const kCount = KATAKANA.filter(([c]) => learned.has(c)).length;
-const jCount = kanjiList.filter(c => learned.has(c.char)).length;
-document.getElementById('hiragana-count').textContent = `${hCount} / ${HIRAGANA.length}`;
-document.getElementById('katakana-count').textContent = `${kCount} / ${KATAKANA.length}`;
-document.getElementById('kanji-count').textContent = `${jCount} / ${kanjiList.length}`;
+  updateCharCounts();
 }
 
-function renderCell(char, romaji, learned, isKanji, meaning) {
-let cls = 'char-cell';
-if (isKanji) cls += ' kanji-cell';
-if (learned.has(char)) cls += ' learned';
-const script = isKanji ? 'kanji' : detectScript(char);
-const meaningAttr = meaning ? ` data-meaning="${escapeAttr(meaning)}"` : '';
-return `<div class="${cls}" title="${escapeAttr(meaning || romaji)}" data-char="${escapeAttr(char)}" data-romaji="${escapeAttr(romaji)}" data-script="${script}"${meaningAttr} onclick="openCharDetail(this)">
-<div class="char">${char}</div>
-<div class="romaji">${romaji}</div>
-</div>`;
+function toggleKanjiGrade(section) {
+  const g = section.dataset.grade;
+  const grid = section.querySelector('[data-grade-grid]');
+  if (grid && !grid.dataset.rendered) {
+    grid.innerHTML = kanjiGradeCells(g, learnedSet());
+    grid.dataset.rendered = '1';
+  }
+  section.classList.toggle('collapsed');
+  const t = section.querySelector('.grade-toggle');
+  if (t) t.textContent = section.classList.contains('collapsed') ? 'Show' : 'Hide';
 }
 
-function renderHiraganaKatakanaGrid(charset, learned) {
-return charset.map(([char, romaji]) => renderCell(char, romaji, learned, false, null)).join('');
-}
-
-function toggleKanjiGrade(grade) {
-const el = document.querySelector(`.kanji-grade[data-grade="${grade}"]`);
-if (!el) return;
-el.classList.toggle('collapsed');
-const toggle = el.querySelector('.kanji-grade-toggle');
-if (toggle) toggle.textContent = el.classList.contains('collapsed') ? 'Show ▾' : 'Hide ▴';
-}
-
-// -------------------------------------------------------------
-// DAILY TAB
-// -------------------------------------------------------------
-function renderDaily() {
-const container = document.getElementById('daily-list');
-if (!container) return;
-const daily = (state?.daily_words || []).slice();
-// Sort newest-first
-daily.sort((a, b) => {
-const ta = new Date(a.delivered_at || 0).getTime();
-const tb = new Date(b.delivered_at || 0).getTime();
-return tb - ta;
-});
-if (daily.length === 0) {
-container.innerHTML = '<div class="empty-state" style="padding:60px 20px;">No daily words yet. First one arrives Tuesday at 10 AM.</div>';
-return;
-}
-container.innerHTML = daily.map(w => `
-<div class="daily-row">
-<div class="daily-jp">${escapeHtml(w.japanese || '')}<span class="reading">${escapeHtml(w.reading_romaji || '')}</span></div>
-<div class="daily-translation">${escapeHtml(w.translation || w.english || '')}</div>
-<div class="daily-week">Week ${w.week_number ?? '?'}</div>
-</div>
-`).join('');
-}
-
-// =============================================================
-// USER ACTIONS (Words tab) — talk to Worker endpoints
-// =============================================================
-
-async function workerCall(path, method, body) {
-const url = `${CONFIG.workerUrl}${path}`;
-const init = { method, headers: { 'Content-Type': 'application/json' } };
-if (body !== undefined) init.body = JSON.stringify(body);
-const res = await fetch(url, init);
-const data = await res.json().catch(() => ({}));
-if (!res.ok) throw new Error(data.error || `Worker error ${res.status}`);
-return data;
-}
-
-async function addUserWord() {
-const jp = document.getElementById('add-jp').value.trim();
-const ro = document.getElementById('add-romaji').value.trim();
-const tr = document.getElementById('add-translation').value.trim();
-const notes = document.getElementById('add-notes').value.trim();
-if (!jp) { showToast('Japanese field is required', 'error'); return; }
-const btn = document.getElementById('add-btn');
-btn.disabled = true;
-btn.textContent = 'Saving…';
-try {
-const result = await workerCall('/add-word', 'POST', { japanese: jp, reading_romaji: ro, translation: tr, notes });
-document.getElementById('add-jp').value = '';
-document.getElementById('add-romaji').value = '';
-document.getElementById('add-translation').value = '';
-document.getElementById('add-notes').value = '';
-showToast('Word added', 'success');
-if (result?.word && state) {
-state.user_words = state.user_words || [];
-state.user_words.push(result.word);
-state.all_words_learned = state.all_words_learned || [];
-state.all_words_learned.push({
-...result.word,
-week_number: state.current_week_number || 1,
-character: null,
-delivered_at: result.word.added_at,
-source: 'user',
-});
-renderAll();
-} else {
-await loadData();
-}
-} catch (err) {
-showToast(err.message, 'error');
-} finally {
-btn.disabled = false;
-btn.textContent = '+ Add word';
-}
-}
-
-function openEdit(japanese) {
-const decoded = japanese.replace(/&apos;/g, "'").replace(/&quot;/g, '"');
-const word = state.user_words?.find(w => w.japanese === decoded);
-if (!word) return showToast('Word not found in your list', 'error');
-currentEditWord = word;
-document.getElementById('edit-jp').value = word.japanese;
-document.getElementById('edit-romaji').value = word.reading_romaji || '';
-document.getElementById('edit-translation').value = word.translation || '';
-document.getElementById('edit-notes').value = word.notes || '';
-document.getElementById('edit-modal').classList.add('show');
-}
-
-function closeModal() {
-document.getElementById('edit-modal').classList.remove('show');
-currentEditWord = null;
-}
-
-async function saveEdit() {
-if (!currentEditWord) return;
-const updates = {
-reading_romaji: document.getElementById('edit-romaji').value.trim(),
-translation: document.getElementById('edit-translation').value.trim(),
-notes: document.getElementById('edit-notes').value.trim(),
-};
-const targetJp = currentEditWord.japanese;
-try {
-await workerCall('/update-word', 'POST', { japanese: targetJp, updates });
-showToast('Saved', 'success');
-closeModal();
-if (state) {
-const applyUpdates = (w) => { if (w?.japanese === targetJp) Object.assign(w, updates); };
-(state.user_words || []).forEach(applyUpdates);
-(state.all_words_learned || []).forEach(applyUpdates);
-renderAll();
-}
-} catch (err) {
-showToast(err.message, 'error');
-}
-}
-
-async function deleteCurrentWord() {
-if (!currentEditWord) return;
-if (!confirm(`Delete "${currentEditWord.japanese}"? This cannot be undone.`)) return;
-const targetJp = currentEditWord.japanese;
-try {
-await workerCall('/delete-word', 'POST', { japanese: targetJp });
-showToast('Deleted', 'success');
-closeModal();
-if (state) {
-state.user_words = (state.user_words || []).filter(w => w.japanese !== targetJp);
-state.all_words_learned = (state.all_words_learned || []).filter(w => !(w.japanese === targetJp && w.source === 'user'));
-renderAll();
-}
-} catch (err) {
-showToast(err.message, 'error');
-}
-}
-
-// =============================================================
-// MARK CHARACTER LEARNED — optimistic UI + debounced background save
-// =============================================================
-
-let _saveTimer = null;
-let _savePromise = null;
-let _saveError = false;
-
-function scheduleCharSave() {
-if (_saveTimer) clearTimeout(_saveTimer);
-_saveTimer = setTimeout(runCharSave, 400); // debounce burst-clicks
-}
-
-async function runCharSave() {
-_saveTimer = null;
-// If a previous save is still in flight, wait for it to finish before starting another
-if (_savePromise) {
-try { await _savePromise; } catch (_) {}
-}
-const localLearned = [...(state.all_characters_learned || [])];
-_savePromise = (async () => {
-try {
-// Merge-safe: pull latest server state, patch only the field we own, PUT back.
-const fresh = await fetchStateWithFallback();
-const next = { ...fresh, all_characters_learned: localLearned };
-await workerCall('/state', 'PUT', next);
-_saveError = false;
-} catch (err) {
-_saveError = true;
-showToast('Save failed: ' + (err.message || 'unknown error'), 'error');
-throw err;
-}
-})();
-try { await _savePromise; } finally { _savePromise = null; }
-}
-
-function toggleCharacterLearnedLocal(char) {
-if (!state) return;
-state.all_characters_learned = state.all_characters_learned || [];
-const idx = state.all_characters_learned.indexOf(char);
-const wasLearned = idx !== -1;
-if (wasLearned) state.all_characters_learned.splice(idx, 1);
-else state.all_characters_learned.push(char);
-// Update the specific cell in-place without a full re-render (faster + no flicker)
-updateCellVisual(char, !wasLearned);
-// Also update Characters counts
-updateCharCounts();
-scheduleCharSave();
-return !wasLearned;
-}
-
-function updateCellVisual(char, isLearned) {
-document.querySelectorAll(`.char-cell[data-char="${cssEscape(char)}"]`).forEach(cell => {
-if (isLearned) cell.classList.add('learned');
-else cell.classList.remove('learned');
-});
-// Also update the modal front-face if open
-const front = document.getElementById('char-detail-front');
-if (front && _activeCharCell && _activeCharCell.dataset.char === char) {
-if (isLearned) front.classList.add('learned');
-else front.classList.remove('learned');
-}
+function setProgress(id, n, total) {
+  const el = $(id);
+  if (!el) return;
+  el.querySelector('.count').textContent = `${n} / ${total}`;
+  el.querySelector('.bar > i').style.transform = `scaleX(${total ? n / total : 0})`;
 }
 
 function updateCharCounts() {
-const learned = new Set(state.all_characters_learned || []);
-const hCount = HIRAGANA.filter(([c]) => learned.has(c)).length;
-const kCount = KATAKANA.filter(([c]) => learned.has(c)).length;
-const kanjiList = (characterOrder?.order || []).filter(c => c.script === 'kanji');
-const jCount = kanjiList.filter(c => learned.has(c.char)).length;
-const h = document.getElementById('hiragana-count');
-const k = document.getElementById('katakana-count');
-const j = document.getElementById('kanji-count');
-if (h) h.textContent = `${hCount} / ${HIRAGANA.length}`;
-if (k) k.textContent = `${kCount} / ${KATAKANA.length}`;
-if (j) j.textContent = `${jCount} / ${kanjiList.length}`;
-// Update kanji grade counts too
-document.querySelectorAll('.kanji-grade').forEach(gradeEl => {
-const g = gradeEl.dataset.grade;
-const items = kanjiList.filter(c => (c.grade || 'S') == g || (g === 'S' && !c.grade));
-const count = items.filter(c => learned.has(c.char)).length;
-const el = gradeEl.querySelector('.kanji-grade-count');
-if (el) el.textContent = `${count} / ${items.length}`;
-});
+  const learned = learnedSet();
+  setProgress('hiragana-progress', HIRAGANA.filter(([c]) => learned.has(c)).length, HIRAGANA.length);
+  setProgress('katakana-progress', KATAKANA.filter(([c]) => learned.has(c)).length, KATAKANA.length);
+  setProgress('kanji-progress', kanjiList.filter(k => learned.has(k.char)).length, kanjiList.length);
+  document.querySelectorAll('[data-grade-count]').forEach(el => {
+    const g = el.dataset.gradeCount;
+    const items = kanjiList.filter(k => (k.grade || 'S') == g);
+    el.textContent = `${items.filter(k => learned.has(k.char)).length} / ${items.length}`;
+  });
+  const total = HIRAGANA.length + KATAKANA.length + kanjiList.length;
+  const n = learned.size;
+  const hero = $('learned-total');
+  if (hero) hero.textContent = `${n} of ${total} characters learned`;
 }
 
-// Simple CSS.escape polyfill for old browsers
+// =============================================================
+// WORD ACTIONS — talk to the Worker
+// =============================================================
+async function workerCall(path, method, body) {
+  if (CONFIG.readOnly) {
+    await new Promise(r => setTimeout(r, 250));
+    return { ok: true, word: body && { ...body, added_at: new Date().toISOString(), source: 'user' } };
+  }
+  const res = await fetch(`${CONFIG.workerUrl}${path}`, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Worker error ${res.status}`);
+  return data;
+}
+
+async function addUserWord() {
+  const jp = $('add-jp').value.trim();
+  const ro = $('add-romaji').value.trim();
+  const tr = $('add-translation').value.trim();
+  const notes = $('add-notes').value.trim();
+  if (!jp) { showToast('Japanese is required', 'error'); $('add-jp').focus(); return; }
+  if ((state?.user_words || []).some(w => w.japanese === jp)) { showToast('That word is already in your list', 'error'); return; }
+  const btn = $('add-btn');
+  btn.disabled = true;
+  btn.classList.add('busy');
+  try {
+    const result = await workerCall('/add-word', 'POST', { japanese: jp, reading_romaji: ro, translation: tr, notes });
+    const word = result?.word || { japanese: jp, reading_romaji: ro, translation: tr, notes, added_at: new Date().toISOString(), source: 'user' };
+    ['add-jp', 'add-romaji', 'add-translation', 'add-notes'].forEach(id => { $(id).value = ''; });
+    state.user_words = state.user_words || [];
+    state.user_words.push(word);
+    state.all_words_learned = state.all_words_learned || [];
+    state.all_words_learned.push({ ...word, week_number: 1, character: null, delivered_at: word.added_at, source: 'user' });
+    renderWords();
+    showToast(`Added ${jp}`, 'success');
+    $('add-jp').focus();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('busy');
+  }
+}
+
+function openEdit(japanese) {
+  const word = state?.user_words?.find(w => w.japanese === japanese);
+  if (!word) return showToast('Word not found', 'error');
+  currentEditWord = word;
+  $('edit-jp').value = word.japanese;
+  $('edit-romaji').value = word.reading_romaji || '';
+  $('edit-translation').value = word.translation || '';
+  $('edit-notes').value = word.notes || '';
+  $('edit-modal').classList.add('show');
+  setTimeout(() => $('edit-romaji').focus(), 30);
+}
+
+function closeModal() {
+  $('edit-modal').classList.remove('show');
+  currentEditWord = null;
+}
+
+async function saveEdit() {
+  if (!currentEditWord) return;
+  const targetJp = currentEditWord.japanese;
+  const updates = {
+    japanese: $('edit-jp').value.trim() || targetJp,
+    reading_romaji: $('edit-romaji').value.trim(),
+    translation: $('edit-translation').value.trim(),
+    notes: $('edit-notes').value.trim(),
+  };
+  if (updates.japanese !== targetJp && (state.user_words || []).some(w => w.japanese === updates.japanese)) {
+    showToast('Another word already uses that Japanese', 'error');
+    return;
+  }
+  try {
+    await workerCall('/update-word', 'POST', { japanese: targetJp, updates });
+    const apply = (w) => { if (w?.japanese === targetJp) Object.assign(w, updates, { updated_at: new Date().toISOString() }); };
+    (state.user_words || []).forEach(apply);
+    (state.all_words_learned || []).forEach(apply);
+    closeModal();
+    renderWords();
+    showToast('Saved', 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function deleteCurrentWord() {
+  if (!currentEditWord) return;
+  const targetJp = currentEditWord.japanese;
+  if (!confirm(`Delete "${targetJp}"? This cannot be undone.`)) return;
+  try {
+    await workerCall('/delete-word', 'POST', { japanese: targetJp });
+    state.user_words = (state.user_words || []).filter(w => w.japanese !== targetJp);
+    state.all_words_learned = (state.all_words_learned || []).filter(w => !(w.japanese === targetJp && w.source === 'user'));
+    closeModal();
+    renderWords();
+    showToast('Deleted', 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+// =============================================================
+// MARK CHARACTER LEARNED — instant UI, debounced background save
+// =============================================================
+let _saveTimer = null;
+let _savePromise = null;
+
+function scheduleCharSave() {
+  if (_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(runCharSave, 500);
+}
+
+async function runCharSave() {
+  _saveTimer = null;
+  if (_savePromise) { try { await _savePromise; } catch (_) {} }
+  const localLearned = [...(state.all_characters_learned || [])];
+  _savePromise = (async () => {
+    try {
+      if (CONFIG.readOnly) return;
+      // Merge-safe: pull the latest state, replace only the field this tab owns.
+      const fresh = await fetchStateWithFallback();
+      await workerCall('/state', 'PUT', { ...fresh, all_characters_learned: localLearned });
+      setSaveIndicator('saved');
+    } catch (err) {
+      setSaveIndicator('error');
+      showToast('Save failed: ' + (err.message || 'unknown error'), 'error');
+      throw err;
+    }
+  })();
+  setSaveIndicator('saving');
+  try { await _savePromise; } catch (_) {} finally { _savePromise = null; }
+}
+
+function setSaveIndicator(status) {
+  const el = $('save-indicator');
+  if (!el) return;
+  el.dataset.status = status;
+  el.textContent = status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : 'Not saved';
+  if (status === 'saved') setTimeout(() => { if (el.dataset.status === 'saved') el.dataset.status = ''; }, 1800);
+}
+
+function setCharLearned(char, isLearned) {
+  if (!state) return;
+  state.all_characters_learned = state.all_characters_learned || [];
+  const idx = state.all_characters_learned.indexOf(char);
+  if (isLearned && idx === -1) state.all_characters_learned.push(char);
+  if (!isLearned && idx !== -1) state.all_characters_learned.splice(idx, 1);
+  // Patch the DOM in place: no re-render of the grids.
+  document.querySelectorAll(`.tile[data-char="${cssEscape(char)}"]`).forEach(t => t.classList.toggle('learned', isLearned));
+  document.querySelectorAll(`.word-jp .ch`).forEach(s => { if (s.textContent === char) s.classList.toggle('learned', isLearned); });
+  updateCharCounts();
+  scheduleCharSave();
+}
+
 function cssEscape(s) {
-if (typeof CSS !== 'undefined' && CSS.escape) return CSS.escape(s);
-return String(s).replace(/["\\\n\r\t]/g, m => '\\' + m);
+  if (typeof CSS !== 'undefined' && CSS.escape) return CSS.escape(s);
+  return String(s).replace(/["\\\n\r\t]/g, m => '\\' + m);
 }
 
-// Called from the tile-flip modal's toggle button. Instant local update + close.
-function toggleCharacterLearned(charAttr) {
-const char = charAttr.replace(/&apos;/g, "'").replace(/&quot;/g, '"');
-const nowLearned = toggleCharacterLearnedLocal(char);
-// Update button label immediately in the modal
-const btn = document.querySelector('.toggle-learned-btn');
-if (btn) {
-btn.textContent = nowLearned ? 'Learned ✓' : 'Not yet learned';
-btn.classList.toggle('learned', nowLearned);
+// =============================================================
+// CHARACTER DETAIL — a real 3D tile that rises and flips.
+// Every animated property is transform / opacity, so open and close
+// stay on the compositor and never trigger layout.
+// =============================================================
+const detail = {
+  layer: null, root: null, box: null, front: null, back: null,
+  cell: null, char: null, size: 0, busy: false, timer: null,
+};
+
+function wordsContaining(char) {
+  return (state?.user_words || []).filter(w => w?.japanese && w.japanese.includes(char));
 }
-// Close modal instantly (the fast animation)
-closeCharDetail();
+
+function buildBackFace(char) {
+  const meta = charMeta.get(char) || { romaji: '', script: detectScript(char), meaning: null };
+  const learned = learnedSet();
+  const isLearned = learned.has(char);
+  const words = wordsContaining(char);
+  const list = words.length
+    ? words.map(w => `
+        <li>
+          <span class="ex-jp">${renderJapanese(w.japanese, learned)}</span>
+          <span class="ex-meta"><span class="ex-ro">${escapeHtml(w.reading_romaji || '')}</span><span class="ex-tr">${escapeHtml(w.translation || '')}</span></span>
+        </li>`).join('')
+    : '<li class="empty">None of your words use this character yet.</li>';
+
+  return `
+    <button class="close-x" type="button" aria-label="Close" data-close>×</button>
+    <div class="detail-head">
+      <div class="detail-char ${meta.script}">${escapeHtml(char)}</div>
+      <div class="detail-info">
+        <div class="detail-reading">${escapeHtml(meta.romaji || '')}</div>
+        ${meta.meaning ? `<div class="detail-meaning">${escapeHtml(meta.meaning)}</div>` : ''}
+        <div class="detail-script">${meta.script}${meta.grade ? ` · ${GRADE_LABEL[meta.grade] || meta.grade}` : ''}</div>
+      </div>
+    </div>
+    <button type="button" class="learn-toggle${isLearned ? ' on' : ''}" data-learn-toggle aria-pressed="${isLearned}">
+      <span class="knob"></span>
+      <span class="label-off">Not yet learned</span>
+      <span class="label-on">Learned</span>
+    </button>
+    <h4>In your words <span>${words.length}</span></h4>
+    <ul class="examples">${list}</ul>`;
+}
+
+function openCharDetail(cell) {
+  if (detail.busy) return;
+  const char = cell.dataset.char;
+  const meta = charMeta.get(char);
+  const isLearned = learnedSet().has(char);
+
+  // Size: a square that fits the viewport.
+  const S = Math.round(Math.min(480, window.innerWidth * 0.92, window.innerHeight * 0.82));
+  detail.size = S;
+  detail.root.style.setProperty('--s', S + 'px');
+
+  detail.front.className = `face front ${meta?.script || ''}${isLearned ? ' learned' : ''}`;
+  detail.front.innerHTML = `<span class="ch">${escapeHtml(char)}</span>`;
+  detail.back.className = `face back${isLearned ? ' learned' : ''}`;
+  detail.back.innerHTML = buildBackFace(char);
+  detail.back.scrollTop = 0;
+
+  // FLIP: start where the tile is, end centered.
+  const r = cell.getBoundingClientRect();
+  const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+  const dx = (r.left + r.width / 2) - cx;
+  const dy = (r.top + r.height / 2) - cy;
+  const k = r.width / S;
+
+  detail.cell = cell;
+  detail.char = char;
+  cell.classList.add('ghost');
+
+  const { root, layer } = detail;
+  layer.classList.remove('closing', 'open');
+  root.style.transition = 'none';
+  root.style.transform = `translate(${dx}px, ${dy}px) scale(${k})`;
+  layer.hidden = false;
+  document.body.classList.add('detail-open');
+  void root.offsetWidth; // commit the start position
+
+  detail.busy = true;
+  requestAnimationFrame(() => {
+    root.style.transition = '';
+    root.style.transform = 'translate(0, 0) scale(1)';
+    layer.classList.add('open');
+    clearTimeout(detail.timer);
+    detail.timer = setTimeout(() => { detail.busy = false; }, 520);
+  });
+}
+
+function closeCharDetail() {
+  const { root, layer } = detail;
+  if (layer.hidden || layer.classList.contains('closing')) return;
+  const cell = detail.cell;
+  detail.busy = true;
+  layer.classList.add('closing');
+  if (cell) {
+    const r = cell.getBoundingClientRect();
+    const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    const dx = (r.left + r.width / 2) - cx;
+    const dy = (r.top + r.height / 2) - cy;
+    root.style.transform = `translate(${dx}px, ${dy}px) scale(${r.width / detail.size})`;
+  } else {
+    root.style.transform = 'scale(0.6)';
+  }
+  clearTimeout(detail.timer);
+  detail.timer = setTimeout(() => {
+    layer.classList.remove('open', 'closing');
+    layer.hidden = true;
+    document.body.classList.remove('detail-open');
+    if (cell) cell.classList.remove('ghost');
+    detail.cell = null;
+    detail.char = null;
+    detail.busy = false;
+  }, 460);
+}
+
+function toggleDetailLearned() {
+  if (!detail.char) return;
+  const now = !learnedSet().has(detail.char);
+  setCharLearned(detail.char, now);
+  // The open card just changes colour: no reload, no re-render.
+  detail.front.classList.toggle('learned', now);
+  detail.back.classList.toggle('learned', now);
+  const btn = detail.back.querySelector('[data-learn-toggle]');
+  if (btn) { btn.classList.toggle('on', now); btn.setAttribute('aria-pressed', String(now)); }
 }
 
 // =============================================================
 // UTILITIES
 // =============================================================
-
 function escapeHtml(str) {
-if (str == null) return '';
-return String(str).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]);
+  if (str == null) return '';
+  return String(str).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 }
-function escapeAttr(str) { return escapeHtml(str).replace(/'/g, "&apos;"); }
-
-function renderExample(w) {
-if (!w) return '';
-const jp = w.example_jp || w.example_japanese || '';
-const en = w.example_en || w.example_english || w.example_translation || '';
-if (!jp && !en) return '';
-return `
-<div class="word-example">
-${jp ? `<div class="ex-jp">${escapeHtml(jp)}</div>` : ''}
-${en ? `<div class="ex-en">${escapeHtml(en)}</div>` : ''}
-</div>
-`;
-}
+function escapeAttr(str) { return escapeHtml(str); }
 
 let toastTimer = null;
 function showToast(msg, type = '') {
-const el = document.getElementById('toast');
-el.textContent = msg;
-el.className = `toast show ${type}`;
-clearTimeout(toastTimer);
-toastTimer = setTimeout(() => { el.classList.remove('show'); }, 2400);
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.classList.remove('show'); }, 2400);
 }
 
 function detectScript(c) {
-if (!c) return 'unknown';
-const cp = c.codePointAt(0);
-if (cp >= 0x3040 && cp <= 0x309F) return 'hiragana';
-if (cp >= 0x30A0 && cp <= 0x30FF) return 'katakana';
-if (cp >= 0x4E00 && cp <= 0x9FFF) return 'kanji';
-return 'unknown';
+  if (!c) return 'unknown';
+  const cp = c.codePointAt(0);
+  if (cp >= 0x3040 && cp <= 0x309F) return 'hiragana';
+  if (cp >= 0x30A0 && cp <= 0x30FF) return 'katakana';
+  if (cp >= 0x4E00 && cp <= 0x9FFF) return 'kanji';
+  return 'unknown';
 }
 
 // =============================================================
-// CHARACTER DETAIL MODAL — faster flip animation
+// ATMOSPHERE — light parallax on pointer move (transform only)
 // =============================================================
-
-let _activeCharCell = null;
-let _closeTimeoutId = null;
-
-// Collect all words (user + daily + week 1 routine) that contain a character
-function wordsContaining(char) {
-const src = [
-...(state?.user_words || []),
-...(state?.daily_words || []),
-...((state?.all_words_learned || []).filter(w => w.source === 'routine' && (w.week_number === 1 || w.week_number === '1'))),
-];
-const seen = new Set();
-const out = [];
-for (const w of src) {
-if (!w?.japanese) continue;
-if (!w.japanese.includes(char)) continue;
-if (seen.has(w.japanese)) continue;
-seen.add(w.japanese);
-out.push(w);
+function initParallax() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!window.matchMedia('(pointer: fine)').matches) return;
+  const scene = document.querySelector('.scene');
+  if (!scene) return;
+  let tx = 0, ty = 0, raf = null;
+  window.addEventListener('pointermove', (e) => {
+    tx = (e.clientX / window.innerWidth - 0.5) * 2;
+    ty = (e.clientY / window.innerHeight - 0.5) * 2;
+    if (!raf) raf = requestAnimationFrame(() => {
+      raf = null;
+      scene.style.setProperty('--mx', tx.toFixed(3));
+      scene.style.setProperty('--my', ty.toFixed(3));
+    });
+  }, { passive: true });
 }
-return out;
-}
-
-function openCharDetail(cellEl) {
-if (_closeTimeoutId) {
-clearTimeout(_closeTimeoutId);
-_closeTimeoutId = null;
-if (_activeCharCell) _activeCharCell.style.visibility = '';
-_activeCharCell = null;
-const m = document.getElementById('char-detail-modal');
-m.classList.remove('open', 'closing');
-}
-const char = cellEl.dataset.char;
-const romaji = cellEl.dataset.romaji;
-const script = cellEl.dataset.script;
-const meaning = cellEl.dataset.meaning || null;
-
-const learned = new Set(state?.all_characters_learned || []);
-const isLearned = learned.has(char);
-const status = isLearned ? 'learned' : 'not-yet';
-const statusLabel = isLearned ? 'Learned' : 'Not yet learned';
-
-const examples = wordsContaining(char);
-const examplesHtml = examples.length
-? examples.map(w => `
-<li>
-<span class="ex-jp">${escapeHtml(w.japanese)}</span>
-<span class="ex-reading">${escapeHtml(w.reading_romaji || '')}</span>
-<span class="ex-trans">${escapeHtml(w.translation || w.english || '')}</span>
-</li>
-`).join('')
-: '<li class="empty">Add a word containing this character in the Words tab and it\'ll show up here.</li>';
-
-const meaningHtml = meaning ? `<div class="meaning">${escapeHtml(meaning)}</div>` : '';
-const isKanji = script === 'kanji';
-
-const card = document.getElementById('char-detail-card');
-const toggleLabel = isLearned ? 'Learned ✓' : 'Mark as learned';
-const btnCls = isLearned ? 'btn-secondary toggle-learned-btn learned' : 'btn-secondary toggle-learned-btn';
-const charAttr = escapeAttr(char);
-card.innerHTML = `
-<button class="close-x" aria-label="Close" onclick="closeCharDetail()">×</button>
-<div class="status-pill ${status}">${statusLabel}</div>
-<div class="big-char ${isKanji ? 'kanji' : ''}">${escapeHtml(char)}</div>
-<div class="big-romaji">${escapeHtml(romaji)}</div>
-<div class="script-tag">${script}</div>
-${meaningHtml}
-<div class="char-actions">
-<button class="${btnCls}" onclick="toggleCharacterLearned('${charAttr}')">${toggleLabel}</button>
-</div>
-<h4>Words with this character</h4>
-<ul class="examples">${examplesHtml}</ul>
-`;
-
-const front = document.getElementById('char-detail-front');
-let frontCls = 'char-detail-front';
-if (isLearned) frontCls += ' learned';
-front.className = frontCls;
-front.innerHTML = `<div class="char">${escapeHtml(char)}</div>`;
-
-const rect = cellEl.getBoundingClientRect();
-const tile = document.getElementById('char-detail-tile');
-const modal = document.getElementById('char-detail-modal');
-
-cellEl.style.visibility = 'hidden';
-_activeCharCell = cellEl;
-
-tile.style.transition = 'none';
-tile.style.width = rect.width + 'px';
-tile.style.height = rect.height + 'px';
-tile.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
-
-modal.classList.remove('closing');
-modal.setAttribute('aria-hidden', 'false');
-document.body.style.overflow = 'hidden';
-
-void tile.offsetWidth;
-
-requestAnimationFrame(() => {
-const targetW = Math.min(420, window.innerWidth * 0.92);
-const targetH = Math.min(540, window.innerHeight * 0.85);
-const targetX = (window.innerWidth - targetW) / 2;
-const targetY = (window.innerHeight - targetH) / 2;
-// Faster: 0.36s total (down from 1.1s)
-const ease = 'cubic-bezier(0.4, 0.15, 0.3, 1)';
-tile.style.transition = `width 0.36s ${ease}, height 0.36s ${ease}, transform 0.36s ${ease}`;
-tile.style.width = targetW + 'px';
-tile.style.height = targetH + 'px';
-tile.style.transform = `translate(${targetX}px, ${targetY}px)`;
-modal.classList.add('open');
-});
-}
-
-function closeCharDetail() {
-const modal = document.getElementById('char-detail-modal');
-if (!modal.classList.contains('open')) return;
-if (modal.classList.contains('closing')) return;
-
-const tile = document.getElementById('char-detail-tile');
-const cellEl = _activeCharCell;
-if (!cellEl) {
-modal.classList.remove('open');
-document.body.style.overflow = '';
-return;
-}
-
-modal.classList.add('closing');
-const rect = cellEl.getBoundingClientRect();
-
-// Faster close: 0.3s shrink after a brief 0.14s delay so the rotation reads
-const ease = 'cubic-bezier(0.4, 0.15, 0.3, 1)';
-tile.style.transition = `width 0.3s 0.12s ${ease}, height 0.3s 0.12s ${ease}, transform 0.3s 0.12s ${ease}`;
-tile.style.width = rect.width + 'px';
-tile.style.height = rect.height + 'px';
-tile.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
-
-_closeTimeoutId = setTimeout(() => {
-modal.classList.remove('open', 'closing');
-modal.setAttribute('aria-hidden', 'true');
-document.body.style.overflow = '';
-if (cellEl) cellEl.style.visibility = '';
-_activeCharCell = null;
-_closeTimeoutId = null;
-}, 460);
-}
-
-document.addEventListener('keydown', (e) => {
-if (e.key === 'Escape') closeCharDetail();
-});
-document.getElementById('char-detail-modal')?.addEventListener('click', (e) => {
-if (!e.target.closest('.char-detail-back')) closeCharDetail();
-});
 
 // =============================================================
-// TAB SWITCHING
+// WIRING
 // =============================================================
+function initUI() {
+  detail.layer = $('char-detail-layer');
+  detail.root = $('char-detail');
+  detail.box = detail.root.querySelector('.box');
+  detail.front = detail.root.querySelector('.face.front');
+  detail.back = detail.root.querySelector('.face.back');
 
-document.querySelectorAll('.tab').forEach(btn => {
-btn.addEventListener('click', () => {
-document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-btn.classList.add('active');
-const target = btn.dataset.tab;
-document.querySelectorAll('.panel').forEach(p => {
-p.classList.remove('active');
-p.style.display = 'none';
-});
-const panel = document.querySelector(`.panel[data-panel="${target}"]`);
-if (panel) {
-panel.classList.add('active');
-panel.style.display = 'block';
+  // Tabs
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === btn));
+      document.querySelectorAll('.panel').forEach(p => { p.classList.toggle('active', p.dataset.panel === btn.dataset.tab); });
+      try { localStorage.setItem('neosai.tab', btn.dataset.tab); } catch (_) {}
+    });
+  });
+  try {
+    const saved = localStorage.getItem('neosai.tab');
+    const btn = saved && document.querySelector(`.tab[data-tab="${saved}"]`);
+    if (btn) btn.click();
+  } catch (_) {}
+
+  // Words
+  $('add-btn').addEventListener('click', addUserWord);
+  ['add-jp', 'add-romaji', 'add-translation'].forEach(id => {
+    $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addUserWord(); } });
+  });
+  $('word-search').addEventListener('input', renderWords);
+  $('words-list').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-edit]');
+    if (b) openEdit(b.dataset.edit);
+  });
+  $('edit-save').addEventListener('click', saveEdit);
+  $('edit-cancel').addEventListener('click', closeModal);
+  $('edit-delete').addEventListener('click', deleteCurrentWord);
+  $('edit-modal').addEventListener('click', (e) => { if (e.target.id === 'edit-modal') closeModal(); });
+
+  // Characters: one delegated listener per panel
+  document.querySelector('.panel[data-panel="characters"]').addEventListener('click', (e) => {
+    const tile = e.target.closest('.tile');
+    if (tile) { openCharDetail(tile); return; }
+    const header = e.target.closest('[data-toggle-grade]');
+    if (header) toggleKanjiGrade(header.closest('.kanji-grade'));
+  });
+
+  // Detail box
+  detail.layer.addEventListener('click', (e) => {
+    if (e.target.closest('[data-learn-toggle]')) { toggleDetailLearned(); return; }
+    if (e.target.closest('[data-close]')) { closeCharDetail(); return; }
+    if (!e.target.closest('.face.back')) closeCharDetail();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if ($('edit-modal').classList.contains('show')) closeModal();
+      else closeCharDetail();
+    }
+  });
+
+  window.addEventListener('beforeunload', (e) => {
+    if (_savePromise || _saveTimer) {
+      e.preventDefault();
+      e.returnValue = 'A save is still in progress.';
+      return e.returnValue;
+    }
+  });
+
+  if (CONFIG.readOnly) {
+    const tag = document.createElement('div');
+    tag.className = 'readonly-tag';
+    tag.textContent = 'preview · nothing is saved';
+    document.body.appendChild(tag);
+  }
+
+  initParallax();
 }
-});
-});
 
-document.getElementById('word-search')?.addEventListener('input', renderWords);
-document.getElementById('word-filter')?.addEventListener('change', renderWords);
-document.getElementById('edit-modal')?.addEventListener('click', (e) => {
-if (e.target.id === 'edit-modal') closeModal();
-});
-
-// Warn on close if a save is still pending
-window.addEventListener('beforeunload', (e) => {
-if (_savePromise || _saveTimer) {
-e.preventDefault();
-e.returnValue = 'Character save is still in progress. Wait a moment before closing.';
-return e.returnValue;
-}
-});
-
-// Initial load
+initUI();
 loadData();
