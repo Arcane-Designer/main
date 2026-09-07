@@ -74,18 +74,55 @@ function rawUrl(file) {
   return `https://raw.githubusercontent.com/${CONFIG.repo}/${CONFIG.branch}/${file}`;
 }
 
-async function loadData() {
-  $('loading').hidden = false;
-  const [s, o] = await Promise.all([fetchStateWithFallback(), fetchOrderWithFallback()]);
-  state = s;
-  characterOrder = o;
+const CACHE_KEY = 'neosai.state.v4';
+
+function readCachedState() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    return data && typeof data === 'object' && 'user_words' in data ? data : null;
+  } catch (_) { return null; }
+}
+
+function writeCachedState(data) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch (_) {}
+}
+
+function setupCharacterMeta() {
   kanjiList = (characterOrder?.order || []).filter(c => c.script === 'kanji');
+  charMeta.clear();
   for (const [c, r] of HIRAGANA) charMeta.set(c, { romaji: r, script: 'hiragana', meaning: null });
   for (const [c, r] of KATAKANA) charMeta.set(c, { romaji: r, script: 'katakana', meaning: null });
   for (const k of kanjiList) charMeta.set(k.char, { romaji: k.romaji || '', script: 'kanji', meaning: k.meaning || null, grade: k.grade || 'S' });
-  $('loading').hidden = true;
+}
+
+// Progressive load: the character inventory ships with the page, and the
+// last known state is cached locally, so the page is usable immediately.
+// The live state then arrives from the Worker and replaces both.
+async function loadData() {
+  characterOrder = embeddedOrder() || await fetchOrderWithFallback();
+  setupCharacterMeta();
+
+  const cached = readCachedState();
+  state = cached || makeEmptyState();
+  $('loading').hidden = !!cached;
   document.body.classList.add('ready');
   renderAll();
+
+  const fresh = await fetchStateWithFallback();
+  if (fresh) {
+    state = fresh;
+    writeCachedState(fresh);
+    $('loading').hidden = true;
+    renderAll();
+  }
+}
+
+function embeddedOrder() {
+  const k = window.NEOSAI_KANJI;
+  if (!Array.isArray(k) || k.length === 0) return null;
+  return { order: k.map(([char, grade, meaning, romaji]) => ({ char, grade, meaning, romaji, script: 'kanji' })) };
 }
 
 async function fetchStateWithFallback() {
@@ -100,8 +137,8 @@ async function fetchStateWithFallback() {
     const res = await fetch(rawUrl('state.json') + `?t=${Date.now()}`, { cache: 'no-cache' });
     if (res.ok) return await res.json();
   } catch (_) { /* fall through */ }
-  showToast('Could not load your words. Showing an empty list.', 'error');
-  return makeEmptyState();
+  showToast(state && state.user_words?.length ? 'Offline: showing your last saved words.' : 'Could not load your words.', 'error');
+  return null;
 }
 
 async function fetchOrderWithFallback() {
@@ -300,6 +337,7 @@ async function addUserWord() {
     state.user_words.push(word);
     state.all_words_learned = state.all_words_learned || [];
     state.all_words_learned.push({ ...word, week_number: 1, character: null, delivered_at: word.added_at, source: 'user' });
+    writeCachedState(state);
     renderWords();
     showToast(`Added ${jp}`, 'success');
     $('add-jp').focus();
@@ -346,6 +384,7 @@ async function saveEdit() {
     const apply = (w) => { if (w?.japanese === targetJp) Object.assign(w, updates, { updated_at: new Date().toISOString() }); };
     (state.user_words || []).forEach(apply);
     (state.all_words_learned || []).forEach(apply);
+    writeCachedState(state);
     closeModal();
     renderWords();
     showToast('Saved', 'success');
@@ -362,6 +401,7 @@ async function deleteCurrentWord() {
     await workerCall('/delete-word', 'POST', { japanese: targetJp });
     state.user_words = (state.user_words || []).filter(w => w.japanese !== targetJp);
     state.all_words_learned = (state.all_words_learned || []).filter(w => !(w.japanese === targetJp && w.source === 'user'));
+    writeCachedState(state);
     closeModal();
     renderWords();
     showToast('Deleted', 'success');
@@ -389,8 +429,10 @@ async function runCharSave() {
     try {
       if (CONFIG.readOnly) return;
       // Merge-safe: pull the latest state, replace only the field this tab owns.
-      const fresh = await fetchStateWithFallback();
-      await workerCall('/state', 'PUT', { ...fresh, all_characters_learned: localLearned });
+      const fresh = (await fetchStateWithFallback()) || state;
+      const next = { ...fresh, all_characters_learned: localLearned };
+      await workerCall('/state', 'PUT', next);
+      writeCachedState(next);
       setSaveIndicator('saved');
     } catch (err) {
       setSaveIndicator('error');
