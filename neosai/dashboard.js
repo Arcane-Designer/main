@@ -166,9 +166,6 @@ function renderWords() {
   }
 
   container.innerHTML = words.map(w => {
-    const chars = Array.from(w.japanese || '').filter(ch => charMeta.has(ch));
-    const known = chars.filter(ch => learned.has(ch)).length;
-    const progress = chars.length ? `${known}/${chars.length}` : '';
     return `
       <article class="word-card" data-jp="${escapeAttr(w.japanese)}">
         <div class="word-jp">${renderJapanese(w.japanese, learned)}</div>
@@ -178,7 +175,6 @@ function renderWords() {
           ${w.notes ? `<div class="word-notes">${escapeHtml(w.notes)}</div>` : ''}
         </div>
         <div class="word-side">
-          ${progress ? `<span class="word-progress" title="characters learned">${progress}</span>` : ''}
           <button class="btn-edit" type="button" data-edit="${escapeAttr(w.japanese)}">Edit</button>
         </div>
       </article>`;
