@@ -767,6 +767,8 @@ const City = (() => {
   function build() {
     const frac = wins.length ? litN / wins.length : 0;
     W = innerWidth; H = innerHeight;
+    // a window that hasn't been laid out yet reports 0x0; update() retries once it has a size
+    if (W < 2 || H < 2) { bg = null; return; }
     D = Math.min(window.devicePixelRatio || 1, 2);
     if (W * H * D * D > 3.4e6) D = Math.sqrt(3.4e6 / (W * H));
     cv.width = Math.round(W * D); cv.height = Math.round(H * D);
@@ -795,8 +797,7 @@ const City = (() => {
     let hi = 0;
     B[2].forEach((b, i) => { if (Math.abs(b.x + b.w / 2 - hx) < Math.abs(B[2][hi].x + B[2][hi].w / 2 - hx)) hi = i; });
     const hb0 = B[2][hi];
-    const heroW = Math.max(hb0.w, clamp(Math.min(W, H) * .05, 20, 44) * 2.6);
-    B[2][hi] = tower(R, hb0.x, heroW, Math.max(hb0.h, H * (port ? .3 : .34)), 2);
+    if (hb0) B[2][hi] = tower(R, hb0.x, Math.max(hb0.w, clamp(Math.min(W, H) * .05, 20, 44) * 2.6), Math.max(hb0.h, H * (port ? .3 : .34)), 2);
     const hb = B[2][hi];
     const nearRects = B[2].flatMap(b => b.rects);
     const midRects = B[1].flatMap(b => b.rects);
@@ -815,7 +816,7 @@ const City = (() => {
       if (signs.some(o => hit(s, o))) continue;
       signs.push(s);
     }
-    hero = makeSign(R, hb, '暗算', '#ff2e97', true);
+    hero = hb ? makeSign(R, hb, '暗算', '#ff2e97', true) : null;
     if (hero) signs.push(hero);
 
     wins = []; groups = []; act.clear(); litN = 0;
@@ -961,6 +962,7 @@ const City = (() => {
   }
 
   function update(dt) {
+    if (!bg) { if (innerWidth > 1 && innerHeight > 1) build(); return; }
     T += dt;
     stepWindows(dt);
     if (mode === 'ambient' && wins.length && !RM.matches) {
@@ -1057,6 +1059,7 @@ const City = (() => {
       heroTrack();
     },
     blackout() {
+      if (!groups.length) return;
       let n = Math.floor(litN * .2);
       for (let tries = 0; n > 0 && tries < 24; tries++) {
         for (const i of groups[randi(0, groups.length - 1)]) if (wins[i].t > .5) { setW(i, 0, rand(14, 30), rand(0, .06)); n--; }
@@ -1603,20 +1606,22 @@ addEventListener('focus', () => Game.resume());
 addEventListener('pagehide', saveProgress);
 document.addEventListener('gesturestart', e => e.preventDefault());
 let rz = 0;
-addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { City.build(); fit(); }, 120); });
+const buildCity = () => { try { City.build(); } catch (e) { console.error(e); } };
+addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { buildCity(); fit(); }, 120); });
 
 /* ---------- boot ---------- */
-let last = 0;
+let last = 0, cityOk = true;
 function frame(ts) {
+  requestAnimationFrame(frame);
   const dt = last ? (ts - last) / 1000 : 0;
   last = ts;
-  City.update(Math.min(dt, .05));
+  // the backdrop is decoration: if it ever fails, turn it off and keep the game running
+  if (cityOk) try { City.update(Math.min(dt, .05)); } catch (e) { cityOk = false; console.error(e); }
   Game.tick(Math.min(dt, .25));
-  City.draw();
-  requestAnimationFrame(frame);
+  if (cityOk) try { City.draw(); } catch (e) { cityOk = false; console.error(e); }
 }
 function boot() {
-  City.build();
+  buildCity();
   renderMenu();
   fit();
   requestAnimationFrame(frame);
