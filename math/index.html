@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;600&family=Tilt+Neon&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@900&text=暗算ラーメンカオケ電脳ホテル薬酒場夜市ゲム寿司未来喫茶占い進歩塔問題間違記録練習計&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@900&text=暗算ラーメンカオケ電脳ホテル薬酒場夜市ゲム寿司未来喫茶占い進歩塔問題間違記録練習計同期&display=swap">
 <style>
 :root {
   color-scheme: dark;
@@ -485,6 +485,18 @@ body.kbd .pad { display: none; }
 .bests { display: grid; grid-template-columns: auto repeat(4, minmax(38px, 1fr)); gap: 12px 14px; align-items: center; font: 400 12px/1 var(--mono); color: var(--dim); max-width: 460px; }
 .bests b { font: 400 24px/1 var(--display); color: var(--ink); text-align: center; font-weight: 400; }
 .bests .lvh { justify-self: center; color: var(--dim); }
+.sync-code { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; }
+.sync-code code { font: 400 clamp(22px, 3vw, 30px)/1.1 var(--display); letter-spacing: .05em; color: var(--cyan-core); text-shadow: 0 0 .2em rgba(34, 238, 255, .5); -webkit-user-select: all; user-select: all; }
+.sync-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 26px; }
+.sync-acts button, .sync-code button, .sync-join button { font: 600 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--cyan-core); padding: 12px 0; }
+.sync-acts button[data-act="sync-off"] { color: var(--dim); }
+.sync-acts .sync-go { font: 400 22px/1 var(--display); letter-spacing: .04em; text-transform: none; color: var(--pink-core); padding: 12px 26px 13px; border: 2px solid var(--pink); border-radius: 7px; text-shadow: 0 0 .1em var(--pink), 0 0 .3em var(--pink); box-shadow: 0 0 10px var(--pink), inset 0 0 10px rgba(255, 46, 151, .4); }
+.sync-join { display: flex; align-items: center; gap: 14px; max-width: 440px; }
+.sync-join input { flex: 1; min-width: 0; font: 400 16px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); background: #120d24; border: 1px solid #2c2350; border-radius: 6px; padding: 11px 12px; -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+.sync-join input::placeholder { text-transform: none; letter-spacing: .02em; color: #5d5285; }
+.sync-join input:focus { outline: 1px solid var(--cyan); outline-offset: 1px; }
+.warn { color: var(--amber); }
+#sync-msg { font: 400 12px/1.5 var(--mono); color: var(--amber); min-height: 1.5em; }
 .st-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 22px; padding-top: 20px; border-top: 1px solid #1c1534; font: 400 11px/1.6 var(--mono); color: var(--dim); }
 .st-foot button { font: 600 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--cyan-core); padding: 10px 0; }
 .st-foot .msg { color: var(--amber); }
@@ -630,11 +642,34 @@ if (!settings.ops.length) settings.ops = Object.keys(OPS);
 settings.level = clamp(Math.round(settings.level) || 2, 1, 4);
 // The first version kept only running totals in localStorage. Those stay as a read-only baseline;
 // every answer and game since is appended to a log in IndexedDB, and all stats come from that log.
-const legacy = {
+const legacyOwn = {
   bests: store.get('bests', {}), hist: store.get('hist', {}), facts: store.get('facts', {}),
   meta: Object.assign({ solved: 0, days: [] }, store.get('meta', {})),
 };
-const saveLegacy = () => { for (const k of ['bests', 'hist', 'facts', 'meta']) store.set(k, legacy[k]); };
+// what every linked device (and any restored backup) had before the log existed, keyed by source
+const legacy = { bests: {}, hist: {}, facts: {}, meta: { solved: 0, days: [] } };
+const legacySnapshot = () => ({ days: legacyOwn.meta.days, solved: legacyOwn.meta.solved, bests: legacyOwn.bests, hist: legacyOwn.hist, facts: legacyOwn.facts });
+function mergeLegacy() {
+  const days = new Set(legacyOwn.meta.days), bests = { ...legacyOwn.bests }, hist = { ...legacyOwn.hist }, fx = {};
+  let solved = legacyOwn.meta.solved || 0;
+  for (const [k, f] of Object.entries(legacyOwn.facts)) fx[k] = { ...f };
+  for (const L of Object.values(store.get('legacyRemote', {}))) {
+    if (!L) continue;
+    for (const d of L.days || []) days.add(d);
+    solved += L.solved || 0;
+    for (const [k, v] of Object.entries(L.bests || {})) bests[k] = Math.max(bests[k] || 0, v);
+    for (const [k, v] of Object.entries(L.hist || {})) if (!hist[k]) hist[k] = v;
+    for (const [k, f] of Object.entries(L.facts || {})) {
+      const m = fx[k];
+      if (!m) { fx[k] = { ...f }; continue; }
+      const n = m.n + f.n;
+      m.t = n ? +(((m.t || 0) * m.n + (f.t || 0) * f.n) / n).toFixed(3) : m.t;
+      m.n = n; m.c += f.c;
+    }
+  }
+  Object.assign(legacy, { bests, hist, facts: fx, meta: { solved, days: [...days].sort() } });
+}
+mergeLegacy();
 const facts = {};
 const LOG = [], RUNS = [];
 const saveSettings = () => store.set('settings', settings);
@@ -714,20 +749,31 @@ function factKey(e) {
 const Data = (() => {
   let db = null, ready = false;
   const pending = [];
+  const ids = { attempts: new Set(), runs: new Set() };
+  const idOf = (name, v) => name === 'runs' ? `${v.ts}|${v.m}` : `${v.ts}|${v.o}|${v.x}|${v.y}|${v.g}|${v.m}`;
   const open = () => new Promise(res => {
+    let done = false;
+    const finish = v => { if (!done) { done = true; res(v); } };
     try {
-      const rq = indexedDB.open('quickmath', 1);
-      rq.onupgradeneeded = () => { for (const n of ['attempts', 'runs']) if (!rq.result.objectStoreNames.contains(n)) rq.result.createObjectStore(n, { autoIncrement: true }); };
-      rq.onsuccess = () => res(rq.result);
-      rq.onerror = rq.onblocked = () => res(null);
-    } catch (e) { res(null); }
+      const rq = indexedDB.open('quickmath', 2);
+      rq.onupgradeneeded = () => { for (const n of ['attempts', 'runs', 'outbox']) if (!rq.result.objectStoreNames.contains(n)) rq.result.createObjectStore(n, { autoIncrement: true }); };
+      rq.onsuccess = () => { const d = rq.result; d.onversionchange = () => d.close(); if (done) db = d; finish(d); };
+      rq.onerror = () => finish(null);
+      // an older copy of the app open in another window can hold up the upgrade; don't wait on it forever
+      setTimeout(() => finish(null), 4000);
+    } catch (e) { finish(null); }
   });
   const getAll = name => new Promise(res => {
     try { const rq = db.transaction(name).objectStore(name).getAll(); rq.onsuccess = () => res(rq.result || []); rq.onerror = () => res(null); }
     catch (e) { res(null); }
   });
-  const write = (name, v) => { try { if (db) db.transaction(name, 'readwrite').objectStore(name).add(v); } catch (e) {} };
+  const write = (names, fn) => { try { if (db) fn(db.transaction(names, 'readwrite')); } catch (e) {} };
   const byTs = (a, b) => a.ts - b.ts;
+  const fill = (arr, name, src) => {
+    arr.length = 0; ids[name].clear();
+    for (const v of src) { const id = idOf(name, v); if (!ids[name].has(id)) { ids[name].add(id); arr.push(v); } }
+    arr.sort(byTs);
+  };
   function rebuild() {
     for (const k in facts) delete facts[k];
     for (const k in legacy.facts) facts[k] = Object.assign({}, legacy.facts[k]);
@@ -738,19 +784,143 @@ const Data = (() => {
     if (!db) db = await open();
     if (db) {
       const [a, r] = await Promise.all([getAll('attempts'), getAll('runs')]);
-      if (a) { LOG.length = 0; for (const v of a) LOG.push(v); LOG.sort(byTs); }
-      if (r) { RUNS.length = 0; for (const v of r) RUNS.push(v); RUNS.sort(byTs); }
+      if (a) fill(LOG, 'attempts', a);
+      if (r) fill(RUNS, 'runs', r);
     }
     ready = true;
     while (pending.length) add(...pending.shift());
     rebuild();
   }
+  // things this device creates also go in the outbox until the sync service has them
   function add(name, v) {
-    if (!ready) { pending.push([name, v]); return; }
+    if (!ready) { pending.push([name, v]); return true; }
+    const id = idOf(name, v);
+    if (ids[name].has(id)) return false;
+    ids[name].add(id);
     (name === 'runs' ? RUNS : LOG).push(v);
-    write(name, v);
+    write([name, 'outbox'], t => { t.objectStore(name).add(v); t.objectStore('outbox').add({ k: name === 'runs' ? 'r' : 'a', v }); });
+    return true;
   }
-  return { load, add, rebuild, sort() { LOG.sort(byTs); RUNS.sort(byTs); }, get saved() { return !!db; } };
+  function addRemote(name, v) {
+    const id = idOf(name, v);
+    if (ids[name].has(id)) return false;
+    ids[name].add(id);
+    (name === 'runs' ? RUNS : LOG).push(v);
+    write([name], t => t.objectStore(name).add(v));
+    return true;
+  }
+  const outbox = () => new Promise(res => {
+    const out = { a: [], r: [], keys: [] };
+    if (!db) return res(out);
+    try {
+      const c = db.transaction('outbox').objectStore('outbox').openCursor();
+      c.onsuccess = () => {
+        const cur = c.result;
+        if (!cur) return res(out);
+        out.keys.push(cur.key);
+        (cur.value.k === 'r' ? out.r : out.a).push(cur.value.v);
+        cur.continue();
+      };
+      c.onerror = () => res(out);
+    } catch (e) { res(out); }
+  });
+  // keys are increasing integers, so a range delete leaves anything added while a sync was running
+  const clearOutbox = keys => new Promise(res => {
+    if (!db || !keys.length) return res();
+    try {
+      const t = db.transaction('outbox', 'readwrite');
+      t.objectStore('outbox').delete(IDBKeyRange.bound(keys[0], keys[keys.length - 1]));
+      t.oncomplete = t.onerror = t.onabort = () => res();
+    } catch (e) { res(); }
+  });
+  return { load, add, addRemote, rebuild, outbox, clearOutbox, sort() { LOG.sort(byTs); RUNS.sort(byTs); }, get ready() { return ready; }, get saved() { return !!db; } };
+})();
+
+/* ---------- sync across devices ---------- */
+const Sync = (() => {
+  const ENDPOINT = 'https://quickmath-sync.nathanagellatly.workers.dev/sync';
+  const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  const S = Object.assign({ key: '', device: '', cursor: 0, boot: true, last: 0, devices: 0, err: '' }, store.get('sync', {}));
+  const rnd = n => { const b = new Uint8Array(n); crypto.getRandomValues(b); return [...b].map(x => ALPHA[x & 31]).join(''); };
+  if (!S.device) S.device = rnd(16);
+  const save = () => store.set('sync', S);
+  save();
+  // sync only runs on the real site; the claude.ai preview has no manifest and no access to the service
+  const available = () => !!document.querySelector('link[rel="manifest"]');
+  const enabled = () => !!S.key && available();
+  const fmt = k => k.match(/.{1,5}/g).join('-');
+  // people read 0, 1 and 8 where the code has O, I and B
+  const clean = k => String(k || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/[018]/g, c => ({ 0: 'O', 1: 'I', 8: 'B' }[c]));
+  const label = () => `${matchMedia('(display-mode: standalone)').matches || navigator.standalone ? 'app' : 'browser'} on ${/iPhone|iPad|Android/.test(navigator.userAgent) || navigator.maxTouchPoints > 1 ? 'phone' : 'computer'}`;
+  const listeners = [];
+  let busy = null, timer = 0;
+
+  async function post(body) {
+    // text/plain keeps this a simple request, so there's no extra preflight round trip
+    const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || 'HTTP ' + r.status);
+    return data;
+  }
+  function take(res) {
+    let n = 0;
+    for (const c of res.chunks || []) {
+      for (const e of c.a || []) if (e && e.ts && Data.addRemote('attempts', e)) n++;
+      for (const r of c.r || []) if (r && r.ts && Data.addRemote('runs', r)) n++;
+    }
+    const rem = store.get('legacyRemote', {});
+    let leg = false;
+    for (const { device, body } of res.legacy || []) {
+      const k = 'dev:' + device;
+      if (JSON.stringify(rem[k]) !== JSON.stringify(body)) { rem[k] = body; leg = true; }
+    }
+    if (leg) { store.set('legacyRemote', rem); mergeLegacy(); n++; }
+    S.cursor = res.cursor || S.cursor;
+    S.devices = res.devices || S.devices;
+    return n;
+  }
+  function run() {
+    if (!enabled() || !Data.ready) return Promise.resolve(0);
+    if (busy) return busy;
+    busy = (async () => {
+      let changed = 0;
+      try {
+        // the first sync on a code sends everything this device has; after that only the outbox
+        const box = await Data.outbox();
+        if (S.boot) { box.a = LOG.slice(); box.r = RUNS.slice(); }
+        const leg = legacySnapshot(), sendLeg = leg.days.length || leg.solved;
+        for (let i = 0; i < Math.max(1, box.a.length); i += 3000) {
+          let res = await post({ key: S.key, device: S.device, label: label(), since: S.cursor, push: { a: box.a.slice(i, i + 3000), r: i ? [] : box.r }, legacy: !i && sendLeg ? leg : null });
+          changed += take(res);
+          while (res.more) { res = await post({ key: S.key, device: S.device, label: label(), since: S.cursor }); changed += take(res); }
+        }
+        await Data.clearOutbox(box.keys);
+        S.boot = false; S.last = Date.now(); S.err = '';
+      } catch (e) {
+        S.err = !navigator.onLine ? 'offline, will catch up when you reconnect' : /bad code/.test(e.message) ? 'that code is not valid' : "couldn't reach sync, will retry";
+      }
+      save();
+      if (changed) { Data.sort(); Data.rebuild(); }
+      busy = null;
+      for (const f of listeners) f(changed);
+      return changed;
+    })();
+    return busy;
+  }
+  function soon(ms = 1500) { clearTimeout(timer); if (enabled()) timer = setTimeout(run, ms); }
+  function use(key) { S.key = key; S.cursor = 0; S.boot = true; S.err = ''; save(); return run(); }
+  return {
+    get available() { return available(); },
+    get on() { return enabled(); },
+    get busy() { return !!busy; },
+    get code() { return S.key ? fmt(S.key) : ''; },
+    get state() { return { ...S }; },
+    start: () => use(rnd(20)),
+    join(code) { const k = clean(code); return /^[A-Z2-7]{20}$/.test(k) ? use(k) : null; },
+    stop() { S.key = ''; S.cursor = 0; S.boot = true; S.err = ''; save(); for (const f of listeners) f(0); },
+    run, soon,
+    onChange(f) { listeners.push(f); },
+  };
 })();
 const dkCache = new WeakMap();
 const dayOf = e => { let k = dkCache.get(e); if (!k) dkCache.set(e, k = day(new Date(e.ts))); return k; };
@@ -1450,7 +1620,7 @@ const Game = {
     const r = run;
     if (!r || r.phase === 'end') return;
     if (r.mode === 'zen' && r.tries) return end();
-    if (r.tries) Data.add('runs', runRecord(r, true));
+    if (r.tries) { Data.add('runs', runRecord(r, true)); Sync.soon(); }
     run = null;
     toMenu();
   },
@@ -1669,7 +1839,7 @@ function finalize(r) {
   const acc = r.tries ? r.right / r.tries : 0;
   const avg = r.times.length ? r.times.reduce((a, b) => a + b, 0) / r.times.length : 0;
   const prev = bestFor(r.key);
-  if (r.tries) Data.add('runs', runRecord(r, false));
+  if (r.tries) { Data.add('runs', runRecord(r, false)); Sync.soon(); }
   let newBest = false, best = 0, hist = null;
   if (r.mode === 'zen') hist = zenDays(r);
   else { newBest = prev > 0 && r.score > prev; best = Math.max(prev, r.score); hist = histFor(r.key); }
@@ -2172,13 +2342,21 @@ const Stats = (() => {
       ${table ? `<p class="sub-h">Best scores by level</p>${table}` : ''}</section>`;
   }
 
-  function secFoot() {
+  function secSync() {
     const app = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-    // the claude.ai preview can't hand out files, so backup lives only on the real site
-    if (!document.querySelector('link[rel="manifest"]')) return `<div class="st-foot span2"><span>${LOG.length.toLocaleString()} answers logged in this preview.</span></div>`;
-    return `<div class="st-foot span2"><span>Progress is saved on this device${app ? ', in this app' : ''}: ${LOG.length.toLocaleString()} answers logged.
-      To combine devices, back up on one and restore on the other.</span>
-      <button data-act="backup">Back up</button><button data-act="restore">Restore</button><span class="msg" id="foot-msg"></span></div>`;
+    const count = `${LOG.length.toLocaleString()} answers logged on this device${app ? ', in this app' : ''}.`;
+    if (!Sync.available) return `<div class="st-foot span2"><span>${count}</span></div>`;
+    const st = Sync.state, n = st.devices || 1;
+    const body = Sync.on
+      ? `<p class="note-line">On · <b>${n}</b> ${n === 1 ? 'device' : 'devices'} linked · ${Sync.busy ? 'syncing now' : st.last ? 'last synced ' + ago(st.last) : 'waiting to sync'}${st.err ? ` · <span class="warn">${esc(st.err)}</span>` : ''}</p>
+        <div class="sync-code"><code>${Sync.code}</code><button data-act="sync-copy">Copy code</button></div>
+        <p class="note-line">Enter this code here on your other devices to link them. After that, every game on any of them shows up on all of them.</p>
+        <div class="sync-acts"><button data-act="sync-now">Sync now</button><button data-act="sync-off">Turn off</button></div>`
+      : `<p class="note-line">Off. This device only knows about games played on it.</p>
+        <div class="sync-acts"><button class="sync-go" data-act="sync-start">Turn on sync</button></div>
+        <form class="sync-join" data-act="sync-join"><input id="sync-code" name="code" placeholder="or paste a code" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" aria-label="Sync code from another device"><button type="submit">Join</button></form>`;
+    return `<section class="sec span2" id="sync-sec">${head('Sync', '同期')}${body}<span class="msg" id="sync-msg"></span>
+      <div class="st-foot"><span>${count}</span><button data-act="backup">Back up</button><button data-act="restore">Restore</button><span class="msg" id="foot-msg"></span></div></section>`;
   }
 
   /* ----- chart ----- */
@@ -2260,7 +2438,7 @@ const Stats = (() => {
     R = RUNS.filter(r => fits(r));
     syncFilters();
     hideTip();
-    body.innerHTML = `<div class="st-wrap">${secHero()}${secProgress()}${secTower()}${secProblems()}${secMistakes()}${secOps()}${secPractice()}${secRecords()}${secFoot()}</div>`;
+    body.innerHTML = `<div class="st-wrap">${secHero()}${secProgress()}${secTower()}${secProblems()}${secMistakes()}${secOps()}${secPractice()}${secRecords()}${secSync()}</div>`;
     drawProgress();
     if (picked) { const c = $(`#tower .c[data-k="${picked}"]`); if (c) c.classList.add('sel'); }
   }
@@ -2299,6 +2477,17 @@ const Stats = (() => {
     const act = b.dataset.act;
     if (act === 'more') { const top = body.scrollTop; more = !more; render(); body.scrollTop = top; }
     else if (act === 'backup') backup();
+    else if (act === 'sync-start') { syncMsg('Turning on…'); Sync.start().then(() => { refreshSync(); syncMsg(Sync.state.err ? '' : 'Sync is on. Copy the code to your other devices.'); }); refreshSync(); }
+    else if (act === 'sync-now') { Sync.run().then(() => refreshSync()); refreshSync(); }
+    else if (act === 'sync-copy') {
+      const code = Sync.code, done = () => syncMsg('Copied.');
+      if (navigator.clipboard) navigator.clipboard.writeText(code).then(done, () => selectCode());
+      else selectCode();
+    }
+    else if (act === 'sync-off') {
+      if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Tap again to turn off'; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = 'Turn off'; } }, 3500); }
+      else { Sync.stop(); refreshSync(); syncMsg('Sync is off on this device. Your stats stay here.'); }
+    }
     else if (act === 'restore') $('#restore-file').click();
   });
   body.addEventListener('pointerover', e => {
@@ -2313,11 +2502,31 @@ const Stats = (() => {
     if (t && !finePointer.matches) { const b = t.getBoundingClientRect(); showTip(esc(t.dataset.tip), b.left + b.width / 2, b.top); }
   });
   body.addEventListener('scroll', hideTip, { passive: true });
+  body.addEventListener('submit', e => {
+    e.preventDefault();
+    const inp = $('#sync-code'), p = inp && Sync.join(inp.value);
+    if (!p) { syncMsg("That doesn't look like a sync code. It's 20 letters and numbers."); return; }
+    syncMsg('Linking…');
+    refreshSync();
+    p.then(() => { const st = Sync.state; render(); syncMsg(st.err ? '' : `Linked with ${st.devices} ${st.devices === 1 ? 'device' : 'devices'}.`); });
+  });
+  const syncMsg = t => { const m = $('#sync-msg'); if (m) m.textContent = t; };
+  const selectCode = () => { const c = $('.sync-code code'); if (!c) return; const r = document.createRange(); r.selectNodeContents(c); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); syncMsg('Selected. Copy it from here.'); };
+  // redraw just the sync block, so a background sync doesn't reset the rest of the page
+  function refreshSync() {
+    const sec = $('#sync-sec');
+    if (!sec || (document.activeElement && document.activeElement.id === 'sync-code')) return;
+    const msg = $('#sync-msg') ? $('#sync-msg').textContent : '';
+    const tmp = document.createElement('div');
+    tmp.innerHTML = secSync();
+    sec.replaceWith(tmp.firstElementChild);
+    syncMsg(msg);
+  }
 
   /* ----- backup and restore (how two devices get merged) ----- */
   const footMsg = t => { const m = $('#foot-msg'); if (m) m.textContent = t; };
   function backup() {
-    const name = `quick-math-${day()}.json`, text = JSON.stringify({ app: 'quickmath', v: 2, at: Date.now(), attempts: LOG, runs: RUNS, legacy });
+    const name = `quick-math-${day()}.json`, text = JSON.stringify({ app: 'quickmath', v: 2, at: Date.now(), attempts: LOG, runs: RUNS, legacy: legacyOwn });
     const blob = new Blob([text], { type: 'application/json' });
     try {
       const file = new File([blob], name, { type: 'application/json' });
@@ -2335,27 +2544,20 @@ const Stats = (() => {
     let d = null;
     try { d = JSON.parse(await file.text()); } catch (e) {}
     if (!d || d.app !== 'quickmath') { footMsg("That file isn't a Quick Math backup."); return; }
-    const sig = e => `${e.ts}|${e.o}|${e.x}|${e.y}|${e.g}|${e.m}`, have = new Set(LOG.map(sig)), haveR = new Set(RUNS.map(r => r.ts + r.m));
     let added = 0;
-    for (const e of d.attempts || []) if (e && e.ts && !have.has(sig(e))) { have.add(sig(e)); Data.add('attempts', e); added++; }
-    for (const r of d.runs || []) if (r && r.ts && !haveR.has(r.ts + r.m)) { haveR.add(r.ts + r.m); Data.add('runs', r); }
-    // the old running totals can only be merged once per source, or they'd double count
-    const L = d.legacy, merged = store.get('merged', []), id = L && JSON.stringify([L.meta && L.meta.days, L.meta && L.meta.solved]);
-    if (L && L.meta && !merged.includes(id) && id !== JSON.stringify([legacy.meta.days, legacy.meta.solved])) {
-      legacy.meta.days = [...new Set([...legacy.meta.days, ...(L.meta.days || [])])].sort();
-      legacy.meta.solved += L.meta.solved || 0;
-      for (const [k, v] of Object.entries(L.bests || {})) legacy.bests[k] = Math.max(legacy.bests[k] || 0, v);
-      for (const [k, v] of Object.entries(L.hist || {})) if (!legacy.hist[k]) legacy.hist[k] = v;
-      for (const [k, f] of Object.entries(L.facts || {})) {
-        const m = legacy.facts[k];
-        if (!m) { legacy.facts[k] = f; continue; }
-        const n = m.n + f.n;
-        m.t = n ? +(((m.t || 0) * m.n + (f.t || 0) * f.n) / n).toFixed(3) : m.t;
-        m.n = n; m.c += f.c;
+    for (const e of d.attempts || []) if (e && e.ts && Data.add('attempts', e)) added++;
+    for (const r of d.runs || []) if (r && r.ts) Data.add('runs', r);
+    const L = d.legacy;
+    if (L && L.meta) {
+      const sig = JSON.stringify([L.meta.days, L.meta.solved]);
+      if (sig !== JSON.stringify([legacyOwn.meta.days, legacyOwn.meta.solved])) {
+        const rem = store.get('legacyRemote', {});
+        rem['file:' + sig] = { days: L.meta.days, solved: L.meta.solved, bests: L.bests, hist: L.hist, facts: L.facts };
+        store.set('legacyRemote', rem);
+        mergeLegacy();
       }
-      saveLegacy();
-      store.set('merged', merged.concat(id));
     }
+    Sync.soon(300);
     Data.sort();
     Data.rebuild();
     render();
@@ -2368,9 +2570,10 @@ const Stats = (() => {
       show('stats');
       render();
       body.scrollTop = 0;
-      Data.load().then(() => { if (screen === 'stats') { const top = body.scrollTop; render(); body.scrollTop = top; } });
+      Data.load().then(() => { if (screen === 'stats') { const top = body.scrollTop; render(); body.scrollTop = top; } Sync.run(); });
     },
     render() { const top = body.scrollTop; render(); body.scrollTop = top; },
+    refreshSync,
   };
 })();
 
@@ -2426,6 +2629,7 @@ $('#pad').addEventListener('pointerdown', e => {
 
 addEventListener('keydown', e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
   const k = e.key, onButton = document.activeElement && document.activeElement.tagName === 'BUTTON';
   Sfx.unlock();
   if (screen === 'play') {
@@ -2451,7 +2655,12 @@ addEventListener('keydown', e => {
   }
   if (screen === 'stats' && (k === 'Escape' || k === 'Backspace')) { e.preventDefault(); toMenu(false); }
 });
-document.addEventListener('visibilitychange', () => { if (document.hidden) Game.pause(); else Game.resume(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) Game.pause(); else { Game.resume(); Sync.soon(600); } });
+addEventListener('online', () => Sync.soon(600));
+Sync.onChange(changed => {
+  if (screen === 'stats') { if (changed && !(document.activeElement && document.activeElement.id === 'sync-code')) Stats.render(); else Stats.refreshSync(); }
+  else if (screen === 'menu' && changed) renderMenu();
+});
 addEventListener('blur', () => Game.pause());
 addEventListener('focus', () => Game.resume());
 document.addEventListener('gesturestart', e => e.preventDefault());
@@ -2473,7 +2682,14 @@ function frame(ts) {
 function boot() {
   buildCity();
   renderMenu();
-  Data.load().then(() => { if (screen === 'menu') renderMenu(); });
+  Data.load().then(() => {
+    if (screen === 'menu') renderMenu();
+    // a link like /math/#join=CODE links this copy of the app
+    const m = location.hash.match(/join=([A-Za-z0-9-]+)/);
+    if (m && !Sync.on) Sync.join(m[1]);
+    if (m) history.replaceState(null, '', location.pathname + location.search);
+    Sync.run();
+  });
   fit();
   requestAnimationFrame(frame);
   if (document.fonts && document.fonts.load) {
