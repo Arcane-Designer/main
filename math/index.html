@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;600&family=Tilt+Neon&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@900&text=暗算ラーメンカオケ電脳ホテル薬酒場夜市ゲム寿司未来喫茶占い&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@900&text=暗算ラーメンカオケ電脳ホテル薬酒場夜市ゲム寿司未来喫茶占い進歩塔問題間違記録練習計&display=swap">
 <style>
 :root {
   color-scheme: dark;
@@ -299,29 +299,204 @@ body.kbd .pad { display: none; }
 .r-spark { width: min(100%, 300px); aspect-ratio: 300 / 56; overflow: visible; }
 .r-miss { display: grid; grid-template-columns: repeat(2, auto); gap: 8px 30px; font: 400 clamp(13px, .9vw, 15px)/1.2 var(--mono); color: #ff8d98; }
 .r-miss b { color: var(--amber); font-weight: 600; }
+.r-miss s { color: var(--fault); opacity: .85; margin-left: 6px; }
 .r-actions { display: flex; align-items: center; gap: 10px; padding-top: 8px; }
 .ghost { font: 600 12px/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--dim); padding: 18px 18px; transition: color .15s; }
 .ghost:hover { color: var(--ink); }
 
-/* ---------- stats ---------- */
-#stats { display: grid; place-items: center; overflow-y: auto; }
-.st-head { position: absolute; top: calc(var(--st) + 6px); left: calc(var(--sl) + 6px); }
-.st-core { display: grid; justify-items: center; gap: 20px; padding-top: 30px; }
-.tower-wrap { position: relative; padding: 12px; background: rgba(10, 7, 22, .88); border: 1px solid #211a3c; }
-.mast { position: absolute; left: 50%; bottom: 100%; width: 2px; height: 26px; margin-left: -1px; background: #211a3c; }
+/* ---------- tower view ---------- */
+#stats { padding: 0; }
+#stats::before { background: radial-gradient(ellipse 70% 50% at 50% 30%, rgba(6, 4, 12, .3), rgba(6, 4, 12, 0) 80%), rgba(6, 4, 12, .86); }
+.st { height: 100%; display: flex; flex-direction: column; }
+.st-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0 12px;
+  padding: calc(var(--st) + 2px) calc(var(--sr) + 16px) 2px calc(var(--sl) + 6px);
+  background: rgba(7, 5, 14, .88);
+  border-bottom: 1px solid #1c1534;
+}
+.st-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 0 28px; flex: 1; min-width: 0; }
+.seg { display: flex; flex-wrap: wrap; align-items: center; gap: 0 14px; }
+.seg button { font: 600 11px/1 var(--mono); letter-spacing: .15em; text-transform: uppercase; color: var(--dim); padding: 12px 1px; transition: color .15s, text-shadow .15s; }
+.seg button:hover { color: var(--ink); }
+.seg button.on { color: var(--cyan-core); text-shadow: 0 0 6px var(--cyan), 0 0 14px rgba(34, 238, 255, .5); }
+.seg button:disabled { opacity: .35; cursor: default; }
+.seg[data-set="tab"] button, .seg[data-set="pop"] button:not([data-v="all"]) { font: 400 24px/1 var(--display); letter-spacing: 0; padding: 6px 5px; color: var(--mute); }
+.seg[data-set="tab"] button:hover, .seg[data-set="pop"] button:not([data-v="all"]):hover { color: var(--dim); }
+.seg[data-set="tab"] button.on, .seg[data-set="pop"] button.on:not([data-v="all"]) { color: var(--cyan-core); text-shadow: var(--glow-cyan); }
+.lv { display: inline-flex; align-items: flex-end; gap: 2px; height: 13px; vertical-align: middle; }
+.lv i { display: block; width: 4px; border: 1px solid currentColor; opacity: .5; }
+.lv i.f { background: currentColor; opacity: 1; }
+.seg button.on .lv i.f { box-shadow: 0 0 6px var(--cyan); }
+.st-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 28px calc(var(--sr) + 16px) calc(var(--sb) + 56px) calc(var(--sl) + 16px); }
+.st-wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 56px 60px; }
+@media (min-width: 900px) { .st-wrap { grid-template-columns: repeat(2, minmax(0, 1fr)); } .span2 { grid-column: 1 / -1; } }
+.sec { display: grid; gap: 16px; align-content: start; min-width: 0; }
+.sec-h { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 12px; min-height: 36px; }
+.sec-h h2 { margin: 0; font: 400 27px/1 var(--display); color: var(--pink-core); text-shadow: 0 0 .08em var(--pink), 0 0 .3em rgba(255, 46, 151, .5); }
+.sec-h .jp { font: 900 15px/1 "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif; color: #6f60a3; letter-spacing: .08em; }
+.sec-h .seg { margin-left: auto; }
+.sec-h .seg + .seg { margin-left: 0; }
+.empty, .note-line { margin: 0; font: 400 12px/1.6 var(--mono); color: var(--dim); }
+.note-line b { color: var(--ink); font-weight: 600; }
+.muted { color: var(--dim); }
+
+.hero { display: grid; grid-template-columns: 1.35fr repeat(4, minmax(0, 1fr)); gap: 24px; align-items: start; }
+@media (max-width: 760px) { .hero { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 18px; } .hero .streak { grid-column: 1 / -1; } }
+.stat { display: grid; gap: 9px; align-content: start; min-width: 0; }
+.stat b { font: 400 clamp(38px, 4.4vw, 56px)/1 var(--display); color: var(--cyan-core); text-shadow: 0 0 .05em #fff, 0 0 .16em var(--cyan), 0 0 .42em rgba(34, 238, 255, .4); white-space: nowrap; }
+.stat span { font: 400 11px/1.3 var(--mono); letter-spacing: .12em; color: var(--dim); }
+.stat.streak b { color: var(--pink-core); text-shadow: var(--glow-pink); }
+.week { display: flex; gap: 6px; padding-top: 4px; }
+.week i { display: grid; justify-items: center; gap: 5px; font: 400 9px/1 var(--mono); font-style: normal; color: var(--dim); }
+.week i::before { content: ""; width: 18px; height: 22px; background: #151027; border: 1px solid #261e46; }
+.week i.on::before { background: var(--pink); border-color: var(--pink); box-shadow: 0 0 9px rgba(255, 46, 151, .7); }
+.week i.today { color: var(--ink); }
+.week i.today:not(.on)::before { border-color: var(--pink); }
+
+.prog-sum { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 30px; }
+.prog-sum > div { display: grid; gap: 8px; }
+.prog-sum span { font: 400 11px/1 var(--mono); letter-spacing: .12em; color: var(--dim); }
+.prog-sum strong { font: 400 28px/1 var(--display); color: var(--ink); font-weight: 400; white-space: nowrap; }
+.prog-sum strong em { font-style: normal; color: var(--mute); margin: 0 .3em; }
+.prog-sum .arrow { font: 400 26px/1 var(--display); color: var(--dim); align-self: center; }
+.prog-sum .delta { font: 400 13px/1.2 var(--mono); color: var(--ink); gap: 8px; }
+.up::before { content: "▲ "; color: var(--cyan); }
+.down::before { content: "▼ "; color: var(--fault); }
+.flat::before { content: "● "; color: var(--dim); }
+.chart { position: relative; min-height: 190px; }
+.chart svg { display: block; width: 100%; height: 200px; overflow: visible; touch-action: pan-y; }
+.chart text { font: 400 10px var(--mono); fill: var(--dim); }
+.chart .gl { stroke: #1f1839; stroke-width: 1; }
+.chart .ln { fill: none; stroke: var(--cyan); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart .dt { fill: var(--cyan); stroke: #0a0716; stroke-width: 2; }
+.chart .end { fill: var(--pink-core); stroke: #0a0716; stroke-width: 2; }
+.chart .xh { stroke: #4a3d7a; stroke-width: 1; }
+.chart .endv { fill: var(--ink); font-size: 12px; }
+.cap { font: 400 11px/1.5 var(--mono); color: var(--dim); }
+.tip { position: fixed; z-index: 20; pointer-events: none; padding: 7px 10px; background: rgba(12, 8, 26, .97); border: 1px solid #34295e; border-radius: 6px; font: 400 12px/1.45 var(--mono); color: var(--ink); white-space: nowrap; transform: translate(-50%, calc(-100% - 12px)); }
+.tip b { color: var(--cyan-core); font-weight: 600; }
+
+.tw { display: grid; grid-template-columns: auto minmax(240px, 1fr); gap: 28px 44px; align-items: start; }
+@media (max-width: 820px) { .tw { grid-template-columns: minmax(0, 1fr); } }
+.tw-grid { overflow-x: auto; padding-top: 30px; max-width: 100%; }
+.tower-wrap { position: relative; display: inline-block; padding: 10px; background: rgba(10, 7, 22, .92); border: 1px solid #231b40; }
+.mast { position: absolute; left: 50%; bottom: 100%; width: 2px; height: 26px; margin-left: -1px; background: #231b40; }
 .mast::after { content: ""; position: absolute; left: -2px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: #ff2b3a; box-shadow: 0 0 8px #ff2b3a; animation: beacon 1.6s steps(1) infinite; }
 @keyframes beacon { 50% { opacity: .15 } }
-.tower { --c: clamp(16px, calc((100vw - 110px) / 12), 30px); display: grid; grid-template-columns: repeat(12, var(--c)); grid-auto-rows: var(--c); gap: 3px; }
+.tower { display: grid; grid-template-columns: repeat(var(--n), var(--c)); grid-auto-rows: var(--c); gap: 3px; }
 .tower .h { display: grid; place-items: center; font: 400 9px/1 var(--mono); color: var(--dim); }
-.tower .c { background: #141026; border: 1px solid #241c42; cursor: pointer; }
-.tower .c.seen { border-color: transparent; }
-.tower .c.sel { outline: 1px solid var(--ink); outline-offset: 1px; }
-.st-read { min-height: 18px; font: 400 13px/1.4 var(--mono); color: var(--ink); text-align: center; }
-.st-read span { color: var(--dim); margin-left: 14px; }
-.st-tot { display: flex; gap: 44px; }
-.st-tot div { display: grid; justify-items: center; gap: 8px; }
-.st-tot b { font: 400 32px/1 var(--display); color: var(--cyan-core); text-shadow: 0 0 .1em var(--cyan), 0 0 .3em rgba(34, 238, 255, .5); }
-.st-tot span { font: 400 clamp(10px, .7vw, 12px)/1 var(--mono); letter-spacing: .14em; color: var(--dim); }
+.tower .h.op { font: 400 15px/1 var(--display); color: var(--pink-core); }
+.t0 { --tc: #151027; }
+.t1 { --tc: #ff3a50; }
+.t2 { --tc: #ffb547; }
+.t3 { --tc: #62f1ff; }
+.tower .c { cursor: pointer; background: #151027; border: 1px solid #271f48; }
+.tower .c.t1, .tower .c.t2, .tower .c.t3 { background: var(--tc); border-color: transparent; box-shadow: 0 0 7px color-mix(in srgb, var(--tc) 50%, transparent); }
+.tower .c.sel { outline: 2px solid #fff; outline-offset: 1px; }
+.key { display: grid; gap: 13px; align-content: start; }
+.key-row { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 4px 11px; align-items: center; }
+.key-row i { width: 18px; height: 18px; background: var(--tc); border: 1px solid var(--tc); }
+.key-row i.t0 { border-color: #2c2350; }
+.key-row i.t1, .key-row i.t2, .key-row i.t3 { box-shadow: 0 0 8px color-mix(in srgb, var(--tc) 55%, transparent); }
+.key-row b { font: 600 13px/1.2 var(--mono); color: var(--ink); }
+.key-row em { font: 400 22px/1 var(--display); font-style: normal; color: var(--ink); }
+.key-row small { grid-column: 2 / 4; font: 400 11px/1.45 var(--mono); color: var(--dim); }
+.cell-info { display: grid; gap: 10px; padding-top: 16px; border-top: 1px solid #1c1534; }
+.cell-info h3 { margin: 0; font: 400 30px/1.05 var(--display); color: var(--ink); font-weight: 400; }
+.cell-info .tier { font: 600 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--tc); }
+.cell-info .tier.t0 { color: var(--dim); }
+.cell-info dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 16px; font: 400 12px/1.5 var(--mono); }
+.cell-info dt { color: var(--dim); }
+.cell-info dd { margin: 0; color: var(--ink); }
+.dots { letter-spacing: .2em; font-size: 14px; }
+.okm { color: var(--cyan); }
+.xm { color: var(--fault); }
+.why-t { color: var(--amber); }
+
+.plist { display: grid; }
+.phead, .prow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(46px, 84px) 56px 70px; gap: 12px; align-items: center; }
+.phead { font: 400 10px/1 var(--mono); letter-spacing: .12em; color: var(--dim); padding: 0 4px 9px; border-bottom: 1px solid #1c1534; }
+.phead span:nth-child(n+3) { text-align: right; }
+.prow { width: 100%; padding: 11px 4px; border-bottom: 1px solid #17122c; text-align: left; transition: background .12s; }
+.prow:hover, .prow.open { background: rgba(255, 255, 255, .03); }
+.prow .p { font: 400 21px/1.1 var(--display); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prow .p small { font: 400 12px var(--mono); color: var(--dim); margin-left: 8px; }
+.bar-bg { display: block; height: 6px; background: #1b1532; border-radius: 0 3px 3px 0; overflow: hidden; }
+.bar-bg i { display: block; height: 100%; background: var(--tc, var(--cyan)); border-radius: 0 3px 3px 0; }
+.prow .n { display: grid; gap: 3px; justify-items: end; font: 400 13px/1 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.prow .n small { font-size: 10px; color: var(--dim); }
+.pdet { padding: 8px 4px 16px; border-bottom: 1px solid #17122c; font: 400 12px/1.5 var(--mono); color: var(--ink); display: grid; gap: 8px; }
+.pdet .hist { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+.more { justify-self: start; font: 600 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--dim); padding: 14px 0 0; }
+.more:hover { color: var(--ink); }
+
+.why { display: grid; gap: 10px; }
+.why-row { display: grid; grid-template-columns: minmax(120px, 40%) minmax(0, 1fr) 64px; gap: 12px; align-items: center; font: 400 12px/1.3 var(--mono); color: var(--ink); }
+.why-row .bar-bg i { background: var(--pink); }
+.why-row .n { text-align: right; font-variant-numeric: tabular-nums; }
+.why-row .n small { color: var(--dim); margin-left: 4px; }
+.mlist { display: grid; }
+.mrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 14px; padding: 11px 0; border-bottom: 1px solid #17122c; }
+.mrow .p { font: 400 19px/1.1 var(--display); color: var(--ink); }
+.mrow .p b { font-weight: 400; color: var(--amber-core); }
+.mrow .you { font: 400 12px/1.35 var(--mono); color: #ff8d98; }
+.mrow .you em { font-style: normal; color: var(--amber); }
+.mrow .when { grid-row: 1 / 3; grid-column: 2; align-self: center; text-align: right; font: 400 10px/1.6 var(--mono); color: var(--dim); }
+
+.ops-t { display: grid; gap: 12px; }
+.oprow { display: grid; grid-template-columns: 30px minmax(0, 1fr) 44px 52px 58px; gap: 12px; align-items: center; font: 400 13px/1 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.oprow > span:nth-child(n+3) { text-align: right; }
+.oprow .g { font: 400 26px/1 var(--display); color: var(--cyan-core); text-shadow: 0 0 .15em rgba(34, 238, 255, .6); text-align: center; }
+.oprow.head { font-size: 10px; letter-spacing: .12em; color: var(--dim); }
+.oprow small { color: var(--dim); }
+.sub-h { margin: 8px 0 0; font: 400 11px/1 var(--mono); letter-spacing: .12em; color: var(--dim); }
+.tables { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 6px; }
+.tt { display: grid; justify-items: center; gap: 5px; padding: 8px 2px 7px; background: #120d24; border-bottom: 3px solid var(--tc); }
+.tt b { font: 400 17px/1 var(--display); color: var(--ink); font-weight: 400; }
+.tt span { font: 400 10px/1 var(--mono); color: var(--dim); }
+.ins { margin: 4px 0 0; padding: 0; list-style: none; display: grid; gap: 11px; }
+.ins li { position: relative; padding-left: 18px; font: 400 13px/1.55 var(--mono); color: var(--ink); }
+.ins li::before { content: ""; position: absolute; left: 0; top: .6em; width: 6px; height: 6px; background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+.ins b { color: var(--amber-core); font-weight: 600; }
+
+.cal-wrap { display: grid; gap: 7px; overflow-x: auto; }
+.cal-months { display: grid; grid-auto-flow: column; grid-auto-columns: 14px; gap: 3px; margin-left: 22px; height: 11px; font: 400 9px/1 var(--mono); color: var(--dim); }
+.cal-months span { white-space: nowrap; }
+.cal-body { display: flex; gap: 6px; }
+.cal-days { display: grid; grid-template-rows: repeat(7, 14px); gap: 3px; width: 16px; font: 400 9px/14px var(--mono); color: var(--dim); }
+.cal { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 14px); grid-auto-columns: 14px; gap: 3px; }
+.cal i { background: #161128; }
+.cal i.l1 { background: rgba(98, 241, 255, .22); }
+.cal i.l2 { background: rgba(98, 241, 255, .42); }
+.cal i.l3 { background: rgba(98, 241, 255, .68); }
+.cal i.l4 { background: #7ff5ff; box-shadow: 0 0 6px rgba(98, 241, 255, .7); }
+.cal i.today { outline: 1px solid var(--pink); outline-offset: 1px; }
+.cal i.fut { visibility: hidden; }
+.cal-key { display: flex; align-items: center; gap: 4px; font: 400 10px/1 var(--mono); color: var(--dim); }
+.cal-key i { width: 11px; height: 11px; }
+
+.recs { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 30px 24px; }
+.rec { display: grid; gap: 8px; align-content: start; }
+.rec b { font: 400 34px/1 var(--display); color: var(--cyan-core); text-shadow: 0 0 .15em rgba(34, 238, 255, .55); font-weight: 400; }
+.rec span { font: 400 11px/1.3 var(--mono); letter-spacing: .1em; color: var(--dim); }
+.rec small { font: 400 12px/1.35 var(--mono); color: var(--ink); }
+.bests { display: grid; grid-template-columns: auto repeat(4, minmax(38px, 1fr)); gap: 12px 14px; align-items: center; font: 400 12px/1 var(--mono); color: var(--dim); max-width: 460px; }
+.bests b { font: 400 24px/1 var(--display); color: var(--ink); text-align: center; font-weight: 400; }
+.bests .lvh { justify-self: center; color: var(--dim); }
+.st-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 22px; padding-top: 20px; border-top: 1px solid #1c1534; font: 400 11px/1.6 var(--mono); color: var(--dim); }
+.st-foot button { font: 600 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--cyan-core); padding: 10px 0; }
+.st-foot .msg { color: var(--amber); }
+@media (max-width: 520px) {
+  .st-top { gap: 0 6px; }
+  .st-filters { gap: 0 16px; }
+  .seg { gap: 0 8px; }
+  .st-filters .lv i { width: 3px; }
+  .seg button { letter-spacing: .08em; }
+  .phead, .prow { grid-template-columns: minmax(0, 1fr) 42px 50px 62px; gap: 9px; }
+  .prow .p { font-size: 19px; }
+}
 
 @media (max-height: 640px) {
   .menu-core { gap: 12px; transform: none; }
@@ -405,16 +580,26 @@ body.kbd .pad { display: none; }
 </section>
 
 <section id="stats" class="screen" hidden>
-  <div class="st-head"><button class="icon" id="b-back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button></div>
-  <div class="st-core">
-    <div class="tower-wrap"><i class="mast"></i><div class="tower" id="tower"></div></div>
-    <div class="st-read" id="st-read"></div>
-    <div class="st-tot">
-      <div><b id="t-solved">0</b><span>solved</span></div>
-      <div><b id="t-days">0</b><span>day streak</span></div>
+  <div class="st">
+    <div class="st-top">
+      <button class="icon" id="b-back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="st-filters" id="st-filters">
+        <div class="seg" data-f="mode" role="radiogroup" aria-label="Mode">
+          <button data-v="all">All</button><button data-v="sprint">Sprint</button><button data-v="survival">Survival</button><button data-v="flash">Flash</button><button data-v="zen">Zen</button>
+        </div>
+        <div class="seg" data-f="level" role="radiogroup" aria-label="Level">
+          <button data-v="all">All</button><button data-v="1" aria-label="Level 1"><span class="lv"><i class="f" style="height:40%"></i><i style="height:60%"></i><i style="height:80%"></i><i style="height:100%"></i></span></button><button data-v="2" aria-label="Level 2"><span class="lv"><i class="f" style="height:40%"></i><i class="f" style="height:60%"></i><i style="height:80%"></i><i style="height:100%"></i></span></button><button data-v="3" aria-label="Level 3"><span class="lv"><i class="f" style="height:40%"></i><i class="f" style="height:60%"></i><i class="f" style="height:80%"></i><i style="height:100%"></i></span></button><button data-v="4" aria-label="Level 4"><span class="lv"><i class="f" style="height:40%"></i><i class="f" style="height:60%"></i><i class="f" style="height:80%"></i><i class="f" style="height:100%"></i></span></button>
+        </div>
+        <div class="seg" data-f="range" role="radiogroup" aria-label="Time">
+          <button data-v="7" aria-label="Last 7 days">7d</button><button data-v="30" aria-label="Last 30 days">30d</button><button data-v="all">All time</button>
+        </div>
+      </div>
     </div>
+    <div class="st-body" id="st-body"></div>
   </div>
+  <input type="file" id="restore-file" accept="application/json,.json" hidden>
 </section>
+<div class="tip" id="tip" hidden></div>
 
 <script>
 (() => {
@@ -443,12 +628,16 @@ if (!MODES.includes(settings.mode)) settings.mode = 'sprint';
 settings.ops = Object.keys(OPS).filter(o => Array.isArray(settings.ops) && settings.ops.includes(o));
 if (!settings.ops.length) settings.ops = Object.keys(OPS);
 settings.level = clamp(Math.round(settings.level) || 2, 1, 4);
-const bests = store.get('bests', {});
-const hist = store.get('hist', {});
-const facts = store.get('facts', {});
-const meta = Object.assign({ solved: 0, days: [] }, store.get('meta', {}));
+// The first version kept only running totals in localStorage. Those stay as a read-only baseline;
+// every answer and game since is appended to a log in IndexedDB, and all stats come from that log.
+const legacy = {
+  bests: store.get('bests', {}), hist: store.get('hist', {}), facts: store.get('facts', {}),
+  meta: Object.assign({ solved: 0, days: [] }, store.get('meta', {})),
+};
+const saveLegacy = () => { for (const k of ['bests', 'hist', 'facts', 'meta']) store.set(k, legacy[k]); };
+const facts = {};
+const LOG = [], RUNS = [];
 const saveSettings = () => store.set('settings', settings);
-const saveProgress = () => { store.set('bests', bests); store.set('hist', hist); store.set('facts', facts); store.set('meta', meta); };
 const cfgKey = () => settings.mode === 'flash' ? `flash:${settings.level}` : `${settings.mode}:${settings.level}:${settings.ops.join('')}`;
 const day = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
@@ -469,10 +658,9 @@ function fam(op, a, b) {
 }
 function make(op, a, b) {
   const sw = Math.random() < .5, key = fam(op, a, b);
-  if (op === 'add') return { text: sw ? `${a} + ${b}` : `${b} + ${a}`, ans: a + b, key };
-  if (op === 'sub') return { text: `${a + b} − ${a}`, ans: b, key };
-  if (op === 'mul') return { text: sw ? `${a} × ${b}` : `${b} × ${a}`, ans: a * b, key };
-  return { text: `${a * b} ÷ ${a}`, ans: b, key };
+  const [x, y, ans] = op === 'add' ? [sw ? a : b, sw ? b : a, a + b] : op === 'sub' ? [a + b, a, b]
+    : op === 'mul' ? [sw ? a : b, sw ? b : a, a * b] : [a * b, a, b];
+  return { op, x, y, ans, key, text: `${x} ${OPS[op]} ${y}` };
 }
 function genPlain(level, ops, prev) {
   let p;
@@ -514,11 +702,61 @@ function recordFact(key, ok, t) {
   if (ok) { f.c++; const s = Math.min(t, 8); f.t = +(f.t ? f.t * .65 + s * .35 : s).toFixed(3); }
   if (f.n > 24) { f.n = Math.round(f.n * .75); f.c = Math.round(f.c * .75); }
 }
-function mastery(f) {
-  if (!f || !f.n) return null;
-  const acc = f.c / f.n, sp = f.t ? clamp((3.2 - f.t) / 2.2, 0, 1) : 0;
-  return clamp(acc * acc * (.3 + .7 * sp), 0, 1);
+function factKey(e) {
+  if (e.o === '×') return fam('mul', e.x, e.y);
+  if (e.o === '÷') return fam('div', e.y, e.a);
+  if (e.o === '+') return fam('add', e.x, e.y);
+  if (e.o === '−') return fam('sub', e.y, e.a);
+  return null;
 }
+
+/* ---------- the log ---------- */
+const Data = (() => {
+  let db = null, ready = false;
+  const pending = [];
+  const open = () => new Promise(res => {
+    try {
+      const rq = indexedDB.open('quickmath', 1);
+      rq.onupgradeneeded = () => { for (const n of ['attempts', 'runs']) if (!rq.result.objectStoreNames.contains(n)) rq.result.createObjectStore(n, { autoIncrement: true }); };
+      rq.onsuccess = () => res(rq.result);
+      rq.onerror = rq.onblocked = () => res(null);
+    } catch (e) { res(null); }
+  });
+  const getAll = name => new Promise(res => {
+    try { const rq = db.transaction(name).objectStore(name).getAll(); rq.onsuccess = () => res(rq.result || []); rq.onerror = () => res(null); }
+    catch (e) { res(null); }
+  });
+  const write = (name, v) => { try { if (db) db.transaction(name, 'readwrite').objectStore(name).add(v); } catch (e) {} };
+  const byTs = (a, b) => a.ts - b.ts;
+  function rebuild() {
+    for (const k in facts) delete facts[k];
+    for (const k in legacy.facts) facts[k] = Object.assign({}, legacy.facts[k]);
+    for (const e of LOG) recordFact(factKey(e), e.ok, e.t);
+  }
+  // Re-reading on every visit to the stats keeps windows in sync; writes are appends, so nothing is overwritten.
+  async function load() {
+    if (!db) db = await open();
+    if (db) {
+      const [a, r] = await Promise.all([getAll('attempts'), getAll('runs')]);
+      if (a) { LOG.length = 0; for (const v of a) LOG.push(v); LOG.sort(byTs); }
+      if (r) { RUNS.length = 0; for (const v of r) RUNS.push(v); RUNS.sort(byTs); }
+    }
+    ready = true;
+    while (pending.length) add(...pending.shift());
+    rebuild();
+  }
+  function add(name, v) {
+    if (!ready) { pending.push([name, v]); return; }
+    (name === 'runs' ? RUNS : LOG).push(v);
+    write(name, v);
+  }
+  return { load, add, rebuild, sort() { LOG.sort(byTs); RUNS.sort(byTs); }, get saved() { return !!db; } };
+})();
+const dkCache = new WeakMap();
+const dayOf = e => { let k = dkCache.get(e); if (!k) dkCache.set(e, k = day(new Date(e.ts))); return k; };
+function playDays() { const s = new Set(legacy.meta.days); for (const e of LOG) s.add(dayOf(e)); return s; }
+function bestFor(key) { let b = legacy.bests[key] || 0; for (const r of RUNS) if (r.key === key && !r.q && r.score > b) b = r.score; return b; }
+function histFor(key) { return (legacy.hist[key] || []).concat(RUNS.filter(r => r.key === key && !r.q).map(r => r.score)).slice(-30); }
 
 /* ---------- sound ---------- */
 const Sfx = (() => {
@@ -1169,7 +1407,7 @@ const Game = {
   start() {
     Sfx.unlock(); Haptic.init(); Sfx.down();
     run = {
-      mode: settings.mode, level: settings.level, ops: settings.ops.slice(), key: cfgKey(), best: bests[cfgKey()] || 0,
+      mode: settings.mode, level: settings.level, ops: settings.ops.slice(), key: cfgKey(), best: bestFor(cfgKey()), id: Date.now(), active: 0,
       phase: 'count', cd: 3, cdT: CD, after: null,
       score: 0, streak: 0, top: 0, tries: 0, right: 0, times: [], misses: [], retry: [],
       clock: settings.mode === 'sprint' ? 60 : settings.mode === 'survival' ? 15 : 0,
@@ -1212,8 +1450,8 @@ const Game = {
     const r = run;
     if (!r || r.phase === 'end') return;
     if (r.mode === 'zen' && r.tries) return end();
+    if (r.tries) Data.add('runs', runRecord(r, true));
     run = null;
-    saveProgress();
     toMenu();
   },
   pause() {
@@ -1242,6 +1480,7 @@ const Game = {
   tick(dt) {
     const r = run;
     if (!r || r.paused) return;
+    if (r.phase !== 'count' && r.phase !== 'end') r.active += dt;
     switch (r.phase) {
       case 'count':
         r.cdT -= dt;
@@ -1299,17 +1538,18 @@ function next() {
 function judge(ok) {
   const r = run, t = (now() - r.t0) / 1000;
   r.tries++;
+  logAttempt(r, ok, t);
   if (r.mode === 'flash') return flashJudge(ok, t);
   recordFact(r.p.key, ok, t);
   if (ok) {
-    r.right++; r.score++; r.streak++; r.top = Math.max(r.top, r.streak); r.times.push(t); meta.solved++;
+    r.right++; r.score++; r.streak++; r.top = Math.max(r.top, r.streak); r.times.push(t);
     let bonus = 0;
     if (r.mode === 'survival') { bonus = survBonus(r); r.clock = Math.min(survCap(r), r.clock + bonus); }
     good(r, bonus);
     next();
   } else {
     r.streak = 0;
-    r.misses.push(r.p);
+    r.misses.push({ text: r.p.text, ans: r.p.ans, g: r.input });
     if (r.retry.length < 6 && !r.retry.some(q => q.p.text === r.p.text)) r.retry.push({ p: r.p, due: randi(3, 5) });
     let pen = 0;
     if (r.mode === 'survival') { pen = 2.5; r.clock = Math.max(0, r.clock - pen); }
@@ -1317,6 +1557,16 @@ function judge(ok) {
     bad(r, pen);
   }
 }
+function logAttempt(r, ok, t) {
+  const e = { ts: Date.now(), m: r.mode, l: r.level, g: r.input, ok, t: Math.round(Math.min(t, 120) * 100) / 100, r: r.id };
+  if (r.mode === 'flash') Object.assign(e, { o: 'Σ', s: r.seq.slice(), a: r.sum });
+  else Object.assign(e, { o: OPS[r.p.op], x: r.p.x, y: r.p.y, a: r.p.ans });
+  Data.add('attempts', e);
+}
+const runRecord = (r, q) => ({
+  ts: r.id, end: Date.now(), m: r.mode, l: r.level, ops: r.mode === 'flash' ? '' : r.ops.join(''), key: r.key,
+  score: r.score, tries: r.tries, right: r.right, top: r.top, dur: Math.round(r.active), q,
+});
 function good(r, bonus) {
   Sfx.correct(r.streak);
   echo(r.input);
@@ -1370,12 +1620,12 @@ function flashTick(dt) {
 function flashJudge(ok, t) {
   const r = run;
   if (ok) {
-    r.right++; r.score++; r.round++; r.streak++; r.top = Math.max(r.top, r.streak); r.times.push(t); meta.solved++;
+    r.right++; r.score++; r.round++; r.streak++; r.top = Math.max(r.top, r.streak); r.times.push(t);
     good(r, 0);
     r.phase = 'wait'; r.wait = .75;
   } else {
     r.lives--; r.streak = 0;
-    r.misses.push({ text: r.seq.join(' + '), ans: r.sum });
+    r.misses.push({ text: r.seq.join(' + '), ans: r.sum, g: r.input });
     r.phase = 'reveal'; r.rv = 1.7; r.swapped = false;
     bad(r, 0);
     setNote(esc(r.seq.join(' + ')), 'seq');
@@ -1418,20 +1668,18 @@ function end() {
 function finalize(r) {
   const acc = r.tries ? r.right / r.tries : 0;
   const avg = r.times.length ? r.times.reduce((a, b) => a + b, 0) / r.times.length : 0;
-  let newBest = false, best = 0;
-  if (r.mode !== 'zen') {
-    const prev = bests[r.key] || 0;
-    if (r.score > prev) { bests[r.key] = r.score; newBest = prev > 0; }
-    best = bests[r.key] || 0;
-    hist[r.key] = (hist[r.key] || []).concat(r.score).slice(-30);
-  }
-  if (r.tries) {
-    const d = day();
-    if (meta.days[meta.days.length - 1] !== d) meta.days.push(d);
-    if (meta.days.length > 400) meta.days = meta.days.slice(-400);
-  }
-  saveProgress();
-  return { mode: r.mode, score: r.score, tries: r.tries, acc, avg, top: r.top, misses: r.misses, newBest, best, hist: r.mode === 'zen' ? null : hist[r.key] };
+  const prev = bestFor(r.key);
+  if (r.tries) Data.add('runs', runRecord(r, false));
+  let newBest = false, best = 0, hist = null;
+  if (r.mode === 'zen') hist = zenDays(r);
+  else { newBest = prev > 0 && r.score > prev; best = Math.max(prev, r.score); hist = histFor(r.key); }
+  return { mode: r.mode, score: r.score, tries: r.tries, acc, avg, top: r.top, misses: r.misses, newBest, best, hist };
+}
+// median answer time per day for this Zen setup, so each session shows where today sits
+function zenDays(r) {
+  const syms = new Set(r.ops.map(o => OPS[o])), m = new Map();
+  for (const e of LOG) if (e.m === 'zen' && e.l === r.level && e.ok && syms.has(e.o)) { const k = dayOf(e); let l = m.get(k); if (!l) m.set(k, l = []); l.push(e.t); }
+  return [...m.keys()].sort().map(k => median(m.get(k))).slice(-30);
 }
 
 /* ---------- results ---------- */
@@ -1441,32 +1689,34 @@ function results(res) {
   const sc = $('#r-score');
   sc.textContent = res.score;
   sc.classList.toggle('gold', res.newBest);
-  $('#r-flag').textContent = res.newBest ? 'new best' : res.best > res.score ? `best ${res.best}` : '';
+  const zenBest = res.mode === 'zen' && res.hist && res.hist.length > 1 && res.hist[res.hist.length - 1] <= Math.min(...res.hist);
+  $('#r-flag').textContent = res.newBest ? 'new best' : zenBest ? 'fastest day yet' : res.best > res.score ? `best ${res.best}` : '';
   $('#r-acc').textContent = res.tries ? Math.round(res.acc * 100) + '%' : '–';
   $('#r-avg').textContent = res.avg ? (res.avg < 10 ? res.avg.toFixed(1) : Math.round(res.avg)) + 's' : '–';
   $('#r-streak').textContent = res.top;
-  sparkline(res.hist);
+  sparkline(res.hist, res.mode === 'zen');
   const box = $('#r-miss'), seen = new Set();
   box.innerHTML = '';
   for (const p of res.misses) {
     if (seen.has(p.text) || seen.size >= 8) continue;
     seen.add(p.text);
     const d = document.createElement('div');
-    d.innerHTML = `${esc(p.text)} = <b>${p.ans}</b>`;
+    d.innerHTML = `${esc(p.text)} = <b>${p.ans}</b>` + (p.g ? `<s>${esc(p.g)}</s>` : '');
     box.appendChild(d);
   }
   box.hidden = !seen.size;
   if (res.newBest) setTimeout(() => Sfx.best(), 150);
 }
-function sparkline(h) {
+// lower-is-better series (Zen speed) are flipped so up always means better
+function sparkline(h, flip) {
   const svg = $('#r-spark');
   if (!h || h.length < 2) { svg.hidden = true; return; }
   svg.hidden = false;
   const VW = 300, VH = 56, p = 6, n = h.length, mx = Math.max(...h), mn = Math.min(...h), span = mx - mn || 1;
-  const pts = h.map((v, i) => [p + i * (VW - p * 2) / (n - 1), mx === mn ? VH / 2 : VH - p - (v - mn) / span * (VH - p * 2)].map(v => +v.toFixed(1)));
+  const pts = h.map((v, i) => [p + i * (VW - p * 2) / (n - 1), mx === mn ? VH / 2 : VH - p - (flip ? mx - v : v - mn) / span * (VH - p * 2)].map(v => +v.toFixed(1)));
   const line = pts.map(q => q.join(',')).join(' ');
   const area = `M${pts[0][0]},${VH} ` + pts.map(q => `L${q[0]},${q[1]}`).join(' ') + ` L${pts[n - 1][0]},${VH} Z`;
-  const bi = h.lastIndexOf(mx), [lx, ly] = pts[n - 1];
+  const bi = h.lastIndexOf(flip ? mn : mx), [lx, ly] = pts[n - 1];
   svg.innerHTML = `<defs><linearGradient id="spg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22eeff" stop-opacity=".26"/><stop offset="1" stop-color="#22eeff" stop-opacity="0"/></linearGradient></defs>`
     + `<path d="${area}" fill="url(#spg)"/>`
     + `<polyline points="${line}" fill="none" stroke="#22eeff" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`
@@ -1474,52 +1724,655 @@ function sparkline(h) {
     + `<circle cx="${lx}" cy="${ly}" r="4" fill="#ff2e97"/>`;
 }
 
-/* ---------- stats ---------- */
-// red = needs work, amber = getting there, cyan = solid; brighter toward the top of each tier
-function towerRGB(m) {
-  const [col, lo, hi] = m < .4 ? [[255, 53, 72], 0, .4] : m < .75 ? [[255, 181, 71], .4, .75] : [[140, 246, 255], .75, 1];
-  const k = .45 + .55 * (m - lo) / (hi - lo), glass = [20, 16, 38];
-  return col.map((v, j) => Math.round(glass[j] + (v - glass[j]) * k));
+/* ---------- tower view ---------- */
+const MODE_NAME = { sprint: 'Sprint', survival: 'Survival', flash: 'Flash', zen: 'Zen' };
+// "at speed" per operation and level, in seconds
+const TARGET = { '+': [1.2, 2.2, 3.2, 5.5], '−': [1.4, 2.6, 3.8, 6.5], '×': [1.4, 1.7, 4.2, 7.5], '÷': [1.6, 2, 4.8, 7.5], 'Σ': [2.5, 3.2, 4, 5] };
+const TIER = ['Not tried', 'Shaky', 'Getting there', 'Locked in'];
+const WHY_MANY = {
+  op: 'wrong operations', flip: 'flipped digits', carry: 'carry slips', borrow: 'borrow slips', near: 'next-door facts',
+  mix: 'mixed-up facts', skip: 'dropped or doubled numbers', one: 'off by 1', ones: 'last-digit slips', lead: 'front-digit slips',
+};
+const WHY = {
+  op: 'Wrong operation', flip: 'Flipped digits', carry: 'Carry slip', borrow: 'Borrow slip', near: 'Next-door fact',
+  mix: 'Mixed-up fact', skip: 'Dropped or doubled a number', one: 'Off by 1', ones: 'Last digit off', lead: 'Front digits off', other: 'Other',
+};
+const target = e => (TARGET[e.o] || TARGET['+'])[clamp((e.l || 2) - 1, 0, 3)];
+const median = a => { if (!a.length) return NaN; const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const pct = v => Number.isFinite(v) ? Math.round(v * 100) + '%' : '–';
+const secs = v => !Number.isFinite(v) ? '–' : v < 10 ? v.toFixed(1) + 's' : Math.round(v) + 's';
+const probText = e => e.o === 'Σ' ? e.s.join(' + ') : `${e.x} ${e.o} ${e.y}`;
+const opsText = k => k.replace(/add/g, '+').replace(/sub/g, '−').replace(/mul/g, '×').replace(/div/g, '÷').split('').join(' ');
+const dateOf = k => new Date(k + 'T12:00:00');
+const fmtDay = k => dateOf(k).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+const shortDay = k => dateOf(k).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+function fmtDur(s) {
+  if (!s) return '0m';
+  if (s < 60) return Math.round(s) + 's';
+  const m = Math.round(s / 60);
+  return m < 60 ? m + 'm' : `${Math.floor(m / 60)}h ${m % 60}m`;
 }
-function dayStreak() {
-  const set = new Set(meta.days), d = new Date();
+function ago(ts) {
+  const s = (Date.now() - ts) / 1000;
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s / 60) + 'm ago';
+  const k = day(new Date(ts));
+  if (k === day()) return Math.floor(s / 3600) + 'h ago';
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  return k === day(y) ? 'yesterday' : shortDay(k);
+}
+function dayStreak(set) {
+  const d = new Date();
   if (!set.has(day(d))) d.setDate(d.getDate() - 1);
   let n = 0;
   while (set.has(day(d))) { n++; d.setDate(d.getDate() - 1); }
   return n;
 }
-function openStats() {
-  const t = $('#tower'), frag = document.createDocumentFragment();
-  const cell = (cls, txt) => { const d = document.createElement('div'); d.className = cls; if (txt != null) d.textContent = txt; frag.appendChild(d); return d; };
-  cell('h', '×');
-  for (let c = 2; c <= 12; c++) cell('h', c);
-  for (let r = 2; r <= 12; r++) {
-    cell('h', r);
-    for (let c = 2; c <= 12; c++) {
-      const d = cell('c'), m = mastery(facts[`m:${Math.min(r, c)},${Math.max(r, c)}`]);
-      d.dataset.r = r; d.dataset.c = c;
-      if (m != null) {
-        const rgb = towerRGB(m).join(',');
-        d.classList.add('seen');
-        d.style.background = `rgb(${rgb})`;
-        if (m >= .75) d.style.boxShadow = `0 0 10px rgba(${rgb},.55)`;
+function longestStreak(set) {
+  let best = 0, cur = 0, prev = 0;
+  for (const k of [...set].sort()) {
+    const t = +dateOf(k);
+    cur = prev && Math.round((t - prev) / 864e5) === 1 ? cur + 1 : 1;
+    best = Math.max(best, cur);
+    prev = t;
+  }
+  return best;
+}
+// a cell or problem is judged on its last 10 tries
+function grade(list) {
+  const recent = list.slice(-10), ok = recent.filter(e => e.ok), acc = ok.length / recent.length;
+  const ratio = median(ok.map(e => e.t / target(e)));
+  return { recent, acc, ratio, tier: acc >= .9 && ratio <= 1 ? 3 : acc >= .75 && ratio <= 2 ? 2 : 1 };
+}
+function gradeAll(list) {
+  const ok = list.filter(e => e.ok), acc = ok.length / list.length, ratio = median(ok.map(e => e.t / target(e)));
+  return acc >= .9 && ratio <= 1 ? 3 : acc >= .75 && ratio <= 2 ? 2 : 1;
+}
+function legacyGrade(a, b) {
+  const f = legacy.facts[`m:${Math.min(a, b)},${Math.max(a, b)}`];
+  if (!f || !f.n) return null;
+  const acc = f.c / f.n, ratio = f.t ? f.t / TARGET['×'][1] : Infinity;
+  return { legacy: f, acc, ratio, tier: acc >= .9 && ratio <= 1 ? 3 : acc >= .75 && ratio <= 2 ? 2 : 1 };
+}
+
+/* why a miss happened, as far as the numbers can tell */
+function digitwise(x, y, f) {
+  const a = String(x), b = String(y), n = Math.max(a.length, b.length);
+  let s = '';
+  for (let i = 0; i < n; i++) s += f(+(a[a.length - n + i] || 0), +(b[b.length - n + i] || 0));
+  return +s;
+}
+function why(e) {
+  const g = Number(e.g), a = e.a;
+  if (e.g === '' || e.g == null || !Number.isFinite(g)) return { k: 'other', t: 'no answer' };
+  const d = g - a, ad = Math.abs(d), sa = String(a), sg = String(e.g);
+  if (e.o === 'Σ') {
+    if (e.s.includes(ad)) return { k: 'skip', t: d < 0 ? `left out a ${ad}` : `counted a ${ad} twice` };
+    if (ad === 1) return { k: 'one', t: 'off by 1' };
+    if (ad % 10 === 0) return { k: 'carry', t: `off by ${ad}, a carry slip` };
+    return { k: 'other', t: `off by ${ad}` };
+  }
+  const { x, y } = e;
+  for (const [o, v] of [['+', x + y], ['−', x - y], ['×', x * y], ['÷', x / y]]) if (o !== e.o && v === g) return { k: 'op', t: `that's ${x} ${o} ${y}` };
+  if (sg.length === sa.length && sg.length > 1 && [...sg].sort().join('') === [...sa].sort().join('')) return { k: 'flip', t: 'digits flipped' };
+  if (e.o === '+' && g === digitwise(x, y, (p, q) => (p + q) % 10)) return { k: 'carry', t: 'forgot to carry' };
+  if (e.o === '−' && g === digitwise(x, y, (p, q) => Math.abs(p - q))) return { k: 'borrow', t: 'skipped the borrow' };
+  if (e.o === '×') {
+    for (const [p, q] of [[x, y - 1], [x, y + 1], [x - 1, y], [x + 1, y]]) if (p > 1 && q > 1 && p * q === g) return { k: 'near', t: `that's ${p} × ${q}` };
+    let pair = null, dist = Infinity;
+    for (let p = 2; p <= 12; p++) {
+      if (g % p) continue;
+      const q = g / p;
+      if (q < 2 || q > 12) continue;
+      const dd = Math.min(Math.abs(p - x) + Math.abs(q - y), Math.abs(p - y) + Math.abs(q - x));
+      if (dd < dist) { dist = dd; pair = [p, q]; }
+    }
+    if (pair) return { k: 'mix', t: `that's ${pair[0]} × ${pair[1]}` };
+  }
+  if (e.o === '÷' && ad === 1) return { k: 'near', t: `that's ${y * g} ÷ ${y}` };
+  if (ad === 1) return { k: 'one', t: 'off by 1' };
+  if (ad % 10 === 0 && ad < Math.max(100, a)) {
+    if (e.o === '+') return { k: 'carry', t: `off by ${ad}, a carry slip` };
+    if (e.o === '−') return { k: 'borrow', t: `off by ${ad}, a borrow slip` };
+    return { k: 'lead', t: `off by ${ad}` };
+  }
+  if (sg.length === sa.length && sg.length > 1) {
+    if (sg.slice(0, -1) === sa.slice(0, -1)) return { k: 'ones', t: 'last digit off' };
+    if (sg.slice(-1) === sa.slice(-1)) return { k: 'lead', t: 'front digits off' };
+  }
+  return { k: 'other', t: `off by ${ad}` };
+}
+
+const Stats = (() => {
+  const body = $('#st-body'), tip = $('#tip');
+  const V = Object.assign({ mode: null, level: 'all', range: 'all', tab: '×', size: 12, chart: 'speed', ptab: 'worst', pop: 'all' }, store.get('statsView', {}));
+  const save = () => store.set('statsView', { mode: V.mode, level: V.level, range: V.range, tab: V.tab, size: V.size, chart: V.chart, ptab: V.ptab, pop: V.pop });
+  let A = [], R = [], t0 = 0, more = false, groupsShown = [], TW = null, picked = null;
+  const finePointer = matchMedia('(hover: hover)');
+
+  const since = () => {
+    if (V.range === 'all') return 0;
+    const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (+V.range - 1));
+    return +d;
+  };
+  const fits = (e, anyTime) => (V.mode === 'all' || e.m === V.mode) && (V.level === 'all' || e.l === +V.level) && (anyTime || e.ts >= t0);
+  const seg = (name, items, cur) => `<div class="seg" data-set="${name}">${items.map(([v, label, off]) => `<button data-v="${v}"${String(v) === String(cur) ? ' class="on"' : ''}${off ? ' disabled' : ''}>${label}</button>`).join('')}</div>`;
+  const head = (title, jp, extra = '') => `<div class="sec-h"><h2>${title}</h2><span class="jp" lang="ja">${jp}</span>${extra}</div>`;
+  const colW = wide => { const full = Math.min(1120, body.clientWidth - 32); return innerWidth >= 900 && !wide ? (full - 60) / 2 : full; };
+  const byDay = list => {
+    const m = new Map();
+    for (const e of list) { const k = dayOf(e); let l = m.get(k); if (!l) m.set(k, l = []); l.push(e); }
+    return [...m.keys()].sort().map(k => {
+      const l = m.get(k), ok = l.filter(e => e.ok);
+      return { k, list: l, n: l.length, ok: ok.length, acc: ok.length / l.length, med: median(ok.map(e => e.t)) };
+    });
+  };
+  const sum = list => { const ok = list.filter(e => e.ok); return { acc: ok.length / list.length, med: median(ok.map(e => e.t)) }; };
+
+  function syncFilters() {
+    for (const g of $$('#st-filters .seg')) for (const b of g.children) b.classList.toggle('on', b.dataset.v === String(V[g.dataset.f]));
+  }
+
+  /* ----- sections ----- */
+  function secHero() {
+    const days = playDays(), streak = dayStreak(days), longest = longestStreak(days);
+    const ok = A.filter(e => e.ok), dur = R.reduce((a, r) => a + (r.dur || 0), 0);
+    let week = '';
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const k = day(d), on = days.has(k);
+      week += `<i class="${on ? 'on' : ''}${i ? '' : ' today'}" data-tip="${esc(fmtDay(k))} · ${on ? 'played' : i ? 'missed' : 'not yet today'}">${'SMTWTFS'[d.getDay()]}</i>`;
+    }
+    return `<section class="sec span2"><div class="hero">
+      <div class="stat streak"><b>${streak}</b><span>day streak${longest > streak ? ` · best ${longest}` : ''}</span><div class="week">${week}</div></div>
+      <div class="stat"><b>${ok.length.toLocaleString()}</b><span>solved</span></div>
+      <div class="stat"><b>${A.length ? pct(ok.length / A.length) : '–'}</b><span>accuracy</span></div>
+      <div class="stat"><b>${secs(median(ok.map(e => e.t)))}</b><span>median answer</span></div>
+      <div class="stat"><b>${fmtDur(dur)}</b><span>practiced</span></div>
+    </div></section>`;
+  }
+
+  function secProgress() {
+    const D = byDay(A), scored = ['sprint', 'survival', 'flash'].includes(V.mode);
+    if (V.chart === 'score' && !scored) V.chart = 'speed';
+    const tabs = seg('chart', [['speed', 'Speed'], ['accuracy', 'Accuracy'], ['score', 'Score', !scored]], V.chart);
+    let top = '';
+    if (!A.length) top = `<p class="empty">Nothing here yet for these filters. Play a round and it shows up.</p>`;
+    else if (D.length < 2) top = `<p class="note-line">One day of data so far. Play again tomorrow to see your trend.</p>`;
+    else {
+      const k = Math.min(3, Math.floor(D.length / 2)), a = sum(D.slice(0, k).flatMap(d => d.list)), b = sum(D.slice(-k).flatMap(d => d.list));
+      const label = n => n === 1 ? 'day' : `${n} days`;
+      const sp = (a.med - b.med) / a.med, dacc = Math.round((b.acc - a.acc) * 100);
+      const spTxt = !Number.isFinite(sp) ? '' : Math.abs(sp) < .02 ? `<span class="flat">same speed</span>` : `<span class="${sp > 0 ? 'up' : 'down'}">${Math.round(Math.abs(sp) * 100)}% ${sp > 0 ? 'faster' : 'slower'}</span>`;
+      const acTxt = dacc === 0 ? `<span class="flat">same accuracy</span>` : `<span class="${dacc > 0 ? 'up' : 'down'}">${dacc > 0 ? '+' : '−'}${Math.abs(dacc)} pts accuracy</span>`;
+      top = `<div class="prog-sum">
+        <div><span>first ${label(k)}</span><strong>${secs(a.med)}<em>·</em>${pct(a.acc)}</strong></div>
+        <div class="arrow">→</div>
+        <div><span>last ${label(k)}</span><strong>${secs(b.med)}<em>·</em>${pct(b.acc)}</strong></div>
+        <div class="delta">${spTxt}${acTxt}</div>
+      </div>`;
+    }
+    return `<section class="sec span2">${head('Progress', '進歩', tabs)}${top}<div class="chart" id="ch-prog"></div><div class="cap" id="ch-cap"></div></section>`;
+  }
+
+  function towerCells() {
+    const t = V.tab, dig = t === '+' || t === '−', lo = dig ? 0 : 2, hi = dig ? 9 : V.size, cells = new Map();
+    const put = (r, c, e) => {
+      if (r < lo || c < lo || r > hi || c > hi) return;
+      const k = r + ',' + c;
+      let l = cells.get(k);
+      if (!l) cells.set(k, l = []);
+      l.push(e);
+    };
+    for (const e of A) {
+      if (e.o !== t) continue;
+      if (t === '×') { put(e.x, e.y, e); if (e.x !== e.y) put(e.y, e.x, e); }
+      else if (t === '÷') put(e.y, e.a, e);
+      else if (t === '+') { const a = e.x % 10, b = e.y % 10; put(a, b, e); if (a !== b) put(b, a, e); }
+      else put(e.x % 10, e.y % 10, e);
+    }
+    return { cells, lo, hi };
+  }
+  function secTower() {
+    const { cells, lo, hi } = towerCells(), t = V.tab, sym = t === '×' || t === '+';
+    const useLegacy = t === '×' && V.mode === 'all' && V.level === 'all' && V.range === 'all';
+    const grades = new Map(), counts = [0, 0, 0, 0];
+    const n = hi - lo + 2, avail = innerWidth >= 820 ? Math.min(colW(true) * .6, 600) : colW(true);
+    const c = clamp(Math.floor((avail - 24 - (n - 1) * 3) / n), 11, 34);
+    let grid = `<div class="h op">${t}</div>`;
+    for (let x = lo; x <= hi; x++) grid += `<div class="h">${x}</div>`;
+    for (let r = lo; r <= hi; r++) {
+      grid += `<div class="h">${r}</div>`;
+      for (let col = lo; col <= hi; col++) {
+        const k = r + ',' + col, list = cells.get(k), g = list ? grade(list) : useLegacy ? legacyGrade(r, col) : null;
+        if (g) grades.set(k, g);
+        if (!sym || r <= col) counts[g ? g.tier : 0]++;
+        grid += `<i class="c t${g ? g.tier : 0}" data-k="${k}" role="button" tabindex="-1" aria-label="${esc(cellTitle(r, col))}"></i>`;
       }
     }
+    TW = { cells, grades };
+    picked = null;
+    // open on the shakiest square with the most tries, so there's always something to look at
+    let pickK = null, pickN = -1;
+    for (const [k, g] of grades) { const w = (g.tier === 1 ? 1e6 : g.tier === 2 ? 1e3 : 0) + (cells.get(k) || []).length; if (g.tier < 3 && w > pickN) { pickN = w; pickK = k; } }
+    picked = pickK;
+    const tg = TARGET[t].map((v, i) => `L${i + 1} ${secs(v)}`).join(' · ');
+    const note = t === '+' ? 'Squares are last digits: 47 + 38 lands on 7 + 8.' : t === '−' ? 'Rows are the last digit of the first number, columns the number taken away: 91 − 38 lands on 1 − 8.' : t === '÷' ? 'Rows are what you divide by, columns the answer: 56 ÷ 8 lands on row 8, column 7.' : '7 × 8 and 8 × 7 share a square.';
+    const tabs = seg('tab', [['+', '+'], ['−', '−'], ['×', '×'], ['÷', '÷']], t) + (t === '×' || t === '÷' ? seg('size', [[12, 'to 12'], [25, 'to 25']], V.size) : '');
+    return `<section class="sec span2">${head('Tower', '塔', tabs)}
+      <div class="tw">
+        <div class="tw-grid"><div class="tower-wrap"><i class="mast"></i><div class="tower" id="tower" style="--n:${n};--c:${c}px">${grid}</div></div></div>
+        <div class="key">
+          <div class="key-row"><i class="t3"></i><b>Locked in</b><em>${counts[3]}</em><small>9 of your last 10 right, at speed</small></div>
+          <div class="key-row"><i class="t2"></i><b>Getting there</b><em>${counts[2]}</em><small>3 of 4 right, within twice the target time</small></div>
+          <div class="key-row"><i class="t1"></i><b>Shaky</b><em>${counts[1]}</em><small>missed more than 1 in 4, or slower than twice the target</small></div>
+          <div class="key-row"><i class="t0"></i><b>Not tried</b><em>${counts[0]}</em><small>no answers yet with these filters</small></div>
+          <p class="note-line">At speed means at or under the target for that level: ${tg}. ${note}</p>
+          <div class="cell-info" id="cell-info">${pickK ? cellInfo(pickK) : `<p class="empty">Tap a square to see how you do on it.</p>`}</div>
+        </div>
+      </div></section>`;
   }
-  t.innerHTML = '';
-  t.appendChild(frag);
-  $('#st-read').innerHTML = '';
-  $('#t-solved').textContent = meta.solved.toLocaleString();
-  $('#t-days').textContent = dayStreak();
-  show('stats');
-}
-function readCell(d) {
-  if (!d || !d.classList.contains('c')) return;
-  $$('#tower .sel').forEach(x => x.classList.remove('sel'));
-  d.classList.add('sel');
-  const r = +d.dataset.r, c = +d.dataset.c, f = facts[`m:${Math.min(r, c)},${Math.max(r, c)}`];
-  $('#st-read').innerHTML = `${r} × ${c} = ${r * c}` + (f && f.n ? `<span>${f.t ? f.t.toFixed(1) + 's' : '–'}</span><span>${f.c}/${f.n}</span>` : '');
-}
+  function cellTitle(r, c) {
+    const t = V.tab;
+    return t === '×' ? `${r} × ${c} = ${r * c}` : t === '÷' ? `${r * c} ÷ ${r} = ${c}` : t === '+' ? `Ends in ${r} + ${c}` : `Ends in ${r} − ${c}${r < c ? ', a borrow' : ''}`;
+  }
+  function cellInfo(k) {
+    const [r, c] = k.split(',').map(Number), list = TW.cells.get(k) || [], g = TW.grades.get(k), title = cellTitle(r, c);
+    if (!g) return `<h3>${esc(title)}</h3><div class="tier t0">Not tried</div>`;
+    if (g.legacy) return `<h3>${esc(title)}</h3><div class="tier t${g.tier}">${TIER[g.tier]}</div><dl><dt>Right</dt><dd>${g.legacy.c} of ${g.legacy.n}</dd><dt>Speed</dt><dd>${secs(g.legacy.t)} average</dd></dl><p class="note-line">From your first days, before every answer was logged.</p>`;
+    const ok = list.filter(e => e.ok), rok = g.recent.filter(e => e.ok);
+    const dots = g.recent.map(e => `<span class="${e.ok ? 'okm' : 'xm'}">${e.ok ? '✓' : '✗'}</span>`).join('');
+    let trend = '';
+    if (ok.length >= 4) { const h = ok.length >> 1; trend = `${secs(median(ok.slice(0, h).map(e => e.t)))} → ${secs(median(ok.slice(h).map(e => e.t)))}`; }
+    const wrong = [...new Map(list.filter(e => !e.ok).reverse().map(e => [e.g, e])).values()].slice(0, 4)
+      .map(e => `${esc(e.g)} <span class="why-t">${esc(why(e).t)}</span>`).join('<br>');
+    const byP = new Map();
+    for (const e of list) { const p = probText(e), v = byP.get(p) || { n: 0, ok: 0 }; v.n++; if (e.ok) v.ok++; byP.set(p, v); }
+    const probs = [...byP.entries()].sort((a, b) => b[1].n - a[1].n).slice(0, 5).map(([p, v]) => `${esc(p)} <span class="muted">${v.ok}/${v.n}</span>`).join('<br>');
+    return `<h3>${esc(title)}</h3><div class="tier t${g.tier}">${TIER[g.tier]}</div><dl>
+      <dt>Last tries</dt><dd class="dots">${dots}</dd>
+      <dt>Right</dt><dd>${rok.length} of last ${g.recent.length}${list.length > g.recent.length ? ` · ${pct(ok.length / list.length)} of all ${list.length}` : ''}</dd>
+      <dt>Speed</dt><dd>${secs(median(rok.map(e => e.t)))} median · target ${secs(target(list[list.length - 1]))}</dd>
+      ${trend ? `<dt>Then → now</dt><dd>${trend}</dd>` : ''}
+      ${wrong ? `<dt>Typed instead</dt><dd>${wrong}</dd>` : ''}
+      <dt>Problems</dt><dd>${probs}</dd></dl>`;
+  }
+
+  function problemGroups(list) {
+    const m = new Map();
+    for (const e of list) {
+      const k = e.o === 'Σ' ? 'Σ' + e.s.join(',') : e.o + e.x + ',' + e.y;
+      let g = m.get(k);
+      if (!g) m.set(k, g = []);
+      g.push(e);
+    }
+    return [...m.values()].map(l => {
+      const ok = l.filter(e => e.ok), s = { e: l[l.length - 1], list: l, n: l.length, ok: ok.length, miss: l.length - ok.length, acc: ok.length / l.length,
+        med: median(ok.map(e => e.t)), ratio: median(ok.map(e => e.t / target(e))), imp: NaN, tier: grade(l).tier };
+      if (ok.length >= 4) { const h = ok.length >> 1; s.from = median(ok.slice(0, h).map(e => e.t)); s.to = median(ok.slice(h).map(e => e.t)); s.imp = (s.from - s.to) / s.from; }
+      return s;
+    });
+  }
+  const SORTS = {
+    // smoothed miss rate, so a problem missed on several tries outranks a one-off slip
+    worst: [s => s.miss > 0, (a, b) => (b.miss + .5) / (b.n + 2) - (a.miss + .5) / (a.n + 2) || b.miss - a.miss],
+    slowest: [s => s.ok > 0, (a, b) => b.ratio - a.ratio],
+    improved: [s => s.imp > .05, (a, b) => b.imp - a.imp],
+    best: [s => s.ok > 1, (a, b) => b.acc - a.acc || a.ratio - b.ratio || b.n - a.n],
+    most: [() => true, (a, b) => b.n - a.n || a.acc - b.acc],
+  };
+  function secProblems() {
+    const present = ['+', '−', '×', '÷', 'Σ'].filter(o => A.some(e => e.o === o));
+    if (V.pop !== 'all' && !present.includes(V.pop)) V.pop = 'all';
+    const [keep, cmp] = SORTS[V.ptab];
+    const all = problemGroups(A.filter(e => V.pop === 'all' || e.o === V.pop)).filter(keep).sort(cmp);
+    groupsShown = all.slice(0, more ? 40 : 10);
+    const imp = V.ptab === 'improved';
+    const rows = groupsShown.map((s, i) => `<button class="prow" data-i="${i}" aria-expanded="false">
+        <span class="p">${esc(probText(s.e))}<small>= ${s.e.a}</small></span>
+        <span class="bar-bg t${s.tier}"><i style="width:${Math.round(s.acc * 100)}%"></i></span>
+        <span class="n">${pct(s.acc)}<small>${s.ok}/${s.n}</small></span>
+        <span class="n">${imp ? `${secs(s.from)} → ${secs(s.to)}` : secs(s.med)}<small>${imp ? 'then → now' : 'median'}</small></span>
+      </button><div class="pdet" id="pd-${i}" hidden></div>`).join('');
+    const empty = { worst: 'No misses here. Nothing to fix.', slowest: 'No correct answers here yet.', improved: 'Needs 4+ correct answers on the same problem to show a change.', best: 'Needs 2+ correct answers on the same problem.', most: 'No problems here yet.' }[V.ptab];
+    const tabs = seg('ptab', [['worst', 'Worst'], ['slowest', 'Slowest'], ['improved', 'Improved'], ['best', 'Best'], ['most', 'Most done']], V.ptab);
+    const opSeg = present.length > 1 ? seg('pop', [['all', 'All'], ...present.map(o => [o, o])], V.pop) : '';
+    return `<section class="sec">${head('Problems', '問題')}${tabs}${opSeg}
+      ${rows ? `<div class="plist"><div class="phead"><span>Problem</span><span></span><span>Right</span><span>Speed</span></div>${rows}</div>` : `<p class="empty">${empty}</p>`}
+      ${all.length > 10 ? `<button class="more" data-act="more">${more ? 'Show fewer' : `Show ${Math.min(40, all.length) - 10} more`}</button>` : ''}</section>`;
+  }
+  function problemDetail(s) {
+    const items = s.list.slice(-14).reverse().map(e => e.ok
+      ? `<span><span class="okm">✓</span> ${secs(e.t)} <span class="muted">${ago(e.ts)}</span></span>`
+      : `<span><span class="xm">✗</span> typed ${esc(e.g)}, <span class="why-t">${esc(why(e).t)}</span> <span class="muted">${ago(e.ts)}</span></span>`).join('');
+    const where = [...new Set(s.list.map(e => `${MODE_NAME[e.m]} L${e.l}`))].join(', ');
+    return `<div class="hist">${items}</div><div class="muted">${s.n} ${s.n === 1 ? 'try' : 'tries'} in ${where}</div>`;
+  }
+
+  function secMistakes() {
+    const M = A.filter(e => !e.ok);
+    if (!M.length) return `<section class="sec">${head('Mistakes', '間違い')}<p class="empty">No misses with these filters.</p></section>`;
+    const cnt = {};
+    for (const e of M) { const k = why(e).k; cnt[k] = (cnt[k] || 0) + 1; }
+    const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 6), max = top[0][1];
+    const bars = top.map(([k, v]) => `<div class="why-row"><span>${WHY[k]}</span><span class="bar-bg"><i style="width:${Math.max(3, v / max * 100)}%"></i></span><span class="n">${pct(v / M.length)}<small>${v}</small></span></div>`).join('');
+    const recent = M.slice(-12).reverse().map(e => `<div class="mrow"><div class="p">${esc(probText(e))} = <b>${e.a}</b></div>
+      <div class="you">typed ${esc(e.g)} · <em>${esc(why(e).t)}</em></div><div class="when">${ago(e.ts)}<br>${MODE_NAME[e.m]} L${e.l}</div></div>`).join('');
+    return `<section class="sec">${head('Mistakes', '間違い')}<div class="why">${bars}</div><p class="sub-h">Recent misses</p><div class="mlist">${recent}</div></section>`;
+  }
+
+  function insights() {
+    const out = [], ok = A.filter(e => e.ok), t = e => e.t;
+    const gap = (a, b) => a.length >= 8 && b.length >= 8 ? median(a.map(t)) - median(b.map(t)) : NaN;
+    const add = ok.filter(e => e.o === '+'), dCarry = gap(add.filter(e => e.x % 10 + e.y % 10 >= 10), add.filter(e => e.x % 10 + e.y % 10 < 10));
+    if (dCarry >= .25) out.push([dCarry, `Carrying adds about <b>${secs(dCarry)}</b> to your addition.`]);
+    const sub = ok.filter(e => e.o === '−'), dBorrow = gap(sub.filter(e => e.x % 10 < e.y % 10), sub.filter(e => e.x % 10 >= e.y % 10));
+    if (dBorrow >= .25) out.push([dBorrow, `Borrowing adds about <b>${secs(dBorrow)}</b> to your subtraction.`]);
+    const dDiv = gap(ok.filter(e => e.o === '÷' && e.l <= 2), ok.filter(e => e.o === '×' && e.l <= 2));
+    if (dDiv >= .25) out.push([dDiv, `Division takes you about <b>${secs(dDiv)}</b> longer than the matching multiplication.`]);
+    const mul = ok.filter(e => e.o === '×' && e.l <= 2), tbl = [];
+    for (let n = 2; n <= 12; n++) { const l = mul.filter(e => e.x === n || e.y === n); if (l.length >= 5) tbl.push([n, median(l.map(t))]); }
+    if (tbl.length >= 4) {
+      tbl.sort((a, b) => b[1] - a[1]);
+      const all = median(mul.map(t));
+      if (tbl[0][1] - all >= .2) out.push([tbl[0][1] - all, `<b>×${tbl[0][0]}</b> is your slowest table at ${secs(tbl[0][1])}, against ${secs(all)} overall.`]);
+    }
+    const M = A.filter(e => !e.ok);
+    if (M.length >= 6) {
+      const cnt = {};
+      for (const e of M) { const k = why(e).k; cnt[k] = (cnt[k] || 0) + 1; }
+      const [k, v] = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0];
+      if (k !== 'other' && v / M.length >= .3) out.push([.4, `Most of your misses are <b>${WHY_MANY[k]}</b> (${pct(v / M.length)}).`]);
+    }
+    return out.sort((a, b) => b[0] - a[0]).slice(0, 3).map(x => x[1]);
+  }
+  function secOps() {
+    const rows = [];
+    for (const o of ['+', '−', '×', '÷', 'Σ']) {
+      const l = A.filter(e => e.o === o);
+      if (!l.length) continue;
+      const ok = l.filter(e => e.ok);
+      rows.push(`<div class="oprow"><span class="g">${o}</span><span class="bar-bg t${gradeAll(l)}"><i style="width:${Math.round(ok.length / l.length * 100)}%"></i></span><span>${pct(ok.length / l.length)}</span><span>${secs(median(ok.map(e => e.t)))}</span><span><small>${l.length.toLocaleString()}</small></span></div>`);
+    }
+    const tiles = (o, match, lab) => {
+      let h = '';
+      for (let n = 2; n <= 12; n++) {
+        const l = A.filter(e => e.o === o && match(e, n));
+        if (l.length < 3) continue;
+        const ok = l.filter(e => e.ok);
+        h += `<div class="tt t${gradeAll(l)}" data-tip="${lab}${n} · ${pct(ok.length / l.length)} right · ${secs(median(ok.map(e => e.t)))} median · ${l.length} tries"><b>${lab}${n}</b><span>${secs(median(ok.map(e => e.t)))}</span></div>`;
+      }
+      return h;
+    };
+    const mt = tiles('×', (e, n) => e.x === n || e.y === n, '×'), dt = tiles('÷', (e, n) => e.y === n, '÷');
+    const ins = insights();
+    return `<section class="sec">${head('By operation', '計算')}
+      ${rows.length ? `<div class="ops-t"><div class="oprow head"><span></span><span>accuracy</span><span></span><span>median</span><span>answers</span></div>${rows.join('')}</div>` : `<p class="empty">No answers with these filters.</p>`}
+      ${mt ? `<p class="sub-h">Times tables, every problem with that number</p><div class="tables">${mt}</div>` : ''}
+      ${dt ? `<p class="sub-h">Dividing by</p><div class="tables">${dt}</div>` : ''}
+      ${ins.length ? `<ul class="ins">${ins.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}</section>`;
+  }
+
+  function secPractice() {
+    const counts = new Map();
+    for (const e of LOG) if (e.ok && fits(e, true)) { const k = dayOf(e); counts.set(k, (counts.get(k) || 0) + 1); }
+    if (V.mode === 'all' && V.level === 'all') for (const k of legacy.meta.days) if (!counts.has(k)) counts.set(k, -1);
+    const weeks = clamp(Math.floor((colW(false) - 24) / 17), 8, 26);
+    const today = new Date(); today.setHours(12, 0, 0, 0);
+    const start = new Date(today); start.setDate(start.getDate() - today.getDay() - (weeks - 1) * 7);
+    let cells = '', months = '', played = 0, lastMonth = -1;
+    for (let w = 0; w < weeks; w++) {
+      const first = new Date(start); first.setDate(first.getDate() + w * 7);
+      months += `<span>${first.getMonth() !== lastMonth && first.getDate() <= 7 ? first.toLocaleDateString(undefined, { month: 'short' }) : ''}</span>`;
+      if (first.getDate() <= 7) lastMonth = first.getMonth();
+      for (let d = 0; d < 7; d++) {
+        const dt = new Date(first); dt.setDate(dt.getDate() + d);
+        const k = day(dt), v = counts.get(k), fut = dt > today;
+        const lv = v === undefined ? 0 : v < 0 ? 2 : v < 20 ? 1 : v < 60 ? 2 : v < 150 ? 3 : 4;
+        if (v !== undefined && !fut) played++;
+        cells += `<i class="l${lv}${fut ? ' fut' : ''}${k === day() ? ' today' : ''}" data-tip="${esc(fmtDay(k))} · ${v === undefined ? 'no practice' : v < 0 ? 'played' : v + ' solved'}"></i>`;
+      }
+    }
+    return `<section class="sec">${head('Practice', '練習')}
+      <p class="note-line">Played <b>${played}</b> of the last ${weeks * 7} days. Brighter means more problems solved.</p>
+      <div class="cal-wrap"><div class="cal-months">${months}</div>
+        <div class="cal-body"><div class="cal-days"><span></span><span>M</span><span></span><span>W</span><span></span><span>F</span><span></span></div><div class="cal">${cells}</div></div></div>
+      <div class="cal-key">less <i class="l0" style="background:#161128"></i><i style="background:rgba(98,241,255,.22)"></i><i style="background:rgba(98,241,255,.42)"></i><i style="background:rgba(98,241,255,.68)"></i><i style="background:#7ff5ff"></i> more</div></section>`;
+  }
+
+  function secRecords() {
+    const days = playDays(), EA = LOG.filter(e => fits(e, true)), ER = RUNS.filter(r => fits(r, true) && !r.q);
+    let fastest = null;
+    for (const e of EA) if (e.ok && (!fastest || e.t < fastest.t)) fastest = e;
+    const perDay = new Map();
+    for (const e of EA) if (e.ok) { const k = dayOf(e); perDay.set(k, (perDay.get(k) || 0) + 1); }
+    let bestDay = null;
+    for (const [k, v] of perDay) if (!bestDay || v > bestDay[1]) bestDay = [k, v];
+    const topStreak = ER.reduce((a, r) => Math.max(a, r.top || 0), 0);
+    const solvedAll = legacy.meta.solved + LOG.filter(e => e.ok).length;
+    const timeAll = RUNS.reduce((a, r) => a + (r.dur || 0), 0);
+    const modes = ['sprint', 'survival', 'flash'].filter(m => V.mode === 'all' || V.mode === m);
+    const bestOf = (m, l) => {
+      let b = 0;
+      for (const r of ER) if (r.m === m && r.l === l && r.score > b) b = r.score;
+      for (const [k, v] of Object.entries(legacy.bests)) { const [km, kl] = k.split(':'); if (km === m && +kl === l && v > b) b = v; }
+      return b;
+    };
+    const table = modes.length ? `<div class="bests"><span></span>${[1, 2, 3, 4].map(l => `<span class="lvh"><span class="lv">${[1, 2, 3, 4].map(i => `<i${i <= l ? ' class="f"' : ''} style="height:${20 + i * 20}%"></i>`).join('')}</span></span>`).join('')}
+      ${modes.map(m => `<span>${MODE_NAME[m]}</span>${[1, 2, 3, 4].map(l => `<b>${bestOf(m, l) || '–'}</b>`).join('')}`).join('')}</div>` : '';
+    return `<section class="sec span2">${head('Records', '記録')}
+      <div class="recs">
+        <div class="rec"><b>${longestStreak(days)}</b><span>longest day streak</span></div>
+        <div class="rec"><b>${topStreak || '–'}</b><span>most right in a row</span></div>
+        <div class="rec"><b>${fastest ? secs(fastest.t) : '–'}</b><span>fastest answer</span>${fastest ? `<small>${esc(probText(fastest))} = ${fastest.a}</small>` : ''}</div>
+        <div class="rec"><b>${bestDay ? bestDay[1] : '–'}</b><span>most solved in a day</span>${bestDay ? `<small>${esc(fmtDay(bestDay[0]))}</small>` : ''}</div>
+        <div class="rec"><b>${solvedAll.toLocaleString()}</b><span>solved all time</span></div>
+        <div class="rec"><b>${fmtDur(timeAll)}</b><span>practiced all time</span></div>
+      </div>
+      ${table ? `<p class="sub-h">Best scores by level</p>${table}` : ''}</section>`;
+  }
+
+  function secFoot() {
+    const app = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    // the claude.ai preview can't hand out files, so backup lives only on the real site
+    if (!document.querySelector('link[rel="manifest"]')) return `<div class="st-foot span2"><span>${LOG.length.toLocaleString()} answers logged in this preview.</span></div>`;
+    return `<div class="st-foot span2"><span>Progress is saved on this device${app ? ', in this app' : ''}: ${LOG.length.toLocaleString()} answers logged.
+      To combine devices, back up on one and restore on the other.</span>
+      <button data-act="backup">Back up</button><button data-act="restore">Restore</button><span class="msg" id="foot-msg"></span></div>`;
+  }
+
+  /* ----- chart ----- */
+  function ticks(lo, hi, n = 4) {
+    const raw = (hi - lo || 1) / n, mag = 10 ** Math.floor(Math.log10(raw)), f = raw / mag;
+    const step = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * mag, out = [];
+    for (let v = Math.floor(lo / step) * step; v < hi + step * .999; v += step) out.push(+v.toFixed(6));
+    return out;
+  }
+  function lineChart(el, pts, o) {
+    if (!pts.length) { el.innerHTML = ''; return; }
+    const W = Math.max(280, Math.round(el.clientWidth)), H = 200, L = 44, Rt = 22, T = 18, B = 26;
+    const vs = pts.map(p => p.v);
+    const tk = ticks(o.lo != null ? o.lo : Math.min(...vs), o.hi != null ? Math.max(o.hi, ...vs) : Math.max(...vs) * 1.08 || 1);
+    const lo = tk[0], hi = tk[tk.length - 1] > lo ? tk[tk.length - 1] : lo + 1;
+    const X = i => pts.length === 1 ? (L + W - Rt) / 2 : L + i * (W - L - Rt) / (pts.length - 1);
+    const Y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+    let svg = `<defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22eeff" stop-opacity=".22"/><stop offset="1" stop-color="#22eeff" stop-opacity="0"/></linearGradient></defs>`;
+    for (const v of tk) svg += `<line class="gl" x1="${L}" x2="${W - Rt}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 8}" y="${Y(v) + 3}" text-anchor="end">${o.fmt(v)}</text>`;
+    const labelAt = new Set([0, pts.length - 1]);
+    if (pts.length >= 5) labelAt.add(Math.floor((pts.length - 1) / 2));
+    for (const i of labelAt) svg += `<text x="${X(i)}" y="${H - 6}" text-anchor="${pts.length === 1 ? 'middle' : i === 0 ? 'start' : i === pts.length - 1 ? 'end' : 'middle'}">${esc(pts[i].label)}</text>`;
+    const line = pts.map((p, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(p.v).toFixed(1)}`).join('');
+    if (pts.length > 1) svg += `<path d="${line}L${X(pts.length - 1).toFixed(1)},${Y(lo)}L${X(0).toFixed(1)},${Y(lo)}Z" fill="url(#cg)"/><path class="ln" d="${line}"/>`;
+    if (pts.length <= 45) pts.forEach((p, i) => { if (i < pts.length - 1) svg += `<circle class="dt" cx="${X(i)}" cy="${Y(p.v)}" r="4"/>`; });
+    const li = pts.length - 1;
+    svg += `<circle class="end" cx="${X(li)}" cy="${Y(pts[li].v)}" r="5.5"/><text class="endv" x="${X(li)}" y="${Y(pts[li].v) - 11}" text-anchor="${pts.length === 1 ? 'middle' : 'end'}">${o.fmt(pts[li].v, true)}</text>`;
+    svg += `<line class="xh" x1="0" x2="0" y1="${T}" y2="${H - B}" visibility="hidden"/>`;
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria)}">${svg}</svg>`;
+    const xh = el.querySelector('.xh');
+    const hover = ev => {
+      const b = el.getBoundingClientRect(), x = (ev.clientX - b.left) / b.width * W;
+      const i = pts.length === 1 ? 0 : clamp(Math.round((x - L) / ((W - L - Rt) / (pts.length - 1))), 0, pts.length - 1);
+      xh.setAttribute('x1', X(i)); xh.setAttribute('x2', X(i)); xh.setAttribute('visibility', 'visible');
+      showTip(pts[i].tip, b.left + X(i) / W * b.width, b.top + Y(pts[i].v) / H * b.height);
+    };
+    el.onpointermove = hover;
+    el.onpointerdown = hover;
+    el.onpointerleave = () => { xh.setAttribute('visibility', 'hidden'); hideTip(); };
+  }
+  function drawProgress() {
+    const el = $('#ch-prog'), cap = $('#ch-cap');
+    if (!el) return;
+    if (V.chart === 'score') {
+      const runs = R.filter(r => !r.q && r.m === V.mode), cnt = {};
+      for (const r of runs) cnt[r.key] = (cnt[r.key] || 0) + 1;
+      const key = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0];
+      const list = key ? runs.filter(r => r.key === key).slice(-60) : [];
+      lineChart(el, list.map(r => ({ v: r.score, label: shortDay(day(new Date(r.ts))), tip: `${esc(new Date(r.ts).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }))} · <b>${r.score}</b>` })), { lo: 0, fmt: v => String(Math.round(v)), aria: 'Score per game' });
+      if (key) { const [m, l, ops] = key.split(':'); cap.textContent = `Score per game in ${MODE_NAME[m]}, level ${l}${ops ? ', ' + opsText(ops) : ''}, your most played setup here.`; }
+      else cap.textContent = 'No finished games with these filters yet.';
+      return;
+    }
+    const D = byDay(A).filter(d => V.chart === 'accuracy' || Number.isFinite(d.med));
+    if (V.chart === 'accuracy') {
+      lineChart(el, D.map(d => ({ v: d.acc * 100, label: shortDay(d.k), tip: `${esc(fmtDay(d.k))} · <b>${pct(d.acc)}</b> · ${d.ok} of ${d.n}` })), { lo: Math.max(0, Math.floor((Math.min(...D.map(d => d.acc * 100)) - 5) / 10) * 10), hi: 100, fmt: v => Math.round(v) + '%', aria: 'Accuracy by day' });
+      cap.textContent = 'Share of answers right, each day you played. Higher is better.';
+    } else {
+      lineChart(el, D.map(d => ({ v: d.med, label: shortDay(d.k), tip: `${esc(fmtDay(d.k))} · <b>${secs(d.med)}</b> median · ${d.n} answers` })), { lo: 0, fmt: (v, end) => end ? secs(v) : +v.toFixed(2) + 's', aria: 'Median answer time by day' });
+      cap.textContent = 'Median seconds per correct answer, each day you played. Lower is faster.';
+    }
+  }
+
+  /* ----- tooltip ----- */
+  function showTip(html, x, y) {
+    tip.innerHTML = html;
+    tip.hidden = false;
+    const w = tip.offsetWidth / 2 + 8;
+    tip.style.left = clamp(x, w, innerWidth - w) + 'px';
+    tip.style.top = Math.max(tip.offsetHeight + 16, y) + 'px';
+  }
+  function hideTip() { tip.hidden = true; }
+
+  /* ----- render + events ----- */
+  function render() {
+    if (!V.mode) V.mode = settings.mode;
+    t0 = since();
+    A = LOG.filter(e => fits(e));
+    R = RUNS.filter(r => fits(r));
+    syncFilters();
+    hideTip();
+    body.innerHTML = `<div class="st-wrap">${secHero()}${secProgress()}${secTower()}${secProblems()}${secMistakes()}${secOps()}${secPractice()}${secRecords()}${secFoot()}</div>`;
+    drawProgress();
+    if (picked) { const c = $(`#tower .c[data-k="${picked}"]`); if (c) c.classList.add('sel'); }
+  }
+  function selectCell(c) {
+    if (!c) return;
+    for (const x of $$('#tower .c.sel')) x.classList.remove('sel');
+    c.classList.add('sel');
+    $('#cell-info').innerHTML = cellInfo(c.dataset.k);
+  }
+  $('#st-filters').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    V[b.parentElement.dataset.f] = b.dataset.v;
+    more = false; save(); Sfx.ui(); render();
+  });
+  body.addEventListener('click', e => {
+    const b = e.target.closest('button, .c');
+    if (!b) return;
+    if (b.classList.contains('c')) return selectCell(b);
+    const set = b.parentElement && b.parentElement.dataset.set;
+    if (set) {
+      const top = body.scrollTop;
+      V[set] = set === 'size' ? +b.dataset.v : b.dataset.v;
+      if (set === 'ptab' || set === 'pop') more = false;
+      save(); Sfx.ui(); render(); body.scrollTop = top;
+      return;
+    }
+    if (b.classList.contains('prow')) {
+      const i = +b.dataset.i, det = $('#pd-' + i), open = det.hidden;
+      if (open) det.innerHTML = problemDetail(groupsShown[i]);
+      det.hidden = !open;
+      b.classList.toggle('open', open);
+      b.setAttribute('aria-expanded', open);
+      return;
+    }
+    const act = b.dataset.act;
+    if (act === 'more') { const top = body.scrollTop; more = !more; render(); body.scrollTop = top; }
+    else if (act === 'backup') backup();
+    else if (act === 'restore') $('#restore-file').click();
+  });
+  body.addEventListener('pointerover', e => {
+    const c = e.target.closest('#tower .c');
+    if (c && finePointer.matches) selectCell(c);
+    const t = e.target.closest('[data-tip]');
+    if (t) { const b = t.getBoundingClientRect(); showTip(esc(t.dataset.tip), b.left + b.width / 2, b.top); }
+  });
+  body.addEventListener('pointerout', e => { if (e.target.closest('[data-tip]')) hideTip(); });
+  body.addEventListener('pointerdown', e => {
+    const t = e.target.closest('[data-tip]');
+    if (t && !finePointer.matches) { const b = t.getBoundingClientRect(); showTip(esc(t.dataset.tip), b.left + b.width / 2, b.top); }
+  });
+  body.addEventListener('scroll', hideTip, { passive: true });
+
+  /* ----- backup and restore (how two devices get merged) ----- */
+  const footMsg = t => { const m = $('#foot-msg'); if (m) m.textContent = t; };
+  function backup() {
+    const name = `quick-math-${day()}.json`, text = JSON.stringify({ app: 'quickmath', v: 2, at: Date.now(), attempts: LOG, runs: RUNS, legacy });
+    const blob = new Blob([text], { type: 'application/json' });
+    try {
+      const file = new File([blob], name, { type: 'application/json' });
+      if (COARSE.matches && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file] }).catch(() => {}); return; }
+    } catch (e) {}
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    footMsg(`Downloading ${name}.`);
+  }
+  async function restore(file) {
+    let d = null;
+    try { d = JSON.parse(await file.text()); } catch (e) {}
+    if (!d || d.app !== 'quickmath') { footMsg("That file isn't a Quick Math backup."); return; }
+    const sig = e => `${e.ts}|${e.o}|${e.x}|${e.y}|${e.g}|${e.m}`, have = new Set(LOG.map(sig)), haveR = new Set(RUNS.map(r => r.ts + r.m));
+    let added = 0;
+    for (const e of d.attempts || []) if (e && e.ts && !have.has(sig(e))) { have.add(sig(e)); Data.add('attempts', e); added++; }
+    for (const r of d.runs || []) if (r && r.ts && !haveR.has(r.ts + r.m)) { haveR.add(r.ts + r.m); Data.add('runs', r); }
+    // the old running totals can only be merged once per source, or they'd double count
+    const L = d.legacy, merged = store.get('merged', []), id = L && JSON.stringify([L.meta && L.meta.days, L.meta && L.meta.solved]);
+    if (L && L.meta && !merged.includes(id) && id !== JSON.stringify([legacy.meta.days, legacy.meta.solved])) {
+      legacy.meta.days = [...new Set([...legacy.meta.days, ...(L.meta.days || [])])].sort();
+      legacy.meta.solved += L.meta.solved || 0;
+      for (const [k, v] of Object.entries(L.bests || {})) legacy.bests[k] = Math.max(legacy.bests[k] || 0, v);
+      for (const [k, v] of Object.entries(L.hist || {})) if (!legacy.hist[k]) legacy.hist[k] = v;
+      for (const [k, f] of Object.entries(L.facts || {})) {
+        const m = legacy.facts[k];
+        if (!m) { legacy.facts[k] = f; continue; }
+        const n = m.n + f.n;
+        m.t = n ? +(((m.t || 0) * m.n + (f.t || 0) * f.n) / n).toFixed(3) : m.t;
+        m.n = n; m.c += f.c;
+      }
+      saveLegacy();
+      store.set('merged', merged.concat(id));
+    }
+    Data.sort();
+    Data.rebuild();
+    render();
+    footMsg(added ? `Merged ${added.toLocaleString()} answers.` : 'Already up to date.');
+  }
+  $('#restore-file').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) restore(f); });
+
+  return {
+    open() {
+      show('stats');
+      render();
+      body.scrollTop = 0;
+      Data.load().then(() => { if (screen === 'stats') { const top = body.scrollTop; render(); body.scrollTop = top; } });
+    },
+    render() { const top = body.scrollTop; render(); body.scrollTop = top; },
+  };
+})();
 
 /* ---------- menu ---------- */
 function renderMenu() {
@@ -1527,7 +2380,7 @@ function renderMenu() {
   for (const b of $$('.ops button')) { const on = settings.ops.includes(b.dataset.op); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }
   for (const b of $$('.levels button')) { const l = +b.dataset.level; b.classList.toggle('on', l <= settings.level); b.setAttribute('aria-checked', l === settings.level); }
   $('.ops').classList.toggle('off', settings.mode === 'flash');
-  const best = settings.mode === 'zen' ? 0 : bests[cfgKey()] || 0, be = $('#best');
+  const best = settings.mode === 'zen' ? 0 : bestFor(cfgKey()), be = $('#best');
   be.style.visibility = best ? '' : 'hidden';
   be.querySelector('b').textContent = best;
   $('#b-sound').classList.toggle('muted', !settings.sound);
@@ -1557,11 +2410,9 @@ $('#b-go').addEventListener('click', () => Game.start());
 $('#b-again').addEventListener('click', () => Game.start());
 $('#b-menu').addEventListener('click', () => toMenu());
 $('#b-quit').addEventListener('click', () => Game.quit());
-$('#b-stats').addEventListener('click', e => { Sfx.unlock(); Sfx.ui(); openStats(); blurIfMouse(e, e.currentTarget); });
+$('#b-stats').addEventListener('click', e => { Sfx.unlock(); Sfx.ui(); Stats.open(); blurIfMouse(e, e.currentTarget); });
 $('#b-back').addEventListener('click', () => toMenu(false));
 $('#b-sound').addEventListener('click', e => { settings.sound = !settings.sound; saveSettings(); renderMenu(); Sfx.unlock(); Sfx.ui(); blurIfMouse(e, e.currentTarget); });
-$('#tower').addEventListener('pointerover', e => readCell(e.target.closest('.c')));
-$('#tower').addEventListener('pointerdown', e => readCell(e.target.closest('.c')));
 
 $('#pad').addEventListener('pointerdown', e => {
   const b = e.target.closest('button');
@@ -1600,14 +2451,13 @@ addEventListener('keydown', e => {
   }
   if (screen === 'stats' && (k === 'Escape' || k === 'Backspace')) { e.preventDefault(); toMenu(false); }
 });
-document.addEventListener('visibilitychange', () => { if (document.hidden) { Game.pause(); saveProgress(); } else Game.resume(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) Game.pause(); else Game.resume(); });
 addEventListener('blur', () => Game.pause());
 addEventListener('focus', () => Game.resume());
-addEventListener('pagehide', saveProgress);
 document.addEventListener('gesturestart', e => e.preventDefault());
 let rz = 0;
 const buildCity = () => { try { City.build(); } catch (e) { console.error(e); } };
-addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { buildCity(); fit(); }, 120); });
+addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { buildCity(); fit(); if (screen === 'stats') Stats.render(); }, 120); });
 
 /* ---------- boot ---------- */
 let last = 0, cityOk = true;
@@ -1623,6 +2473,7 @@ function frame(ts) {
 function boot() {
   buildCity();
   renderMenu();
+  Data.load().then(() => { if (screen === 'menu') renderMenu(); });
   fit();
   requestAnimationFrame(frame);
   if (document.fonts && document.fonts.load) {
