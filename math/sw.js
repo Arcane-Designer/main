@@ -1,7 +1,7 @@
 // Offline support for /math/ only. Pages are network-first so updates show up right away;
 // everything else is served from cache and refreshed in the background.
-const V = 'quickmath-v1';
-const SHELL = ['./', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
+const V = 'quickmath-v2-neon-math';
+const SHELL = ['./', 'manifest.webmanifest?v=neon-city-math-3', 'icon-192.png?v=neon-city-math-3', 'icon-512.png?v=neon-city-math-3', 'icon-maskable-512.png?v=neon-city-math-3', 'apple-touch-icon.png?v=neon-city-math-3'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
