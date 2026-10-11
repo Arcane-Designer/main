@@ -946,11 +946,62 @@ const Data = (() => {
 const Sync = (() => {
   const ENDPOINT = 'https://quickmath-sync.nathanagellatly.workers.dev/sync';
   const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-  const S = Object.assign({ key: '', device: '', cursor: 0, boot: true, last: 0, devices: 0, err: '' }, store.get('sync', {}));
+  const validKey = k => /^[A-Z2-7]{20}$/.test(k || '');
+  // Safari copies cookies into a newly installed home-screen app, but not localStorage.
+  // Keep only the connection here; answers stay in IndexedDB and the private sync space.
+  const COOKIE = 'quickmath_connection';
+  let inherited = '';
+  try { inherited = (document.cookie.split('; ').find(c => c.startsWith(COOKIE + '=')) || '').slice(COOKIE.length + 1); } catch (e) {}
+  const saved = store.get('sync', null);
+  const S = Object.assign({ key: '', device: '', cursor: 0, boot: true, last: 0, devices: 0, err: '', disabled: false }, saved || {});
+  if (!validKey(S.key)) S.key = '';
+  if (!S.key && !S.disabled && validKey(inherited)) Object.assign(S, { key: inherited, device: '', cursor: 0, boot: true, savedAnswers: 0 });
+  if (!S.key && inherited === 'off') S.disabled = true;
   const rnd = n => { const b = new Uint8Array(n); crypto.getRandomValues(b); return [...b].map(x => ALPHA[x & 31]).join(''); };
   if (!S.device) S.device = rnd(16);
-  const save = () => store.set('sync', S);
-  save();
+  // A second independent copy survives localStorage failure without changing the history DB.
+  let connectionDB = null, connectionOpening = null, initialized = false, epoch = 0;
+  const openConnection = () => {
+    if (connectionDB) return Promise.resolve(connectionDB);
+    if (connectionOpening) return connectionOpening;
+    connectionOpening = new Promise(resolve => {
+      let done = false;
+      const finish = value => { if (!done) { done = true; clearTimeout(timer); resolve(value); } };
+      const timer = setTimeout(() => finish(null), 4000);
+      try {
+        const req = indexedDB.open('quickmath-connection', 1);
+        req.onupgradeneeded = () => req.result.createObjectStore('settings');
+        req.onsuccess = () => {
+          if (done) { req.result.close(); return; }
+          connectionDB = req.result;
+          connectionDB.onversionchange = () => { connectionDB.close(); connectionDB = null; };
+          connectionDB.onclose = () => { connectionDB = null; };
+          finish(connectionDB);
+        };
+        req.onerror = () => finish(null);
+      } catch (e) { finish(null); }
+    }).finally(() => { connectionOpening = null; });
+    return connectionOpening;
+  };
+  const disk = async (value = null) => {
+    const db = await openConnection(); if (!db) return null;
+    return new Promise(resolve => {
+      try {
+        const tx = db.transaction('settings', value ? 'readwrite' : 'readonly');
+        const req = value ? tx.objectStore('settings').put(value, 'sync') : tx.objectStore('settings').get('sync');
+        tx.oncomplete = () => resolve(value || req.result || null);
+        tx.onerror = tx.onabort = () => resolve(null);
+      } catch (e) { resolve(null); }
+    });
+  };
+  const save = () => {
+    const ok = store.set('sync', S);
+    if (available() && location.protocol === 'https:') try {
+      document.cookie = `${COOKIE}=${S.key || 'off'}; Max-Age=31536000; Path=/math; Secure; SameSite=Strict`;
+    } catch (e) {}
+    if (initialized) disk({ ...S });
+    return ok;
+  };
   // sync only runs on the real site; the claude.ai preview has no manifest and no access to the service
   const available = () => !!document.querySelector('link[rel="manifest"]');
   const enabled = () => !!S.key && available();
@@ -960,6 +1011,17 @@ const Sync = (() => {
   const label = () => `${matchMedia('(display-mode: standalone)').matches || navigator.standalone ? 'app' : 'browser'} on ${/iPhone|iPad|Android/.test(navigator.userAgent) || navigator.maxTouchPoints > 1 ? 'phone' : 'computer'}`;
   const listeners = [];
   let busy = null, timer = 0;
+  const init = async () => {
+    const at = epoch;
+    const prior = await disk();
+    if (epoch === at && !S.key && !S.disabled && prior && prior.disabled) S.disabled = true;
+    if (epoch === at && !S.key && !S.disabled && prior && validKey(prior.key)) {
+      // Replaying with a fresh device also restores chunks uploaded by the previous identity.
+      Object.assign(S, { key: prior.key, device: rnd(16), cursor: 0, boot: true, savedAnswers: 0 });
+    }
+    initialized = true; save();
+    for (const f of listeners) f(0);
+  };
 
   async function post(body) {
     // text/plain keeps this a simple request, so there's no extra preflight round trip
@@ -1003,7 +1065,7 @@ const Sync = (() => {
       const accept = async res => { if (S.key !== key) throw new Error('Sync code changed'); return take(res, key); };
       try {
         // the first sync on a code sends everything this device has; after that only the outbox
-        if ((S.cursor > 0 && !LOG.length && !RUNS.length) || Number(S.savedAnswers) > LOG.length) {
+        if ((S.cursor > 0 && !LOG.length && !RUNS.length) || Number(S.savedAnswers) > LOG.length || Number(S.savedRuns) > RUNS.length || Number(S.savedLegacyDays) > legacyOwn.meta.days.length || Number(S.savedLegacySolved) > (legacyOwn.meta.solved || 0)) {
           // A missing local database must be allowed to pull this device's own cloud history too.
           S.device = rnd(16); S.cursor = 0; S.boot = true;
         }
@@ -1017,7 +1079,7 @@ const Sync = (() => {
         }
         await Data.clearOutbox(box);
         if (S.key !== key) throw new Error('Sync code changed');
-        S.boot = false; S.savedAnswers = LOG.length; S.last = Date.now(); S.err = '';
+        S.boot = false; S.savedAnswers = LOG.length; S.savedRuns = RUNS.length; S.savedLegacyDays = legacyOwn.meta.days.length; S.savedLegacySolved = legacyOwn.meta.solved || 0; S.last = Date.now(); S.err = '';
       } catch (e) {
         if (S.key === key) S.err = /could not save|could not be saved|acknowledgement/i.test(e.message) ? 'history could not be saved; sync will retry' : !navigator.onLine ? 'offline, will catch up when you reconnect' : /bad code/.test(e.message) ? 'that code is not valid' : "couldn't reach sync, will retry";
       }
@@ -1031,7 +1093,7 @@ const Sync = (() => {
     return busy;
   }
   function soon(ms = 1500) { clearTimeout(timer); if (enabled()) timer = setTimeout(run, ms); }
-  function use(key) { S.key = key; S.cursor = 0; S.boot = true; S.savedAnswers = 0; S.err = ''; save(); return busy ? busy.then(run) : run(); }
+  function use(key) { epoch++; S.key = key; S.disabled = false; S.cursor = 0; S.boot = true; S.savedAnswers = S.savedRuns = S.savedLegacyDays = S.savedLegacySolved = 0; S.err = ''; save(); return busy ? busy.then(run) : run(); }
   return {
     get available() { return available(); },
     get on() { return enabled(); },
@@ -1040,8 +1102,8 @@ const Sync = (() => {
     get state() { return { ...S }; },
     start: () => use(rnd(20)),
     join(code) { const k = clean(code); return /^[A-Z2-7]{20}$/.test(k) ? use(k) : null; },
-    stop() { S.key = ''; S.cursor = 0; S.boot = true; S.err = ''; save(); for (const f of listeners) f(0); },
-    run, soon,
+    stop() { epoch++; S.key = ''; S.disabled = true; S.cursor = 0; S.boot = true; S.err = ''; save(); for (const f of listeners) f(0); },
+    init, run, soon,
     onChange(f) { listeners.push(f); },
   };
 })();
@@ -2500,9 +2562,9 @@ const Stats = (() => {
     const body = Sync.on
       ? `<p class="note-line">On · <b>${n}</b> ${n === 1 ? 'device' : 'devices'} linked · ${Sync.busy ? 'syncing now' : st.last ? 'last synced ' + ago(st.last) : 'waiting to sync'}${st.err ? ` · <span class="warn">${esc(st.err)}</span>` : ''}</p>
         <div class="sync-code"><code>${Sync.code}</code><button data-act="sync-copy">Copy code</button></div>
-        <p class="note-line">Enter this code here on your other devices to link them. After that, every game on any of them shows up on all of them.</p>
+        <p class="note-line">Your history is linked and reconnects automatically after updates. Open Math in Safari with this same code before adding it to your home screen so the new app inherits the connection. Keep a backup before removing an app.</p>
         <div class="sync-acts"><button data-act="sync-now">Sync now</button><button data-act="sync-off">Turn off</button></div>`
-      : `<p class="note-line">Off. This device only knows about games played on it.</p>
+      : `<p class="note-line">Off. History is saved only on this device. To recover earlier practice, join with your existing code or restore a backup. Turning on a new connection creates separate cloud history.</p>
         <div class="sync-acts"><button class="sync-go" data-act="sync-start">Turn on sync</button></div>
         <form class="sync-join" data-act="sync-join"><input id="sync-code" name="code" placeholder="or paste a code" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" aria-label="Sync code from another device"><button type="submit">Join</button></form>`;
     return `<section class="sec span2" id="sync-sec">${head('Sync', '同期')}${warning}${body}<span class="msg" id="sync-msg"></span>
@@ -2678,7 +2740,7 @@ const Stats = (() => {
   const footMsg = t => { const m = $('#foot-msg'); if (m) m.textContent = t; };
   async function backup() {
     await Data.load();
-    const name = `quick-math-${day()}.json`, text = JSON.stringify({ app: 'quickmath', v: 3, at: Date.now(), attempts: LOG, runs: RUNS, legacy: legacyOwn, legacySources: store.get('legacyRemote', {}) });
+    const name = `quick-math-${day()}.json`, text = JSON.stringify({ app: 'quickmath', v: 4, at: Date.now(), attempts: LOG, runs: RUNS, legacy: legacyOwn, legacySources: store.get('legacyRemote', {}), connection: Sync.on ? { key: Sync.state.key } : null });
     const blob = new Blob([text], { type: 'application/json' });
     try {
       const file = new File([blob], name, { type: 'application/json' });
@@ -2717,6 +2779,8 @@ const Stats = (() => {
     if (!store.set('legacyRemote', sources)) throw new Error('Could not save older history');
     mergeLegacy();
     await Data.durable();
+    // Restore the connection as well as history, but preserve an already linked device.
+    if (!Sync.on && d.connection && /^[A-Z2-7]{20}$/.test(d.connection.key || '')) await Sync.join(d.connection.key);
     Sync.soon(300);
     Data.sort();
     Data.rebuild();
@@ -2843,7 +2907,8 @@ function frame(ts) {
 function boot() {
   buildCity();
   renderMenu();
-  Data.load().then(() => {
+  Data.load().then(async () => {
+    await Sync.init();
     if (screen === 'menu') renderMenu();
     // a link like /math/#join=CODE links this copy of the app
     const m = location.hash.match(/join=([A-Za-z0-9-]+)/);

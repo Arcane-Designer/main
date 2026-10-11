@@ -1,6 +1,6 @@
 // Offline support for /math/ only. Pages are network-first so updates show up right away;
 // everything else is served from cache and refreshed in the background.
-const V = 'quickmath-v3-stats-repair';
+const V = 'quickmath-v4-history-recovery';
 const SHELL = ['./', 'manifest.webmanifest?v=neon-city-math-3', 'icon-192.png?v=neon-city-math-3', 'icon-512.png?v=neon-city-math-3', 'icon-maskable-512.png?v=neon-city-math-3', 'apple-touch-icon.png?v=neon-city-math-3'];
 
 self.addEventListener('install', e => {
