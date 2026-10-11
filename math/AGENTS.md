@@ -2,6 +2,12 @@
 
 Every release must retain existing practice history and the existing Sync connection.
 
+## Authorization
+
+Nathan's requests to fix, improve, or update his personal Quick Math game authorize implementation, testing, pushing, and deployment to arcanedesigner.com/math. Complete the requested work without asking for approval for each push. This standing authorization is specific to Quick Math; keep client projects and other consequential actions under their own approval rules. Ask only when a step materially changes the requested scope, involves spending, deletes personal history, or changes account access.
+
+## Release requirements
+
 - Keep the `qm1:` storage namespace and the `quickmath` IndexedDB database. Change the schema only with an additive, tested migration.
 - Keep history independent of streaks and Stats filters. Include attempted answers, interrupted sessions, and legacy practice dates.
 - Merge restored and received records by identity. Preserve pending writes and acknowledge only records saved durably.
