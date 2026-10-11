@@ -519,6 +519,13 @@ body.kbd .pad { display: none; }
   .menu-core > *, .res > *, .sign.ig, .sign.fl, .sign.short, .answer.bad, .shake, .pop, .caret { animation: none !important; }
   .echo, .float { animation-duration: .01s !important; }
 }
+
+#save-status { position: fixed; bottom: max(16px, env(safe-area-inset-bottom)); left: 16px; right: 16px; z-index: 12; background: #120d24; color: var(--amber); border: 1px solid var(--amber); padding: 12px; font: 11px/1.5 var(--mono); }
+.practice-history { margin-top: 24px; }
+.practice-history summary, .practice-history button { color: var(--cyan-core); cursor: pointer; padding: 12px 0; }
+.history-days > div { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid #211a36; font-size: 11px; }
+.history-days b { font-weight: 400; color: var(--ink); }
+.history-days span { color: var(--dim); }
 </style>
 </head>
 <body>
@@ -591,6 +598,7 @@ body.kbd .pad { display: none; }
   </div>
 </section>
 
+<div id="save-status" role="status" hidden></div>
 <section id="stats" class="screen" hidden>
   <div class="st">
     <div class="st-top">
@@ -631,7 +639,7 @@ const reflow = el => void el.offsetWidth;
 /* ---------- saved state ---------- */
 const store = {
   get(k, d) { try { const v = localStorage.getItem('qm1:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem('qm1:' + k, JSON.stringify(v)); } catch (e) {} },
+  set(k, v) { try { localStorage.setItem('qm1:' + k, JSON.stringify(v)); return true; } catch (e) { return false; } },
 };
 const OPS = { add: '+', sub: '−', mul: '×', div: '÷' };
 const MODES = ['sprint', 'survival', 'flash', 'zen'];
@@ -648,13 +656,17 @@ const legacyOwn = {
 };
 // what every linked device (and any restored backup) had before the log existed, keyed by source
 const legacy = { bests: {}, hist: {}, facts: {}, meta: { solved: 0, days: [] } };
-const legacySnapshot = () => ({ days: legacyOwn.meta.days, solved: legacyOwn.meta.solved, bests: legacyOwn.bests, hist: legacyOwn.hist, facts: legacyOwn.facts });
+const legacySnapshot = () => ({ days: legacyOwn.meta.days, solved: legacyOwn.meta.solved, bests: legacyOwn.bests, hist: legacyOwn.hist, facts: legacyOwn.facts, sources: store.get('legacyRemote', {}) });
+const canonical = v => JSON.stringify(v, (k, x) => x && !Array.isArray(x) && typeof x === 'object' ? Object.fromEntries(Object.keys(x).sort().map(k => [k, x[k]])) : x);
+const legacySignature = L => canonical({ days: (L.days || []).slice().sort(), solved: L.solved || 0, bests: L.bests || {}, hist: L.hist || {}, facts: L.facts || {} });
 function mergeLegacy() {
   const days = new Set(legacyOwn.meta.days), bests = { ...legacyOwn.bests }, hist = { ...legacyOwn.hist }, fx = {};
   let solved = legacyOwn.meta.solved || 0;
   for (const [k, f] of Object.entries(legacyOwn.facts)) fx[k] = { ...f };
+  const seen = new Set([legacySignature(legacySnapshot())]);
   for (const L of Object.values(store.get('legacyRemote', {}))) {
-    if (!L) continue;
+    if (!L || seen.has(legacySignature(L))) continue;
+    seen.add(legacySignature(L));
     for (const d of L.days || []) days.add(d);
     solved += L.solved || 0;
     for (const [k, v] of Object.entries(L.bests || {})) bests[k] = Math.max(bests[k] || 0, v);
@@ -674,6 +686,7 @@ const facts = {};
 const LOG = [], RUNS = [];
 const saveSettings = () => store.set('settings', settings);
 const cfgKey = () => settings.mode === 'flash' ? `flash:${settings.level}` : `${settings.mode}:${settings.level}:${settings.ops.join('')}`;
+const uid = () => crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const day = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 /* ---------- problems ---------- */
@@ -747,94 +760,187 @@ function factKey(e) {
 
 /* ---------- the log ---------- */
 const Data = (() => {
-  let db = null, ready = false;
-  const pending = [];
+  let db = null, opening = null, loading = null, flushing = null, ready = false, error = '', readError = '', revision = 0;
+  const pending = new Map();
   const ids = { attempts: new Set(), runs: new Set() };
-  const idOf = (name, v) => name === 'runs' ? `${v.ts}|${v.m}` : `${v.ts}|${v.o}|${v.x}|${v.y}|${v.g}|${v.m}`;
-  const open = () => new Promise(res => {
-    let done = false;
-    const finish = v => { if (!done) { done = true; res(v); } };
-    try {
-      const rq = indexedDB.open('quickmath', 2);
-      rq.onupgradeneeded = () => { for (const n of ['attempts', 'runs', 'outbox']) if (!rq.result.objectStoreNames.contains(n)) rq.result.createObjectStore(n, { autoIncrement: true }); };
-      rq.onsuccess = () => { const d = rq.result; d.onversionchange = () => d.close(); if (done) db = d; finish(d); };
-      rq.onerror = () => finish(null);
-      // an older copy of the app open in another window can hold up the upgrade; don't wait on it forever
-      setTimeout(() => finish(null), 4000);
-    } catch (e) { finish(null); }
-  });
-  const getAll = name => new Promise(res => {
-    try { const rq = db.transaction(name).objectStore(name).getAll(); rq.onsuccess = () => res(rq.result || []); rq.onerror = () => res(null); }
-    catch (e) { res(null); }
-  });
-  const write = (names, fn) => { try { if (db) fn(db.transaction(names, 'readwrite')); } catch (e) {} };
+  const PREFIX = 'qm1:pending:';
+  const idOf = (name, v) => v.id || (name === 'runs' ? `${v.ts}|${v.m}` : `${v.ts}|${v.o}|${v.x}|${v.y}|${v.g}|${v.m}`);
+  const keyOf = (name, v) => name + ':' + idOf(name, v);
   const byTs = (a, b) => a.ts - b.ts;
-  const fill = (arr, name, src) => {
-    arr.length = 0; ids[name].clear();
-    for (const v of src) { const id = idOf(name, v); if (!ids[name].has(id)) { ids[name].add(id); arr.push(v); } }
-    arr.sort(byTs);
+  const valid = (name, v) => v && Number.isFinite(v.ts) && v.ts > 0 && MODES.includes(v.m) && (name === 'runs' ? Number.isFinite(v.tries) : typeof v.ok === 'boolean' && Number.isFinite(v.t) && ['+', '−', '×', '÷', 'Σ'].includes(v.o) && (v.o !== 'Σ' || Array.isArray(v.s)));
+  const journal = item => {
+    try { localStorage.setItem(PREFIX + keyOf(item.name, item.v), JSON.stringify(item)); return true; }
+    catch (e) { error = 'Practice is not saved yet. Keep this app open and back up your stats.';
+      const status = document.getElementById('save-status'); if (status) { status.textContent = error; status.hidden = false; }
+      return false; }
   };
+  const unjournal = item => { try { localStorage.removeItem(PREFIX + keyOf(item.name, item.v)); } catch (e) {} };
+  const remember = (name, v) => {
+    const id = idOf(name, v);
+    if (ids[name].has(id)) return false;
+    ids[name].add(id); revision++;
+    if (name === 'runs') {
+      const same = r => v.sid && r.sid ? v.sid === r.sid : r.ts === v.ts && r.m === v.m;
+      const i = RUNS.findIndex(same), prior = RUNS[i];
+      // Session checkpoints are revisions, never extra games or extra practice time.
+      if (!prior) RUNS.push(v);
+      else if ((!v.q && prior.q) || (v.q === prior.q && (v.end || v.ts) >= (prior.end || prior.ts))) RUNS[i] = v;
+    } else LOG.push(v);
+    return true;
+  };
+  function recover() {
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key || !key.startsWith(PREFIX)) continue;
+        try {
+          const item = JSON.parse(localStorage.getItem(key));
+          if (!['attempts', 'runs'].includes(item.name) || !valid(item.name, item.v)) continue;
+          const id = keyOf(item.name, item.v);
+          if (!pending.has(id)) pending.set(id, item);
+          remember(item.name, item.v);
+        } catch (e) {}
+      }
+    } catch (e) {}
+  }
+  const open = () => {
+    if (db) return Promise.resolve(db);
+    if (opening) return opening;
+    opening = new Promise(res => {
+      let done = false;
+      const finish = v => { if (!done) { done = true; clearTimeout(timer); opening = null; res(v); } };
+      const timer = setTimeout(() => finish(null), 4000);
+      try {
+        const rq = indexedDB.open('quickmath', 2);
+        rq.onupgradeneeded = () => { for (const n of ['attempts', 'runs', 'outbox']) if (!rq.result.objectStoreNames.contains(n)) rq.result.createObjectStore(n, { autoIncrement: true }); };
+        rq.onsuccess = () => {
+          const connection = rq.result;
+          if (db && db !== connection) db.close();
+          db = connection;
+          connection.onversionchange = () => { connection.close(); if (db === connection) db = null; };
+          connection.onclose = () => { if (db === connection) db = null; };
+          finish(db);
+          // A blocked database may finish opening after the timeout. Recover the journal then.
+          if (ready) Promise.resolve(loading).then(() => load());
+        };
+        rq.onerror = () => finish(null);
+      } catch (e) { finish(null); }
+    }).finally(() => { opening = null; });
+    return opening;
+  };
+  const getAll = name => new Promise((res, rej) => {
+    try {
+      const tx = db.transaction(name), rq = tx.objectStore(name).getAll();
+      rq.onsuccess = () => res(rq.result || []);
+      rq.onerror = () => rej(rq.error); tx.onabort = () => rej(tx.error);
+    } catch (e) { rej(e); }
+  });
+  const write = item => new Promise((res, rej) => {
+    try {
+      const names = item.local && !item.sent ? [item.name, 'outbox'] : [item.name];
+      const tx = db.transaction(names, 'readwrite');
+      tx.objectStore(item.name).add(item.v);
+      if (names.length > 1) tx.objectStore('outbox').add({ k: item.name === 'runs' ? 'r' : 'a', v: item.v });
+      tx.oncomplete = res; tx.onerror = tx.onabort = () => rej(tx.error || new Error('Save failed'));
+    } catch (e) { rej(e); }
+  });
   function rebuild() {
     for (const k in facts) delete facts[k];
     for (const k in legacy.facts) facts[k] = Object.assign({}, legacy.facts[k]);
+    LOG.sort(byTs); RUNS.sort(byTs);
     for (const e of LOG) recordFact(factKey(e), e.ok, e.t);
   }
-  // Re-reading on every visit to the stats keeps windows in sync; writes are appends, so nothing is overwritten.
-  async function load() {
-    if (!db) db = await open();
+  function flush() {
+    if (flushing) return flushing;
+    flushing = (async () => {
+      try {
+        if (!db) await open();
+        if (db) for (const [key, item] of pending) {
+          await write(item);
+          pending.delete(key); unjournal(item);
+        }
+      } catch (e) { error = 'Using a recovery copy. Keep a backup until saving is working again.'; }
+      if (!pending.size && db) { error = ''; const status = document.getElementById('save-status'); if (status) status.hidden = true; }
+      else if (pending.size) {
+        const durable = [...pending.values()].every(journal);
+        if (durable) error = 'Using a recovery copy on this device. Your practice will move into the main history when saving is available.';
+      }
+    })().finally(() => { flushing = null; });
+    return flushing;
+  }
+  function load() {
+    if (loading) return loading;
+    loading = (async () => {
+      recover(); mergeLegacy();
+      if (!db) await open();
+      if (db) {
+        try {
+          const [a, r] = await Promise.all([getAll('attempts'), getAll('runs')]);
+          // Merge, never replace in-memory answers recorded while the read was in flight.
+          readError = '';
+          for (const [name, src] of [['attempts', a], ['runs', r]]) for (const v of src) if (valid(name, v)) {
+            remember(name, v);
+            const key = keyOf(name, v), item = pending.get(key);
+            if (item) { pending.delete(key); unjournal(item); }
+          }
+        } catch (e) { readError = 'Could not read all saved history. Keep a backup and try reopening Stats.'; }
+      }
+      ready = true;
+      await flush(); rebuild();
+    })().finally(() => { loading = null; });
+    return loading;
+  }
+  function enqueue(name, v, local) {
+    if (!valid(name, v) || !remember(name, v)) return false;
+    const item = { name, v, local };
+    pending.set(keyOf(name, v), item);
+    // This synchronous recovery entry survives closing the app before IndexedDB commits.
+    journal(item);
+    if (ready) flush();
+    return true;
+  }
+  const outbox = async () => {
+    await flush();
+    const out = { a: [], r: [], keys: [], pending: [] };
     if (db) {
-      const [a, r] = await Promise.all([getAll('attempts'), getAll('runs')]);
-      if (a) fill(LOG, 'attempts', a);
-      if (r) fill(RUNS, 'runs', r);
+      await new Promise((res, rej) => {
+        try {
+          const tx = db.transaction('outbox'), c = tx.objectStore('outbox').openCursor();
+          c.onsuccess = () => {
+            const cur = c.result; if (!cur) return res();
+            out.keys.push(cur.key); (cur.value.k === 'r' ? out.r : out.a).push(cur.value.v); cur.continue();
+          };
+          c.onerror = () => rej(c.error); tx.onabort = () => rej(tx.error);
+        } catch (e) { rej(e); }
+      });
     }
-    ready = true;
-    while (pending.length) add(...pending.shift());
-    rebuild();
-  }
-  // things this device creates also go in the outbox until the sync service has them
-  function add(name, v) {
-    if (!ready) { pending.push([name, v]); return true; }
-    const id = idOf(name, v);
-    if (ids[name].has(id)) return false;
-    ids[name].add(id);
-    (name === 'runs' ? RUNS : LOG).push(v);
-    write([name, 'outbox'], t => { t.objectStore(name).add(v); t.objectStore('outbox').add({ k: name === 'runs' ? 'r' : 'a', v }); });
-    return true;
-  }
-  function addRemote(name, v) {
-    const id = idOf(name, v);
-    if (ids[name].has(id)) return false;
-    ids[name].add(id);
-    (name === 'runs' ? RUNS : LOG).push(v);
-    write([name], t => t.objectStore(name).add(v));
-    return true;
-  }
-  const outbox = () => new Promise(res => {
-    const out = { a: [], r: [], keys: [] };
-    if (!db) return res(out);
-    try {
-      const c = db.transaction('outbox').objectStore('outbox').openCursor();
-      c.onsuccess = () => {
-        const cur = c.result;
-        if (!cur) return res(out);
-        out.keys.push(cur.key);
-        (cur.value.k === 'r' ? out.r : out.a).push(cur.value.v);
-        cur.continue();
-      };
-      c.onerror = () => res(out);
-    } catch (e) { res(out); }
-  });
-  // keys are increasing integers, so a range delete leaves anything added while a sync was running
-  const clearOutbox = keys => new Promise(res => {
-    if (!db || !keys.length) return res();
-    try {
-      const t = db.transaction('outbox', 'readwrite');
-      t.objectStore('outbox').delete(IDBKeyRange.bound(keys[0], keys[keys.length - 1]));
-      t.oncomplete = t.onerror = t.onabort = () => res();
-    } catch (e) { res(); }
-  });
-  return { load, add, addRemote, rebuild, outbox, clearOutbox, sort() { LOG.sort(byTs); RUNS.sort(byTs); }, get ready() { return ready; }, get saved() { return !!db; } };
+    for (const [key, item] of pending) if (item.local && !item.sent) {
+      (item.name === 'runs' ? out.r : out.a).push(item.v); out.pending.push(key);
+    }
+    return out;
+  };
+  const clearOutbox = async box => {
+    // Exact acknowledgements leave answers added during sync untouched.
+    if (db && box.keys.length) await new Promise((res, rej) => {
+      try {
+        const tx = db.transaction('outbox', 'readwrite');
+        for (const key of box.keys) tx.objectStore('outbox').delete(key);
+        tx.oncomplete = res; tx.onerror = tx.onabort = () => rej(tx.error);
+      } catch (e) { rej(e); }
+    });
+    for (const key of box.pending || []) {
+      const item = pending.get(key); if (item) { item.sent = true; if (!journal(item)) throw new Error('Cannot save sync acknowledgement'); }
+    }
+  };
+  const durable = async () => {
+    await flush();
+    // Only advance a sync cursor after every received record is safely stored.
+    if (![...pending.values()].every(journal)) throw new Error('History could not be saved');
+  };
+  return { load, flush, durable, idOf, add: (name, v) => enqueue(name, v, true), addRemote: (name, v) => enqueue(name, v, false), rebuild, outbox, clearOutbox,
+    sort() { LOG.sort(byTs); RUNS.sort(byTs); }, get ready() { return ready; }, get saved() { return !!db; }, get warning() { return readError || error; }, get revision() { return revision; } };
 })();
+
 
 /* ---------- sync across devices ---------- */
 const Sync = (() => {
@@ -857,12 +963,14 @@ const Sync = (() => {
 
   async function post(body) {
     // text/plain keeps this a simple request, so there's no extra preflight round trip
-    const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
-    const data = await r.json().catch(() => ({}));
+    const controller = new AbortController(), timeout = setTimeout(() => controller.abort(), 15000);
+    let r, data;
+    try { r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body), signal: controller.signal }); data = await r.json(); }
+    finally { clearTimeout(timeout); }
     if (!r.ok) throw new Error(data.error || 'HTTP ' + r.status);
     return data;
   }
-  function take(res) {
+  async function take(res, key) {
     let n = 0;
     for (const c of res.chunks || []) {
       for (const e of c.a || []) if (e && e.ts && Data.addRemote('attempts', e)) n++;
@@ -872,9 +980,16 @@ const Sync = (() => {
     let leg = false;
     for (const { device, body } of res.legacy || []) {
       const k = 'dev:' + device;
-      if (JSON.stringify(rem[k]) !== JSON.stringify(body)) { rem[k] = body; leg = true; }
+      const { sources, ...own } = body;
+      if (canonical(rem[k]) !== canonical(own)) { rem[k] = own; leg = true; }
+      for (const [source, snapshot] of Object.entries(sources || {})) {
+        if (source === 'dev:' + S.device) continue;
+        if (canonical(rem[source]) !== canonical(snapshot)) { rem[source] = snapshot; leg = true; }
+      }
     }
-    if (leg) { store.set('legacyRemote', rem); mergeLegacy(); n++; }
+    if (leg) { if (!store.set('legacyRemote', rem)) throw new Error('Could not save older history'); mergeLegacy(); n++; }
+    await Data.durable();
+    if (S.key !== key) throw new Error('Sync code changed');
     S.cursor = res.cursor || S.cursor;
     S.devices = res.devices || S.devices;
     return n;
@@ -884,22 +999,30 @@ const Sync = (() => {
     if (busy) return busy;
     busy = (async () => {
       let changed = 0;
+      const key = S.key, before = Data.revision;
+      const accept = async res => { if (S.key !== key) throw new Error('Sync code changed'); return take(res, key); };
       try {
         // the first sync on a code sends everything this device has; after that only the outbox
+        if ((S.cursor > 0 && !LOG.length && !RUNS.length) || Number(S.savedAnswers) > LOG.length) {
+          // A missing local database must be allowed to pull this device's own cloud history too.
+          S.device = rnd(16); S.cursor = 0; S.boot = true;
+        }
         const box = await Data.outbox();
         if (S.boot) { box.a = LOG.slice(); box.r = RUNS.slice(); }
-        const leg = legacySnapshot(), sendLeg = leg.days.length || leg.solved;
-        for (let i = 0; i < Math.max(1, box.a.length); i += 3000) {
-          let res = await post({ key: S.key, device: S.device, label: label(), since: S.cursor, push: { a: box.a.slice(i, i + 3000), r: i ? [] : box.r }, legacy: !i && sendLeg ? leg : null });
-          changed += take(res);
-          while (res.more) { res = await post({ key: S.key, device: S.device, label: label(), since: S.cursor }); changed += take(res); }
+        const leg = legacySnapshot(), sendLeg = leg.days.length || leg.solved || Object.keys(leg.sources).length;
+        for (let i = 0; i < Math.max(1, box.a.length, box.r.length); i += 1000) {
+          let res = await post({ key, device: S.device, label: label(), since: S.cursor, push: { a: box.a.slice(i, i + 1000), r: box.r.slice(i, i + 1000) }, legacy: !i && sendLeg ? leg : null });
+          changed += await accept(res);
+          while (res.more) { res = await post({ key, device: S.device, label: label(), since: S.cursor }); changed += await accept(res); }
         }
-        await Data.clearOutbox(box.keys);
-        S.boot = false; S.last = Date.now(); S.err = '';
+        await Data.clearOutbox(box);
+        if (S.key !== key) throw new Error('Sync code changed');
+        S.boot = false; S.savedAnswers = LOG.length; S.last = Date.now(); S.err = '';
       } catch (e) {
-        S.err = !navigator.onLine ? 'offline, will catch up when you reconnect' : /bad code/.test(e.message) ? 'that code is not valid' : "couldn't reach sync, will retry";
+        if (S.key === key) S.err = /could not save|could not be saved|acknowledgement/i.test(e.message) ? 'history could not be saved; sync will retry' : !navigator.onLine ? 'offline, will catch up when you reconnect' : /bad code/.test(e.message) ? 'that code is not valid' : "couldn't reach sync, will retry";
       }
-      save();
+      changed = Math.max(changed, Data.revision > before ? 1 : 0);
+      if (!save()) S.err = 'This device could not save the sync code. Keep the code and back up your history.';
       if (changed) { Data.sort(); Data.rebuild(); }
       busy = null;
       for (const f of listeners) f(changed);
@@ -908,7 +1031,7 @@ const Sync = (() => {
     return busy;
   }
   function soon(ms = 1500) { clearTimeout(timer); if (enabled()) timer = setTimeout(run, ms); }
-  function use(key) { S.key = key; S.cursor = 0; S.boot = true; S.err = ''; save(); return run(); }
+  function use(key) { S.key = key; S.cursor = 0; S.boot = true; S.savedAnswers = 0; S.err = ''; save(); return busy ? busy.then(run) : run(); }
   return {
     get available() { return available(); },
     get on() { return enabled(); },
@@ -923,8 +1046,13 @@ const Sync = (() => {
   };
 })();
 const dkCache = new WeakMap();
-const dayOf = e => { let k = dkCache.get(e); if (!k) dkCache.set(e, k = day(new Date(e.ts))); return k; };
-function playDays() { const s = new Set(legacy.meta.days); for (const e of LOG) s.add(dayOf(e)); return s; }
+const dayOf = e => { let k = dkCache.get(e); if (!k) dkCache.set(e, k = /^\d{4}-\d{2}-\d{2}$/.test(e.d || '') ? e.d : day(new Date(e.ts))); return k; };
+function playDays() {
+  const s = new Set(legacy.meta.days);
+  for (const e of LOG) s.add(dayOf(e));
+  for (const r of RUNS) if (r.tries > 0 && !LOG.some(e => e.r === r.ts && e.m === r.m)) s.add(dayOf(r));
+  return new Set([...s].filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k) && Number.isFinite(+new Date(k + 'T12:00:00')) && k <= day()));
+}
 function bestFor(key) { let b = legacy.bests[key] || 0; for (const r of RUNS) if (r.key === key && !r.q && r.score > b) b = r.score; return b; }
 function histFor(key) { return (legacy.hist[key] || []).concat(RUNS.filter(r => r.key === key && !r.q).map(r => r.score)).slice(-30); }
 
@@ -1577,7 +1705,7 @@ const Game = {
   start() {
     Sfx.unlock(); Haptic.init(); Sfx.down();
     run = {
-      mode: settings.mode, level: settings.level, ops: settings.ops.slice(), key: cfgKey(), best: bestFor(cfgKey()), id: Date.now(), active: 0,
+      mode: settings.mode, level: settings.level, ops: settings.ops.slice(), key: cfgKey(), best: bestFor(cfgKey()), id: Date.now(), uid: uid(), active: 0, checkpointAt: 0,
       phase: 'count', cd: 3, cdT: CD, after: null,
       score: 0, streak: 0, top: 0, tries: 0, right: 0, times: [], misses: [], retry: [],
       clock: settings.mode === 'sprint' ? 60 : settings.mode === 'survival' ? 15 : 0,
@@ -1629,6 +1757,7 @@ const Game = {
     if (!r || r.paused || r.phase === 'end') return;
     r.paused = true;
     r.pausedAt = now();
+    checkpointRun(r);
     el.play.classList.add('paused');
   },
   resume() {
@@ -1651,6 +1780,7 @@ const Game = {
     const r = run;
     if (!r || r.paused) return;
     if (r.phase !== 'count' && r.phase !== 'end') r.active += dt;
+    if (r.active - r.checkpointAt >= 10) checkpointRun(r);
     switch (r.phase) {
       case 'count':
         r.cdT -= dt;
@@ -1709,7 +1839,7 @@ function judge(ok) {
   const r = run, t = (now() - r.t0) / 1000;
   r.tries++;
   logAttempt(r, ok, t);
-  if (r.mode === 'flash') return flashJudge(ok, t);
+  if (r.mode === 'flash') { flashJudge(ok, t); checkpointRun(r); return; }
   recordFact(r.p.key, ok, t);
   if (ok) {
     r.right++; r.score++; r.streak++; r.top = Math.max(r.top, r.streak); r.times.push(t);
@@ -1726,17 +1856,25 @@ function judge(ok) {
     r.phase = 'reveal'; r.rv = r.mode === 'zen' ? 1.15 : .8; r.swapped = false;
     bad(r, pen);
   }
+  checkpointRun(r);
 }
 function logAttempt(r, ok, t) {
-  const e = { ts: Date.now(), m: r.mode, l: r.level, g: r.input, ok, t: Math.round(Math.min(t, 120) * 100) / 100, r: r.id };
+  const e = { id: uid(), d: day(), ts: Date.now(), m: r.mode, l: r.level, g: r.input, ok, t: Math.round(Math.min(t, 120) * 100) / 100, r: r.id };
   if (r.mode === 'flash') Object.assign(e, { o: 'Σ', s: r.seq.slice(), a: r.sum });
   else Object.assign(e, { o: OPS[r.p.op], x: r.p.x, y: r.p.y, a: r.p.ans });
   Data.add('attempts', e);
+  Sync.soon();
 }
 const runRecord = (r, q) => ({
-  ts: r.id, end: Date.now(), m: r.mode, l: r.level, ops: r.mode === 'flash' ? '' : r.ops.join(''), key: r.key,
+  id: uid(), sid: r.uid, d: day(new Date(r.id)), ts: r.id, end: Date.now(), m: r.mode, l: r.level, ops: r.mode === 'flash' ? '' : r.ops.join(''), key: r.key,
   score: r.score, tries: r.tries, right: r.right, top: r.top, dur: Math.round(r.active), q,
 });
+function checkpointRun(r) {
+  if (!r || !r.tries || r.phase === 'end') return;
+  r.checkpointAt = r.active;
+  Data.add('runs', runRecord(r, true));
+  Sync.soon();
+}
 function good(r, bonus) {
   Sfx.correct(r.streak);
   echo(r.input);
@@ -1939,12 +2077,11 @@ function dayStreak(set) {
   return n;
 }
 function longestStreak(set) {
-  let best = 0, cur = 0, prev = 0;
-  for (const k of [...set].sort()) {
-    const t = +dateOf(k);
-    cur = prev && Math.round((t - prev) / 864e5) === 1 ? cur + 1 : 1;
-    best = Math.max(best, cur);
-    prev = t;
+  let best = 0, cur = 0, prev = null;
+  for (const k of [...set].filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k) && k <= day()).sort()) {
+    const [y, m, d] = k.split('-').map(Number), ordinal = Date.UTC(y, m - 1, d) / 864e5;
+    cur = prev !== null && ordinal - prev === 1 ? cur + 1 : 1;
+    best = Math.max(best, cur); prev = ordinal;
   }
   return best;
 }
@@ -2015,9 +2152,14 @@ function why(e) {
 
 const Stats = (() => {
   const body = $('#st-body'), tip = $('#tip');
-  const V = Object.assign({ mode: null, level: 'all', range: 'all', tab: '×', size: 12, chart: 'speed', ptab: 'worst', pop: 'all' }, store.get('statsView', {}));
+  const V = Object.assign({ mode: 'all', level: 'all', range: 'all', tab: '×', size: 12, chart: 'speed', ptab: 'worst', pop: 'all' }, store.get('statsView', {}));
   const save = () => store.set('statsView', { mode: V.mode, level: V.level, range: V.range, tab: V.tab, size: V.size, chart: V.chart, ptab: V.ptab, pop: V.pop });
-  let A = [], R = [], t0 = 0, more = false, groupsShown = [], TW = null, picked = null;
+  // One-time reset of the old, implicitly selected mode. Later choices are preserved.
+  if (store.get('statsOverview', 0) < 2) { V.mode = V.level = V.range = 'all'; save(); store.set('statsOverview', 2); }
+  if (!['all', ...MODES].includes(V.mode)) V.mode = 'all';
+  if (!['all', '1', '2', '3', '4'].includes(String(V.level))) V.level = 'all';
+  if (!['all', '7', '30'].includes(String(V.range))) V.range = 'all';
+  let A = [], R = [], t0 = 0, more = false, daysExpanded = false, groupsShown = [], TW = null, picked = null;
   const finePointer = matchMedia('(hover: hover)');
 
   const since = () => {
@@ -2046,6 +2188,7 @@ const Stats = (() => {
   /* ----- sections ----- */
   function secHero() {
     const days = playDays(), streak = dayStreak(days), longest = longestStreak(days);
+    const older = V.mode === 'all' && V.level === 'all' && V.range === 'all' ? legacy.meta.solved : 0;
     const ok = A.filter(e => e.ok), dur = R.reduce((a, r) => a + (r.dur || 0), 0);
     let week = '';
     for (let i = 6; i >= 0; i--) {
@@ -2054,12 +2197,12 @@ const Stats = (() => {
       week += `<i class="${on ? 'on' : ''}${i ? '' : ' today'}" data-tip="${esc(fmtDay(k))} · ${on ? 'played' : i ? 'missed' : 'not yet today'}">${'SMTWTFS'[d.getDay()]}</i>`;
     }
     return `<section class="sec span2"><div class="hero">
-      <div class="stat streak"><b>${streak}</b><span>day streak${longest > streak ? ` · best ${longest}` : ''}</span><div class="week">${week}</div></div>
-      <div class="stat"><b>${ok.length.toLocaleString()}</b><span>solved</span></div>
+      <div class="stat streak"><b>${streak}</b><span>day streak · all modes${longest > streak ? ` · best ${longest}` : ''}</span><div class="week">${week}</div></div>
+      <div class="stat"><b>${(ok.length + older).toLocaleString()}</b><span>solved</span></div>
       <div class="stat"><b>${A.length ? pct(ok.length / A.length) : '–'}</b><span>accuracy</span></div>
       <div class="stat"><b>${secs(median(ok.map(e => e.t)))}</b><span>median answer</span></div>
       <div class="stat"><b>${fmtDur(dur)}</b><span>practiced</span></div>
-    </div></section>`;
+    </div>${older ? '<p class="note-line">Solved includes earlier practice. Accuracy and speed use individually logged answers.</p>' : ''}</section>`;
   }
 
   function secProgress() {
@@ -2284,13 +2427,16 @@ const Stats = (() => {
   }
 
   function secPractice() {
-    const counts = new Map();
-    for (const e of LOG) if (e.ok && fits(e, true)) { const k = dayOf(e); counts.set(k, (counts.get(k) || 0) + 1); }
-    if (V.mode === 'all' && V.level === 'all') for (const k of legacy.meta.days) if (!counts.has(k)) counts.set(k, -1);
+    // Practice includes every attempt, even a day with no correct answers. It is all-mode history.
+    const counts = new Map([...playDays()].map(k => [k, { n: 0, ok: 0, older: true }]));
+    for (const e of LOG) {
+      const k = dayOf(e); if (!counts.has(k)) continue;
+      const c = counts.get(k); c.n++; c.ok += e.ok ? 1 : 0; c.older = false;
+    }
     const weeks = clamp(Math.floor((colW(false) - 24) / 17), 8, 26);
     const today = new Date(); today.setHours(12, 0, 0, 0);
     const start = new Date(today); start.setDate(start.getDate() - today.getDay() - (weeks - 1) * 7);
-    let cells = '', months = '', played = 0, lastMonth = -1;
+    let cells = '', months = '', lastMonth = -1;
     for (let w = 0; w < weeks; w++) {
       const first = new Date(start); first.setDate(first.getDate() + w * 7);
       months += `<span>${first.getMonth() !== lastMonth && first.getDate() <= 7 ? first.toLocaleDateString(undefined, { month: 'short' }) : ''}</span>`;
@@ -2298,16 +2444,19 @@ const Stats = (() => {
       for (let d = 0; d < 7; d++) {
         const dt = new Date(first); dt.setDate(dt.getDate() + d);
         const k = day(dt), v = counts.get(k), fut = dt > today;
-        const lv = v === undefined ? 0 : v < 0 ? 2 : v < 20 ? 1 : v < 60 ? 2 : v < 150 ? 3 : 4;
-        if (v !== undefined && !fut) played++;
-        cells += `<i class="l${lv}${fut ? ' fut' : ''}${k === day() ? ' today' : ''}" data-tip="${esc(fmtDay(k))} · ${v === undefined ? 'no practice' : v < 0 ? 'played' : v + ' solved'}"></i>`;
+        const lv = v === undefined ? 0 : v.older ? 2 : v.ok < 20 ? 1 : v.ok < 60 ? 2 : v.ok < 150 ? 3 : 4;
+        cells += `<i class="l${lv}${fut ? ' fut' : ''}${k === day() ? ' today' : ''}" data-day="${k}" data-tip="${esc(fmtDay(k))} · ${v === undefined ? 'no practice' : v.older ? 'earlier practice' : v.n + ' attempted · ' + v.ok + ' solved'}"></i>`;
       }
     }
     return `<section class="sec">${head('Practice', '練習')}
-      <p class="note-line">Played <b>${played}</b> of the last ${weeks * 7} days. Brighter means more problems solved.</p>
+      <p class="note-line"><b>${counts.size}</b> practice days all time · all modes and levels. Every attempted answer counts. Brighter means more solved.</p>
       <div class="cal-wrap"><div class="cal-months">${months}</div>
         <div class="cal-body"><div class="cal-days"><span></span><span>M</span><span></span><span>W</span><span></span><span>F</span><span></span></div><div class="cal">${cells}</div></div></div>
-      <div class="cal-key">less <i class="l0" style="background:#161128"></i><i style="background:rgba(98,241,255,.22)"></i><i style="background:rgba(98,241,255,.42)"></i><i style="background:rgba(98,241,255,.68)"></i><i style="background:#7ff5ff"></i> more</div></section>`;
+      <div class="cal-key">less <i class="l0" style="background:#161128"></i><i style="background:rgba(98,241,255,.22)"></i><i style="background:rgba(98,241,255,.42)"></i><i style="background:rgba(98,241,255,.68)"></i><i style="background:#7ff5ff"></i> more</div>
+      <details class="practice-history"><summary>Practice history · ${counts.size} days</summary>
+        <div class="history-days">${[...counts].sort(([a], [b]) => b.localeCompare(a)).slice(0, daysExpanded ? counts.size : 30).map(([k, v]) => `<div data-history-day="${k}"><b>${esc(fmtDay(k))} ${k.slice(0, 4)}</b><span>${v.older ? 'Earlier practice · detailed answers unavailable' : v.n + ' attempted · ' + v.ok + ' solved'}</span></div>`).join('')}</div>
+        ${counts.size > 30 && !daysExpanded ? '<button data-act="history-more">Show all days</button>' : ''}
+      </details></section>`;
   }
 
   function secRecords() {
@@ -2318,7 +2467,7 @@ const Stats = (() => {
     for (const e of EA) if (e.ok) { const k = dayOf(e); perDay.set(k, (perDay.get(k) || 0) + 1); }
     let bestDay = null;
     for (const [k, v] of perDay) if (!bestDay || v > bestDay[1]) bestDay = [k, v];
-    const topStreak = ER.reduce((a, r) => Math.max(a, r.top || 0), 0);
+    const topStreak = RUNS.filter(r => fits(r, true)).reduce((a, r) => Math.max(a, r.top || 0), 0);
     const solvedAll = legacy.meta.solved + LOG.filter(e => e.ok).length;
     const timeAll = RUNS.reduce((a, r) => a + (r.dur || 0), 0);
     const modes = ['sprint', 'survival', 'flash'].filter(m => V.mode === 'all' || V.mode === m);
@@ -2345,8 +2494,9 @@ const Stats = (() => {
   function secSync() {
     const app = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
     const count = `${LOG.length.toLocaleString()} answers logged on this device${app ? ', in this app' : ''}.`;
-    if (!Sync.available) return `<div class="st-foot span2"><span>${count}</span></div>`;
+    if (!Sync.available) return `<div class="st-foot span2"><span>${count}</span>${Data.warning ? `<span role="status">${esc(Data.warning)}</span>` : ''}<button data-act="backup">Back up</button><button data-act="restore">Restore</button><span class="msg" id="foot-msg"></span></div>`;
     const st = Sync.state, n = st.devices || 1;
+    const warning = Data.warning ? `<p role="status" class="note-line warn">${esc(Data.warning)}</p>` : '';
     const body = Sync.on
       ? `<p class="note-line">On · <b>${n}</b> ${n === 1 ? 'device' : 'devices'} linked · ${Sync.busy ? 'syncing now' : st.last ? 'last synced ' + ago(st.last) : 'waiting to sync'}${st.err ? ` · <span class="warn">${esc(st.err)}</span>` : ''}</p>
         <div class="sync-code"><code>${Sync.code}</code><button data-act="sync-copy">Copy code</button></div>
@@ -2355,7 +2505,7 @@ const Stats = (() => {
       : `<p class="note-line">Off. This device only knows about games played on it.</p>
         <div class="sync-acts"><button class="sync-go" data-act="sync-start">Turn on sync</button></div>
         <form class="sync-join" data-act="sync-join"><input id="sync-code" name="code" placeholder="or paste a code" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" aria-label="Sync code from another device"><button type="submit">Join</button></form>`;
-    return `<section class="sec span2" id="sync-sec">${head('Sync', '同期')}${body}<span class="msg" id="sync-msg"></span>
+    return `<section class="sec span2" id="sync-sec">${head('Sync', '同期')}${warning}${body}<span class="msg" id="sync-msg"></span>
       <div class="st-foot"><span>${count}</span><button data-act="backup">Back up</button><button data-act="restore">Restore</button><span class="msg" id="foot-msg"></span></div></section>`;
   }
 
@@ -2432,7 +2582,7 @@ const Stats = (() => {
 
   /* ----- render + events ----- */
   function render() {
-    if (!V.mode) V.mode = settings.mode;
+    if (!V.mode) V.mode = 'all';
     t0 = since();
     A = LOG.filter(e => fits(e));
     R = RUNS.filter(r => fits(r));
@@ -2475,8 +2625,9 @@ const Stats = (() => {
       return;
     }
     const act = b.dataset.act;
-    if (act === 'more') { const top = body.scrollTop; more = !more; render(); body.scrollTop = top; }
-    else if (act === 'backup') backup();
+    if (act === 'history-more') { daysExpanded = true; const top = body.scrollTop; render(); const history = $('.practice-history'); if (history) history.open = true; body.scrollTop = top; }
+    else if (act === 'more') { const top = body.scrollTop; more = !more; render(); body.scrollTop = top; }
+    else if (act === 'backup') backup().catch(() => footMsg('Could not create the backup. Try again.'));
     else if (act === 'sync-start') { syncMsg('Turning on…'); Sync.start().then(() => { refreshSync(); syncMsg(Sync.state.err ? '' : 'Sync is on. Copy the code to your other devices.'); }); refreshSync(); }
     else if (act === 'sync-now') { Sync.run().then(() => refreshSync()); refreshSync(); }
     else if (act === 'sync-copy') {
@@ -2525,8 +2676,9 @@ const Stats = (() => {
 
   /* ----- backup and restore (how two devices get merged) ----- */
   const footMsg = t => { const m = $('#foot-msg'); if (m) m.textContent = t; };
-  function backup() {
-    const name = `quick-math-${day()}.json`, text = JSON.stringify({ app: 'quickmath', v: 2, at: Date.now(), attempts: LOG, runs: RUNS, legacy: legacyOwn });
+  async function backup() {
+    await Data.load();
+    const name = `quick-math-${day()}.json`, text = JSON.stringify({ app: 'quickmath', v: 3, at: Date.now(), attempts: LOG, runs: RUNS, legacy: legacyOwn, legacySources: store.get('legacyRemote', {}) });
     const blob = new Blob([text], { type: 'application/json' });
     try {
       const file = new File([blob], name, { type: 'application/json' });
@@ -2541,29 +2693,37 @@ const Stats = (() => {
     footMsg(`Downloading ${name}.`);
   }
   async function restore(file) {
+    await Data.load();
+    const previousLegacy = canonical(legacy.meta), previousRuns = RUNS.length;
     let d = null;
     try { d = JSON.parse(await file.text()); } catch (e) {}
-    if (!d || d.app !== 'quickmath') { footMsg("That file isn't a Quick Math backup."); return; }
+    if (!d || d.app !== 'quickmath' || (d.attempts && !Array.isArray(d.attempts)) || (d.runs && !Array.isArray(d.runs))) { footMsg("That file isn't a Quick Math backup."); return; }
     let added = 0;
     for (const e of d.attempts || []) if (e && e.ts && Data.add('attempts', e)) added++;
     for (const r of d.runs || []) if (r && r.ts) Data.add('runs', r);
     const L = d.legacy;
     if (L && L.meta) {
-      const sig = JSON.stringify([L.meta.days, L.meta.solved]);
-      if (sig !== JSON.stringify([legacyOwn.meta.days, legacyOwn.meta.solved])) {
+      const snapshot = { days: L.meta.days, solved: L.meta.solved, bests: L.bests, hist: L.hist, facts: L.facts };
+      const sig = legacySignature(snapshot);
+      if (sig !== legacySignature(legacySnapshot())) {
         const rem = store.get('legacyRemote', {});
         rem['file:' + sig] = { days: L.meta.days, solved: L.meta.solved, bests: L.bests, hist: L.hist, facts: L.facts };
-        store.set('legacyRemote', rem);
+        if (!store.set('legacyRemote', rem)) throw new Error('Could not save older history');
         mergeLegacy();
       }
     }
+    const sources = store.get('legacyRemote', {});
+    for (const [key, snapshot] of Object.entries(d.legacySources || {})) sources[key] = snapshot;
+    if (!store.set('legacyRemote', sources)) throw new Error('Could not save older history');
+    mergeLegacy();
+    await Data.durable();
     Sync.soon(300);
     Data.sort();
     Data.rebuild();
     render();
-    footMsg(added ? `Merged ${added.toLocaleString()} answers.` : 'Already up to date.');
+    footMsg(added ? `Merged ${added.toLocaleString()} answers.` : previousLegacy !== canonical(legacy.meta) || previousRuns !== RUNS.length ? 'Restored additional practice history.' : 'Already up to date.');
   }
-  $('#restore-file').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) restore(f); });
+  $('#restore-file').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) restore(f).catch(() => footMsg('Could not save the whole backup. Keep the file and try again.')); });
 
   return {
     open() {
@@ -2655,8 +2815,9 @@ addEventListener('keydown', e => {
   }
   if (screen === 'stats' && (k === 'Escape' || k === 'Backspace')) { e.preventDefault(); toMenu(false); }
 });
-document.addEventListener('visibilitychange', () => { if (document.hidden) Game.pause(); else { Game.resume(); Sync.soon(600); } });
-addEventListener('online', () => Sync.soon(600));
+document.addEventListener('visibilitychange', () => { if (document.hidden) Game.pause(); else { Game.resume(); Data.load().then(() => { if (screen === 'stats' && !(document.activeElement && document.activeElement.id === 'sync-code')) Stats.render(); else if (screen === 'menu') renderMenu(); Sync.soon(600); }); } });
+addEventListener('pagehide', () => checkpointRun(run));
+addEventListener('online', () => { Data.load().then(() => Sync.soon(600)); });
 Sync.onChange(changed => {
   if (screen === 'stats') { if (changed && !(document.activeElement && document.activeElement.id === 'sync-code')) Stats.render(); else Stats.refreshSync(); }
   else if (screen === 'menu' && changed) renderMenu();
