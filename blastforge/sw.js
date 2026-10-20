@@ -1,4 +1,4 @@
-const CACHE='blastforge-shell-v6';
+const CACHE='blastforge-shell-v7';
 const FILES=['./','./index.html','./style.css','./app.js','./actions.js','./selects.js','./core.js','./store.js','./config.js','./validate.js','./manifest.webmanifest','./assets/anvil.webp','./assets/mark.svg','./assets/apple-touch-icon.png','./assets/favicon-64.png','./assets/icon-maskable-512.png','./assets/icon-192.png','./assets/icon-512.png','./assets/forge.webp','./assets/forge-phone.webp','./assets/fonts/alegreya-sans-400.ttf','./assets/fonts/alegreya-sans-500.ttf','./assets/fonts/alegreya-sans-700.ttf','./assets/fonts/grenze-600.ttf','./assets/fonts/grenze-700.ttf'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('blastforge-shell-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

@@ -5,12 +5,15 @@ export function dateOf(key){return new Date(`${key}T12:00:00`);}
 export function addDays(key,n){const d=dateOf(key);d.setDate(d.getDate()+n);return dayKey(d);}
 export function weekKey(key){return addDays(key,-((dateOf(key).getDay()+6)%7));}
 export function weekDays(key){const start=weekKey(key);return Array.from({length:7},(_,i)=>addDays(start,i));}
-export function goalForDate(records,id,date){
+export function goalForDate(records,id,date,today=dayKey()){
  const root=value(records,`goal:${id}`);if(!root)return null;
- const snapshot=value(records,`snapshot:${id}:${date}`);if(snapshot)return snapshot;
- const prefix=`version:${id}:`;
+ const snapshot=records[`snapshot:${id}:${date}`],prefix=`version:${id}:`;
  const versions=Object.entries(records).filter(([k])=>k.startsWith(prefix)&&k.slice(prefix.length)<=date).sort(([a],[b])=>a.localeCompare(b));
- return versions.length?versions.at(-1)[1].value:root;
+ const definition=versions.length?versions.at(-1)[1]:records[`goal:${id}`];
+ // Old clients wrote the stale snapshot and the updated definition in the same save.
+ // Resolve that tie in favor of the saved edit today; past days retain their snapshot.
+ if(snapshot&&(date!==today||snapshot.value.dayOnly||snapshot.stamp>definition.stamp))return snapshot.value;
+ return definition.value;
 }
 export function completionDate(records,goal,date){
  const period=periodKey(goal,date),key=`completed:${goal.id}:${period}`;
@@ -24,7 +27,7 @@ export function completedOnDay(records,goal,date){
 }
 export function historyDay(records,date,today=dayKey()){
  if(date>today)return {date,future:true,goals:[],completed:0};
- const entries=Object.entries(records).filter(([k,r])=>k.startsWith('goal:')&&r.value).map(([,r])=>goalForDate(records,r.value.id,date));
+ const entries=Object.entries(records).filter(([k,r])=>k.startsWith('goal:')&&r.value).map(([,r])=>goalForDate(records,r.value.id,date,today));
  const list=entries.filter(g=>{
   if(g.metric)return false;
   const activity=Object.hasOwn(records,`snapshot:${g.id}:${date}`)||Object.keys(records).some(k=>k.startsWith(`entry:${g.id}:${date}:`));
