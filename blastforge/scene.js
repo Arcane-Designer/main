@@ -5,12 +5,13 @@ const preferenceKey='blastforge-background-motion-v1';
 let enabled=true;try{enabled=localStorage.getItem(preferenceKey)!=='off';}catch{}
 let video,attempting=false,failed=false;
 function wanted(){return enabled&&!reduced.matches&&!document.hidden&&!failed;}
-function stop(){video?.pause();host.classList.remove('is-animated');}
+function stop(){video?.pause();if(!(document.hidden&&enabled&&!reduced.matches&&!failed))host.classList.remove('is-animated');}
 function setup(){
  video=document.createElement('video');video.muted=true;video.defaultMuted=true;video.autoplay=true;video.loop=true;video.playsInline=true;video.preload='none';video.disablePictureInPicture=true;
  video.setAttribute('muted','');video.setAttribute('playsinline','');video.setAttribute('webkit-playsinline','');video.setAttribute('aria-hidden','true');video.tabIndex=-1;
- video.addEventListener('playing',()=>{if(wanted())host.classList.add('is-animated');else stop();});
+ video.addEventListener('playing',()=>{const reveal=()=>{if(wanted())host.classList.add('is-animated');else stop();};if(video.requestVideoFrameCallback)video.requestVideoFrameCallback(reveal);else reveal();});
  video.addEventListener('error',()=>{failed=true;stop();update();});
+ video.poster=new URL('./assets/forge-poster.jpg',import.meta.url).href;
  video.src=new URL('./assets/forge-loop.mp4',import.meta.url).href;host.append(video);
 }
 function update(){
