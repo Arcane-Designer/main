@@ -33,11 +33,12 @@
   <div class="dialog-actions"><button type="button" id="archive-goal" class="quiet danger">Archive goal</button><button type="button" class="quiet close">Cancel</button><button type="submit" class="primary">Save goal</button></div><p id="goal-error" class="error" role="alert"></p>
  </form></dialog>
  <dialog id="settings-dialog" class="modal"><header><h2>Settings</h2><button class="icon-button close" aria-label="Close settings">×</button></header>
+  <label class="motion-setting"><span>Animated background</span><input id="background-motion" type="checkbox" checked></label>
   <div class="settings-status" role="status"><span class="sync-dot"></span><span id="sync-label">Saved on this device</span></div><p id="footer-status" class="help"></p>
   <div class="connection-card"><span class="connection-label">Connection code</span><code id="connection-code"></code><button class="quiet" id="copy-link">Copy link</button></div>
   <form id="connect-form"><label>Connect another device<input name="code" placeholder="Connection code" autocomplete="off" spellcheck="false" required></label><button class="primary" type="submit">Connect</button></form>
   <p id="connection-message" class="help" role="status"></p><div class="settings-row"><button class="quiet" id="sync-now">Sync now</button><button class="quiet" id="export">Save backup</button><label class="quiet file-label">Restore backup<input id="import" type="file" accept="application/json,.json"></label></div>
  </dialog>
  <dialog id="progress-dialog" class="modal"><form id="progress-form"><header><h2>Keene followers</h2><button type="button" class="icon-button close" aria-label="Close follower update">×</button></header><label>Current follower count<input name="followers" type="number" min="0" max="100000000" required></label><p class="help">One count updates your October, November, and December milestones.</p><div class="dialog-actions"><button type="button" class="quiet close">Cancel</button><button class="primary" type="submit">Save count</button></div></form></dialog>
- <div id="toast" role="status" aria-live="polite"></div><script type="module" src="./app.js"></script>
+ <div id="toast" role="status" aria-live="polite"></div><script type="module" src="./app.js"></script><script type="module" src="./scene.js"></script>
 </body></html>

@@ -55,12 +55,13 @@ export const SEED_GOALS=[
  {id:'quick-math',title:'Quick math',category:'Learning',schedule:'days',days:[6],target:1,icon:'math',link:'https://arcanedesigner.com/math/',notes:'Open Quick Math for your practice, then check it off here.',steps:[]},
  {id:'keene-engage',title:'Keene · follow & engage',category:'Creative',schedule:'weekly',target:2,icon:'flame',notes:'Follow and engage with people.',steps:[]},
  {id:'barnacles',title:'Write for Barnacles',category:'Creative',schedule:'weekly',target:2,preferred:[5],icon:'quill',notes:'Friday is a likely writing day; the other day is flexible. No word count yet.',steps:[]},
+ {id:'neosai-practice',title:'Practice Neosai',category:'Learning',schedule:'weekly',target:2,icon:'kana',link:'https://arcanedesigner.com/neosai/',notes:'Practice Japanese in Neosai on two days each week.',steps:[],start:'2026-10-21'},
  {id:'calories',title:'Stay within 1,700 calories',category:'Health',schedule:'daily',target:1,icon:'bowl',notes:'Your daily intake target. Check this off after you know your total for the day. This does not calculate calories burned or a weekly deficit.',steps:[]},
  {id:'hiragana',title:'Memorize all hiragana',category:'Learning',schedule:'once',due:'2026-12-31',target:1,icon:'kana',link:'https://arcanedesigner.com/neosai/',notes:'Your end-of-year Neosai goal. Track learning in Neosai; mark this complete when you have memorized all hiragana.',steps:[]},
  {id:'keene-oct',title:'4,500 Keene followers',category:'Creative',schedule:'once',due:'2026-10-31',target:4500,metric:'followers',icon:'flame',notes:'October milestone.',steps:[]},
  {id:'keene-nov',title:'4,750 Keene followers',category:'Creative',schedule:'once',due:'2026-11-30',target:4750,metric:'followers',icon:'flame',notes:'November milestone.',steps:[]},
  {id:'keene-dec',title:'5,000 Keene followers',category:'Creative',schedule:'once',due:'2026-12-31',target:5000,metric:'followers',icon:'flame',notes:'End-of-year milestone.',steps:[]}
-].map(g=>({...g,start:'2026-10-19',archived:false,time:''}));
+].map(g=>({...g,start:g.start||'2026-10-19',archived:false,time:''}));
 export function seededRecords(){return Object.fromEntries(SEED_GOALS.map(g=>[`goal:${g.id}`,{value:g,stamp:'0000000000000000:seed'}]));}
 export function goalsOf(records){return Object.entries(records).filter(([k,r])=>k.startsWith('goal:')&&r.value&&!r.value.archived).map(([,r])=>r.value);}
 export function milestoneDone(records,g,date){return g.metric?Number(value(records,`metric:${g.metric}`,-1))>=g.target:isComplete(records,g,date);}
