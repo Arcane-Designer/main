@@ -1,19 +1,58 @@
-import {validRecord} from './validate.js';
+import {validRecord} from './validate.js?v=12';
 export const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 export function dayKey(date=new Date()){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
 export function dateOf(key){return new Date(`${key}T12:00:00`);}
 export function addDays(key,n){const d=dateOf(key);d.setDate(d.getDate()+n);return dayKey(d);}
 export function weekKey(key){return addDays(key,-((dateOf(key).getDay()+6)%7));}
 export function weekDays(key){const start=weekKey(key);return Array.from({length:7},(_,i)=>addDays(start,i));}
+// A move belongs to its original occurrence, never to the recurring goal definition.
+function recordedActivity(records,id,date){const g=value(records,`snapshot:${id}:${date}`);return Boolean(g&&(value(records,sessionKey(g,date),false)||value(records,`entry:${id}:${date}:missed`,false)||stepsFor(g,date).some(s=>value(records,entryKey(g,date,`step-${s.id}`),false))));}
+function protectedArrival(records,id,origin){
+ const prefix=`snapshot:${id}:`;
+ return Object.entries(records).filter(([k,r])=>k.startsWith(prefix)&&r.value?.occurrenceOrigin===origin&&recordedActivity(records,id,k.slice(prefix.length))).sort(([ka,a],[kb,b])=>a.stamp.localeCompare(b.stamp)||ka.localeCompare(kb)).map(([key,r])=>({date:key.slice(prefix.length),goal:r.value})).at(-1)||null;
+}
+export function arrivalForDate(records,id,date){
+ const prefix=`snapshot:${id}:`,saved=value(records,`${prefix}${date}`);
+ // A stale offline undo/date change cannot erase work already recorded at the destination.
+ if(saved?.occurrenceOrigin&&recordedActivity(records,id,date))return {origin:saved.occurrenceOrigin,goal:value(records,`${prefix}${saved.occurrenceOrigin}`,saved)};
+ return Object.entries(records).filter(([k,r])=>{
+  if(!k.startsWith(prefix)||r.value?.rescheduledTo!==date)return false;
+  const protectedAt=protectedArrival(records,id,k.slice(prefix.length));return !protectedAt||protectedAt.date===date;
+ }).sort(([ka,a],[kb,b])=>a.stamp.localeCompare(b.stamp)||ka.localeCompare(kb)).map(([key,r])=>({origin:key.slice(prefix.length),goal:r.value})).at(-1)||null;
+}
 export function goalForDate(records,id,date,today=dayKey()){
  const root=value(records,`goal:${id}`);if(!root)return null;
- const snapshot=records[`snapshot:${id}:${date}`],prefix=`version:${id}:`;
+ let snapshot=records[`snapshot:${id}:${date}`];const prefix=`version:${id}:`;
  const versions=Object.entries(records).filter(([k])=>k.startsWith(prefix)&&k.slice(prefix.length)<=date).sort(([a],[b])=>a.localeCompare(b));
  const definition=versions.length?versions.at(-1)[1]:records[`goal:${id}`];
- // Old clients wrote the stale snapshot and the updated definition in the same save.
- // Resolve that tie in favor of the saved edit today; past days retain their snapshot.
+ const arrival=arrivalForDate(records,id,date);
+ if(arrival){
+  if(snapshot?.value.occurrenceOrigin===arrival.origin)return snapshot.value;
+  const g={...arrival.goal,occurrenceOrigin:arrival.origin,archived:definition.value.archived};delete g.rescheduledTo;
+  if(g.routines)g.routines={[dateOf(date).getDay()]:stepsFor(arrival.goal,arrival.origin)};
+  return g;
+ }
+ const protectedAt=protectedArrival(records,id,date);
+ if(protectedAt)return {...(snapshot?.value||definition.value),rescheduledTo:protectedAt.date,dayOnly:true};
+ // An undone or changed move must not leave a phantom occurrence at its old destination.
+ if(snapshot?.value.occurrenceOrigin)snapshot=null;
+ if(snapshot?.value.rescheduledTo){
+  if(arrivalForDate(records,id,snapshot.value.rescheduledTo)?.origin===date)return snapshot.value;
+  // Two offline devices can move different occurrences to the same date. Keep the losing
+  // occurrence on its original day, rather than silently dropping it or sharing a checklist.
+  return {...snapshot.value,rescheduledTo:null,moveConflict:snapshot.value.rescheduledTo};
+ }
  if(snapshot&&(date!==today||snapshot.value.dayOnly||snapshot.stamp>definition.stamp))return snapshot.value;
  return definition.value;
+}
+export function scheduledOn(records,goal,date){
+ if(goal.rescheduledTo)return false;
+ if(goal.occurrenceOrigin&&arrivalForDate(records,goal.id,date)?.origin===goal.occurrenceOrigin)return !goal.archived;
+ return scheduled(goal,date);
+}
+export function missedOnDay(records,goal,date){
+ const missed=records[`entry:${goal.id}:${date}:missed`],done=records[sessionKey(goal,date)];
+ return Boolean(missed?.value)&&!(done?.value&&done.stamp>missed.stamp);
 }
 export function completionDate(records,goal,date){
  const period=periodKey(goal,date),key=`completed:${goal.id}:${period}`;
@@ -22,7 +61,7 @@ export function completionDate(records,goal,date){
  return entry?.value?dayKey(new Date(Number(entry.stamp.split(':')[0]))):null;
 }
 export function completedOnDay(records,goal,date){
- if(!value(records,sessionKey(goal,date),false)||!canComplete(records,goal,date))return false;
+ if(goal.rescheduledTo||missedOnDay(records,goal,date)||!value(records,sessionKey(goal,date),false)||!canComplete(records,goal,date))return false;
  return ['monthly','once'].includes(goal.schedule)?completionDate(records,goal,date)===date:true;
 }
 export function historyDay(records,date,today=dayKey()){
@@ -30,9 +69,11 @@ export function historyDay(records,date,today=dayKey()){
  const entries=Object.entries(records).filter(([k,r])=>k.startsWith('goal:')&&r.value).map(([,r])=>goalForDate(records,r.value.id,date,today));
  const list=entries.filter(g=>{
   if(g.metric)return false;
-  const activity=Object.hasOwn(records,`snapshot:${g.id}:${date}`)||Object.keys(records).some(k=>k.startsWith(`entry:${g.id}:${date}:`));
+  const snapshot=records[`snapshot:${g.id}:${date}`]?.value;
+  const cancelledArrival=snapshot?.occurrenceOrigin&&!arrivalForDate(records,g.id,date);
+  const activity=!cancelledArrival&&(Boolean(snapshot)||Object.keys(records).some(k=>k.startsWith(`entry:${g.id}:${date}:`)));
   if(['once','monthly'].includes(g.schedule))return activity||completionDate(records,g,date)===date;
-  return scheduled(g,date)||activity;
+  return scheduledOn(records,g,date)||activity;
  });
  return {date,future:false,goals:list,completed:list.filter(g=>completedOnDay(records,g,date)).length};
 }
@@ -41,7 +82,7 @@ export function scheduled(goal,date){if(goal.archived||date<(goal.start||'2026-1
 export function entryKey(goal,date,step='done'){const period=goal.schedule==='weekly'&&step.startsWith('step-')?date:periodKey(goal,date);return `entry:${goal.id}:${period}:${step}`;}
 export function stepsFor(goal,date){return goal.routines?goal.routines[dateOf(date).getDay()]||[]:goal.steps||[];}
 export function value(records,key,fallback=null){return records[key]?.value??fallback;}
-export function count(records,goal,date){if(goal.schedule==='weekly'){let n=0;for(const d of weekDays(date)){const at=goalForDate(records,goal.id,d)||goal;n+=at.schedule==='weekly'&&completedOnDay(records,at,d);}return n;}return Boolean(value(records,entryKey(goal,date),false))&&canComplete(records,goal,date)?1:0;}
+export function count(records,goal,date){if(goal.schedule==='weekly'){let n=0;for(const d of weekDays(date)){const at=goalForDate(records,goal.id,d)||goal;n+=at.schedule==='weekly'&&completedOnDay(records,at,d);}return n;}return !goal.rescheduledTo&&!missedOnDay(records,goal,date)&&Boolean(value(records,entryKey(goal,date),false))&&canComplete(records,goal,date)?1:0;}
 export function isComplete(records,goal,date){return count(records,goal,date)>=(goal.target||1);}
 export function sessionKey(goal,date){return goal.schedule==='weekly'?`entry:${goal.id}:${date}:session`:entryKey(goal,date);}
 export function canComplete(records,goal,date){const steps=stepsFor(goal,date);if(goal.routines&&!steps.length)return false;return steps.every(s=>value(records,entryKey(goal,date,`step-${s.id}`),false));}

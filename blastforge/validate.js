@@ -15,6 +15,8 @@ export function validGoal(g,goalId){
  if(g.archived!==undefined&&typeof g.archived!=='boolean')return false;
  if(g.metric!==undefined&&g.metric!=='followers')return false;
  if(g.metric&&g.schedule!=='once')return false;
+ if(g.rescheduledTo!==undefined&&g.rescheduledTo!==null&&!validDate(g.rescheduledTo))return false;
+ if(g.occurrenceOrigin!==undefined&&!validDate(g.occurrenceOrigin))return false;
  if(g.preferred!==undefined&&!weekdays(g.preferred))return false;
  if(g.steps!==undefined&&!steps(g.steps))return false;
  if(g.routines!==undefined&&(!g.routines||typeof g.routines!=='object'||Array.isArray(g.routines)||Object.entries(g.routines).some(([d,s])=>!/^[0-6]$/.test(d)||!steps(s))))return false;
@@ -28,5 +30,7 @@ export function validRecord(key,r){
  if(key.startsWith('completed:'))return r.value===null||validDate(r.value);
  const [kind,goalId,date]=key.split(':');
  if(['version','snapshot'].includes(kind)&&!validDate(date))return false;
+ if(r.value?.rescheduledTo!==undefined&&(kind!=='snapshot'||r.value.rescheduledTo!==null&&r.value.rescheduledTo<=date))return false;
+ if(r.value?.occurrenceOrigin!==undefined&&(kind!=='snapshot'||r.value.occurrenceOrigin>=date||r.value.rescheduledTo))return false;
  return validGoal(r.value,goalId);
 }

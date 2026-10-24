@@ -8,7 +8,7 @@
  <title>Blastforge</title>
  <link rel="icon" href="./assets/favicon-64.png" type="image/png"><link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
  <link rel="preload" as="image" href="./assets/forge-poster.jpg" fetchpriority="high">
- <link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./style.css?v=11">
+ <link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./style.css?v=12">
 </head>
 <body>
  <div class="scene" aria-hidden="true"><img class="scene-poster" src="./assets/forge-poster.jpg" alt="" fetchpriority="high"></div><div class="snow" aria-hidden="true"></div>
@@ -33,6 +33,7 @@
   <label><span id="steps-label">Smaller steps</span> <span class="muted">(one per line)</span><textarea name="steps" rows="4" maxlength="4000"></textarea></label><p id="routine-help" class="help"></p>
   <div class="dialog-actions"><button type="button" id="archive-goal" class="quiet danger">Archive goal</button><button type="button" class="quiet close">Cancel</button><button type="submit" class="primary">Save goal</button></div><p id="goal-error" class="error" role="alert"></p>
  </form></dialog>
+ <dialog id="move-dialog" class="modal"><form id="move-form"><header><h2>Move this time</h2><button type="button" class="icon-button close" aria-label="Close move dialog">×</button></header><p id="move-goal-name"></p><label>Move to<input name="date" type="date" required></label><p class="help">Only this occurrence moves. The repeating schedule stays the same.</p><p id="move-error" class="error" role="alert"></p><div class="dialog-actions"><button type="button" class="quiet close">Cancel</button><button type="submit" class="primary">Move this time</button></div></form></dialog>
  <dialog id="settings-dialog" class="modal"><header><h2>Settings</h2><button class="icon-button close" aria-label="Close settings">×</button></header>
   <label class="motion-setting"><span>Animated background</span><input id="background-motion" type="checkbox" checked></label>
   <div class="settings-status" role="status"><span class="sync-dot"></span><span id="sync-label">Saved on this device</span></div><p id="footer-status" class="help"></p>
@@ -41,5 +42,5 @@
   <p id="connection-message" class="help" role="status"></p><div class="settings-row"><button class="quiet" id="sync-now">Sync now</button><button class="quiet" id="export">Save backup</button><label class="quiet file-label">Restore backup<input id="import" type="file" accept="application/json,.json"></label></div>
  </dialog>
  <dialog id="progress-dialog" class="modal"><form id="progress-form"><header><h2>Keene followers</h2><button type="button" class="icon-button close" aria-label="Close follower update">×</button></header><label>Current follower count<input name="followers" type="number" min="0" max="100000000" required></label><p class="help">One count updates your October, November, and December milestones.</p><div class="dialog-actions"><button type="button" class="quiet close">Cancel</button><button class="primary" type="submit">Save count</button></div></form></dialog>
- <div id="toast" role="status" aria-live="polite"></div><script type="module" src="./app.js?v=9"></script><script type="module" src="./scene.js?v=11"></script>
+ <div id="toast" role="status" aria-live="polite"></div><script type="module" src="./app.js?v=12"></script><script type="module" src="./scene.js?v=11"></script>
 </body></html>

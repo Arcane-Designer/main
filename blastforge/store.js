@@ -1,7 +1,7 @@
-import {seededRecords,mergeRecords,nextStamp,dayKey} from './core.js';
-import {completionChanges,stepChanges,goalEditChanges,archiveChanges} from './actions.js';
-import {SYNC_ENDPOINT} from './config.js';
-import {validRecord} from './validate.js';
+import {seededRecords,mergeRecords,nextStamp,dayKey} from './core.js?v=12';
+import {completionChanges,stepChanges,goalEditChanges,archiveChanges,missedChanges,moveChanges,cancelMoveChanges} from './actions.js?v=12';
+import {SYNC_ENDPOINT} from './config.js?v=12';
+import {validRecord} from './validate.js?v=12';
 const STATE='blastforge-v1', CONNECTION='blastforge-connection-v1';
 const random=()=>{const b=crypto.getRandomValues(new Uint8Array(20));return [...b].map(x=>'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'[x&31]).join('');};
 export const cleanCode=s=>String(s||'').toUpperCase().replace(/[018]/g,c=>({'0':'O','1':'I','8':'B'}[c])).replace(/[^A-Z2-7]/g,'');
@@ -28,6 +28,9 @@ export const Store={
  async set(key,value){return commit({[key]:value});},
  async setMany(changes){return commit(changes);},
  async setCompletion(id,date,done){await ready;return commit(completionChanges(records,id,date,done));},
+ async setMissed(id,date,missed){await ready;return commit(missedChanges(records,id,date,missed));},
+ async moveOccurrence(id,date,to){await ready;return commit(moveChanges(records,id,date,to));},
+ async cancelMove(id,date){await ready;return commit(cancelMoveChanges(records,id,date));},
  async setStep(id,date,step,done){await ready;return commit(stepChanges(records,id,date,step,done));},
  async saveGoal(goal,options){await ready;return commit(goalEditChanges(records,goal,options));},
  async archiveGoal(id,archived=true){await ready;return commit(archiveChanges(records,id,archived));},
