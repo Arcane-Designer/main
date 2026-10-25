@@ -1,4 +1,4 @@
-import {validRecord} from './validate.js?v=12';
+import {validRecord} from './validate.js?v=13';
 export const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 export function dayKey(date=new Date()){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
 export function dateOf(key){return new Date(`${key}T12:00:00`);}
@@ -53,6 +53,24 @@ export function scheduledOn(records,goal,date){
 export function missedOnDay(records,goal,date){
  const missed=records[`entry:${goal.id}:${date}:missed`],done=records[sessionKey(goal,date)];
  return Boolean(missed?.value)&&!(done?.value&&done.stamp>missed.stamp);
+}
+// Automatic outcomes are derived, never written over the user's saved progress.
+export function weeklyProgress(records,goal,date,today=dayKey()){
+ const days=weekDays(date),completed=count(records,goal,date),target=goal.target||1;
+ const available=days.filter(d=>{
+  const at=goalForDate(records,goal.id,d,today)||goal;
+  return d>=today&&at.schedule==='weekly'&&scheduledOn(records,at,d)&&!completedOnDay(records,at,d)&&!missedOnDay(records,at,d);
+ }).length;
+ return {completed,target,available,complete:completed>=target,possible:completed+available>=target};
+}
+export function notCompletedOnDay(records,goal,date,today=dayKey()){
+ if(goal.rescheduledTo||!['daily','days','weekly'].includes(goal.schedule))return false;
+ if(missedOnDay(records,goal,date))return true;
+ if(value(records,sessionKey(goal,date),false)&&canComplete(records,goal,date))return false;
+ if(!scheduledOn(records,goal,date))return false;
+ // Reopen is explicit and stays open, even on a historical date.
+ if(value(records,`entry:${goal.id}:${date}:reopened`,false))return false;
+ return date<today;
 }
 export function completionDate(records,goal,date){
  const period=periodKey(goal,date),key=`completed:${goal.id}:${period}`;

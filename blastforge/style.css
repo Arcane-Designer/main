@@ -94,3 +94,10 @@
 .occurrence-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.detail-actions{gap:10px 14px}.occurrence-actions button{min-height:30px}.text-link:disabled{opacity:.45;cursor:default}.not-completed .mini-check,.checkbox.not-completed{color:#ceb69c;background:#a8875b16;border-color:#aa947264}.not-completed .icon{width:15px;height:15px}.is-missed .goal-text strong{color:#c6baa6}.is-moved .goal-text strong{color:#b6bbac}.is-moved .checkbox{color:#b9ac8d;opacity:.6}.missed-list>summary{color:#cbb597}.moved-list>summary{color:#b7bba9}.upcoming-move{display:inline-flex;align-items:center;gap:5px;text-align:left;background:transparent;padding:0;color:#dec39c;font-size:12px}.upcoming-move .icon{width:13px;height:13px}
 @media(max-width:540px){.occurrence-actions{gap:12px}.detail-actions>button:last-child{margin-left:0}.detail-actions{align-items:center}.occurrence-actions .text-link{font-size:13px}}
 .missed-list>summary,.moved-list>summary{font-size:13px;min-height:40px}
+
+/* Keep the native calendar input inside its own tap target, including on iOS. */
+.calendar-jump{overflow:hidden;isolation:isolate;min-width:0;contain:paint}
+.calendar-jump input{min-width:0;min-height:0;max-width:100%;max-height:100%;margin:0;box-sizing:border-box;clip-path:inset(0)}
+.week-arrow{position:relative;z-index:1}
+.weekly-title .weekly-outcome{display:block;margin-top:3px;color:#d1aa8a;font-size:12px}
+.history-weekly .weekly-outcome{color:#d1aa8a;font-size:12px}

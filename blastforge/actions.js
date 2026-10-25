@@ -1,4 +1,4 @@
-import {dayKey,dateOf,addDays,goalForDate,value,entryKey,sessionKey,periodKey,stepsFor,canComplete,scheduledOn,arrivalForDate,completedOnDay} from './core.js?v=12';
+import {dayKey,dateOf,addDays,goalForDate,value,entryKey,sessionKey,periodKey,stepsFor,canComplete,scheduledOn,arrivalForDate,completedOnDay} from './core.js?v=13';
 export function snapshotGoal(goal,date){const g=structuredClone(goal);delete g.moveConflict;if(g.routines)g.routines={[dateOf(date).getDay()]:stepsFor(g,date)};return g;}
 export function baselineChanges(records,goal){
  const prefix=`version:${goal.id}:`;
@@ -8,14 +8,14 @@ function activeGoal(records,id,date,today){if(date>today)throw new Error('Future
 export function completionChanges(records,id,date,done,today=dayKey()){
  const g=activeGoal(records,id,date,today);
  if(done&&!canComplete(records,g,date))throw new Error('Finish the smaller steps first.');
- const changes={...baselineChanges(records,value(records,`goal:${id}`)),[`snapshot:${id}:${date}`]:snapshotGoal(g,date),[sessionKey(g,date)]:Boolean(done),[`entry:${id}:${date}:missed`]:false};
+ const changes={...baselineChanges(records,value(records,`goal:${id}`)),[`snapshot:${id}:${date}`]:snapshotGoal(g,date),[sessionKey(g,date)]:Boolean(done),[`entry:${id}:${date}:missed`]:false,[`entry:${id}:${date}:reopened`]:date<today};
  if(['monthly','once'].includes(g.schedule))changes[`completed:${id}:${periodKey(g,date)}`]=done?date:null;
  return changes;
 }
 export function stepChanges(records,id,date,step,done,today=dayKey()){
  const g=activeGoal(records,id,date,today);
  if(!stepsFor(g,date).some(s=>s.id===step))throw new Error('This step has changed. Reopen the goal.');
- const changes={...baselineChanges(records,value(records,`goal:${id}`)),[`snapshot:${id}:${date}`]:snapshotGoal(g,date),[entryKey(g,date,`step-${step}`)]:Boolean(done),[`entry:${id}:${date}:missed`]:false};
+ const changes={...baselineChanges(records,value(records,`goal:${id}`)),[`snapshot:${id}:${date}`]:snapshotGoal(g,date),[entryKey(g,date,`step-${step}`)]:Boolean(done),[`entry:${id}:${date}:missed`]:false,[`entry:${id}:${date}:reopened`]:date<today};
  if(!done){changes[sessionKey(g,date)]=false;if(['monthly','once'].includes(g.schedule))changes[`completed:${id}:${periodKey(g,date)}`]=null;}
  return changes;
 }
@@ -59,7 +59,7 @@ export function missedChanges(records,id,date,missed,today=dayKey()){
  const g=activeGoal(records,id,date,today);
  if(!['daily','days','weekly'].includes(g.schedule))throw new Error('This option is for daily occurrences.');
  const changes=completionChanges(records,id,date,false,today);
- changes[`entry:${id}:${date}:missed`]=Boolean(missed);return changes;
+ changes[`entry:${id}:${date}:missed`]=Boolean(missed);changes[`entry:${id}:${date}:reopened`]=!missed&&date<today;return changes;
 }
 function hasProgress(records,g,date){return completedOnDay(records,g,date)||stepsFor(g,date).some(s=>value(records,entryKey(g,date,`step-${s.id}`),false))||value(records,`entry:${g.id}:${date}:missed`,false);}
 function movingOccurrence(records,id,date,today){
@@ -72,7 +72,7 @@ function movingOccurrence(records,id,date,today){
 }
 export function moveChanges(records,id,date,to,today=dayKey()){
  const {origin,current,currentGoal}=movingOccurrence(records,id,date,today);
- if(!/^\d{4}-\d{2}-\d{2}$/.test(to)||dayKey(dateOf(to))!==to||to<=today||to<=origin)throw new Error('Choose a later date after today.');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(to)||dayKey(dateOf(to))!==to||to<today||to<=origin)throw new Error('Choose a later date, today or in the future.');
  if(to===current)throw new Error('This occurrence is already on that date.');
  const target=goalForDate(records,id,to,today);
  if(scheduledOn(records,target,to)||hasProgress(records,target,to))throw new Error('This goal is already on that day. Choose another date.');

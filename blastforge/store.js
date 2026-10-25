@@ -1,7 +1,7 @@
-import {seededRecords,mergeRecords,nextStamp,dayKey} from './core.js?v=12';
-import {completionChanges,stepChanges,goalEditChanges,archiveChanges,missedChanges,moveChanges,cancelMoveChanges} from './actions.js?v=12';
-import {SYNC_ENDPOINT} from './config.js?v=12';
-import {validRecord} from './validate.js?v=12';
+import {seededRecords,mergeRecords,nextStamp,dayKey} from './core.js?v=13';
+import {completionChanges,stepChanges,goalEditChanges,archiveChanges,missedChanges,moveChanges,cancelMoveChanges} from './actions.js?v=13';
+import {SYNC_ENDPOINT} from './config.js?v=13';
+import {validRecord} from './validate.js?v=13';
 const STATE='blastforge-v1', CONNECTION='blastforge-connection-v1';
 const random=()=>{const b=crypto.getRandomValues(new Uint8Array(20));return [...b].map(x=>'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'[x&31]).join('');};
 export const cleanCode=s=>String(s||'').toUpperCase().replace(/[018]/g,c=>({'0':'O','1':'I','8':'B'}[c])).replace(/[^A-Z2-7]/g,'');
