@@ -8,16 +8,16 @@
  <title>Blastforge</title>
  <link rel="icon" href="./assets/favicon-64.png" type="image/png"><link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
  <link rel="preload" as="image" href="./assets/forge-poster.jpg" fetchpriority="high">
- <link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./style.css?v=13">
+ <link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./style.css?v=14">
 </head>
 <body>
  <div class="scene" aria-hidden="true"><img class="scene-poster" src="./assets/forge-poster.jpg" alt="" fetchpriority="high"></div><div class="snow" aria-hidden="true"></div>
  <div class="app-shell">
   <header class="masthead">
    <a class="brand" href="./" aria-label="Blastforge home"><span class="brand-mark"><img src="./assets/anvil.webp" alt="" width="52" height="52"></span><span>BLASTFORGE</span></a>
-   <button id="settings-open" class="settings-button" aria-label="Settings"><span data-icon="settings"></span></button>
+   <div class="masthead-actions"><button id="add-goal" class="add-button" aria-label="Add goal"><span data-icon="plus"></span><span class="add-label">Add goal</span></button><button id="settings-open" class="settings-button" aria-label="Settings"><span data-icon="settings"></span></button></div>
   </header>
-  <nav class="main-nav" aria-label="Main views"><div class="tabs"><button data-view="today" class="active" aria-current="page"><span data-icon="sun"></span>Today</button><button data-view="upcoming"><span data-icon="calendar"></span>Upcoming</button><button data-view="history"><span data-icon="history"></span>History</button><button data-view="goals"><span data-icon="flag"></span>All goals</button></div><button id="add-goal" class="primary" aria-label="Add goal"><span data-icon="plus"></span><span>Add goal</span></button></nav>
+  <nav class="main-nav" aria-label="Main views"><div class="tabs"><button data-view="today" class="active" aria-current="page"><span data-icon="sun"></span>Today</button><button data-view="upcoming"><span data-icon="calendar"></span>Upcoming</button><button data-view="history"><span data-icon="history"></span>History</button><button data-view="goals"><span data-icon="flag"></span>All goals</button></div></nav>
   <main id="main" tabindex="-1"></main>
   <footer><span class="footer-flame" data-icon="flame"></span> Keep the fire going.</footer>
  </div>
@@ -42,5 +42,5 @@
   <p id="connection-message" class="help" role="status"></p><div class="settings-row"><button class="quiet" id="sync-now">Sync now</button><button class="quiet" id="export">Save backup</button><label class="quiet file-label">Restore backup<input id="import" type="file" accept="application/json,.json"></label></div>
  </dialog>
  <dialog id="progress-dialog" class="modal"><form id="progress-form"><header><h2>Keene followers</h2><button type="button" class="icon-button close" aria-label="Close follower update">×</button></header><label>Current follower count<input name="followers" type="number" min="0" max="100000000" required></label><p class="help">One count updates your October, November, and December milestones.</p><div class="dialog-actions"><button type="button" class="quiet close">Cancel</button><button class="primary" type="submit">Save count</button></div></form></dialog>
- <div id="toast" role="status" aria-live="polite"></div><script type="module" src="./app.js?v=13"></script><script type="module" src="./scene.js?v=11"></script>
+ <div id="toast" role="status" aria-live="polite"></div><script type="module" src="./app.js?v=14"></script><script type="module" src="./scene.js?v=11"></script>
 </body></html>

@@ -1,4 +1,4 @@
-import {validRecord} from './validate.js?v=13';
+import {validRecord} from './validate.js?v=14';
 export const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 export function dayKey(date=new Date()){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
 export function dateOf(key){return new Date(`${key}T12:00:00`);}
@@ -123,5 +123,17 @@ export const SEED_GOALS=[
 ].map(g=>({...g,start:g.start||'2026-10-19',archived:false,time:''}));
 export function seededRecords(){return Object.fromEntries(SEED_GOALS.map(g=>[`goal:${g.id}`,{value:g,stamp:'0000000000000000:seed'}]));}
 export function goalsOf(records){return Object.entries(records).filter(([k,r])=>k.startsWith('goal:')&&r.value&&!r.value.archived).map(([,r])=>r.value);}
+// One-time goals added to a specific day ("day goals") appear in that day's list.
+// Unfinished ones carry into today until they are done; finished ones stay on the day they were done.
+export function isDayTask(g){return Boolean(g)&&g.schedule==='once'&&!g.metric&&g.dayGoal===true;}
+export function dayTasks(records,date,today=dayKey()){
+ return goalsOf(records).map(g=>goalForDate(records,g.id,date,today)).filter(g=>{
+  if(!isDayTask(g)||g.archived)return false;
+  if(g.due===date)return true;
+  if(date!==today||g.due>today)return false;
+  const doneOn=completionDate(records,g,date);
+  return !doneOn||doneOn===today;
+ });
+}
 export function milestoneDone(records,g,date){return g.metric?Number(value(records,`metric:${g.metric}`,-1))>=g.target:isComplete(records,g,date);}
 export function scheduleLabel(g){return g.schedule==='daily'?'Every day':g.schedule==='days'?g.days.map(d=>DAYS[d]).join(' · '):g.schedule==='weekly'?`${g.target||1} ${(g.target||1)>1?'days':'time'} / week`:g.schedule==='monthly'?'Each month':`By ${dateOf(g.due).toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;}

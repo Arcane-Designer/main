@@ -18,6 +18,7 @@ export function validGoal(g,goalId){
  if(g.rescheduledTo!==undefined&&g.rescheduledTo!==null&&!validDate(g.rescheduledTo))return false;
  if(g.occurrenceOrigin!==undefined&&!validDate(g.occurrenceOrigin))return false;
  if(g.preferred!==undefined&&!weekdays(g.preferred))return false;
+ if(g.dayGoal!==undefined&&typeof g.dayGoal!=='boolean')return false;
  if(g.steps!==undefined&&!steps(g.steps))return false;
  if(g.routines!==undefined&&(!g.routines||typeof g.routines!=='object'||Array.isArray(g.routines)||Object.entries(g.routines).some(([d,s])=>!/^[0-6]$/.test(d)||!steps(s))))return false;
  return true;

@@ -1,14 +1,18 @@
-import {dayKey,dateOf,addDays,goalForDate,value,entryKey,sessionKey,periodKey,stepsFor,canComplete,scheduledOn,arrivalForDate,completedOnDay} from './core.js?v=13';
+import {dayKey,dateOf,addDays,goalForDate,value,entryKey,sessionKey,periodKey,stepsFor,canComplete,scheduledOn,arrivalForDate,completedOnDay,count} from './core.js?v=14';
 export function snapshotGoal(goal,date){const g=structuredClone(goal);delete g.moveConflict;if(g.routines)g.routines={[dateOf(date).getDay()]:stepsFor(g,date)};return g;}
 export function baselineChanges(records,goal){
  const prefix=`version:${goal.id}:`;
  return Object.keys(records).some(k=>k.startsWith(prefix))?{}:{[`${prefix}${goal.start||'2026-10-19'}`]:structuredClone(goal)};
 }
 function activeGoal(records,id,date,today){if(date>today)throw new Error('Future days cannot be checked off.');const g=goalForDate(records,id,date,today);if(!g||g.rescheduledTo||date<(g.start||'2026-10-19'))throw new Error('This goal is unavailable on that day.');return g;}
-export function completionChanges(records,id,date,done,today=dayKey()){
- const g=activeGoal(records,id,date,today);
- if(done&&!canComplete(records,g,date))throw new Error('Finish the smaller steps first.');
+// cascade: the parent checkbox drives its steps. Checking it checks every step;
+// unchecking it clears them. Without cascade the steps must already be complete.
+export function completionChanges(records,id,date,done,today=dayKey(),{cascade=false}={}){
+ const g=activeGoal(records,id,date,today),steps=stepsFor(g,date);
+ if(done&&g.routines&&!steps.length)throw new Error('Set up this day’s routine first.');
+ if(done&&!cascade&&!canComplete(records,g,date))throw new Error('Finish the smaller steps first.');
  const changes={...baselineChanges(records,value(records,`goal:${id}`)),[`snapshot:${id}:${date}`]:snapshotGoal(g,date),[sessionKey(g,date)]:Boolean(done),[`entry:${id}:${date}:missed`]:false,[`entry:${id}:${date}:reopened`]:date<today};
+ if(cascade)for(const s of steps)changes[entryKey(g,date,`step-${s.id}`)]=Boolean(done);
  if(['monthly','once'].includes(g.schedule))changes[`completed:${id}:${periodKey(g,date)}`]=done?date:null;
  return changes;
 }
@@ -17,6 +21,10 @@ export function stepChanges(records,id,date,step,done,today=dayKey()){
  if(!stepsFor(g,date).some(s=>s.id===step))throw new Error('This step has changed. Reopen the goal.');
  const changes={...baselineChanges(records,value(records,`goal:${id}`)),[`snapshot:${id}:${date}`]:snapshotGoal(g,date),[entryKey(g,date,`step-${step}`)]:Boolean(done),[`entry:${id}:${date}:missed`]:false,[`entry:${id}:${date}:reopened`]:date<today};
  if(!done){changes[sessionKey(g,date)]=false;if(['monthly','once'].includes(g.schedule))changes[`completed:${id}:${periodKey(g,date)}`]=null;}
+ // Checking the last open step completes the parent, unless a weekly target is already met.
+ else if(stepsFor(g,date).every(s=>s.id===step||value(records,entryKey(g,date,`step-${s.id}`),false))&&!value(records,sessionKey(g,date),false)&&!(g.schedule==='weekly'&&count(records,g,date)>=(g.target||1))){
+  changes[sessionKey(g,date)]=true;if(['monthly','once'].includes(g.schedule))changes[`completed:${id}:${periodKey(g,date)}`]=date;
+ }
  return changes;
 }
 export function goalEditChanges(records,goal,{scope='future',date=dayKey(),today=dayKey()}={}){

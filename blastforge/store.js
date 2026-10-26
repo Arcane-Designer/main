@@ -1,7 +1,7 @@
-import {seededRecords,mergeRecords,nextStamp,dayKey} from './core.js?v=13';
-import {completionChanges,stepChanges,goalEditChanges,archiveChanges,missedChanges,moveChanges,cancelMoveChanges} from './actions.js?v=13';
-import {SYNC_ENDPOINT} from './config.js?v=13';
-import {validRecord} from './validate.js?v=13';
+import {seededRecords,mergeRecords,nextStamp,dayKey} from './core.js?v=14';
+import {completionChanges,stepChanges,goalEditChanges,archiveChanges,missedChanges,moveChanges,cancelMoveChanges} from './actions.js?v=14';
+import {SYNC_ENDPOINT} from './config.js?v=14';
+import {validRecord} from './validate.js?v=14';
 const STATE='blastforge-v1', CONNECTION='blastforge-connection-v1';
 const random=()=>{const b=crypto.getRandomValues(new Uint8Array(20));return [...b].map(x=>'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'[x&31]).join('');};
 export const cleanCode=s=>String(s||'').toUpperCase().replace(/[018]/g,c=>({'0':'O','1':'I','8':'B'}[c])).replace(/[^A-Z2-7]/g,'');
@@ -27,7 +27,7 @@ export const Store={
  subscribe(f){listeners.add(f);},
  async set(key,value){return commit({[key]:value});},
  async setMany(changes){return commit(changes);},
- async setCompletion(id,date,done){await ready;return commit(completionChanges(records,id,date,done));},
+ async setCompletion(id,date,done){await ready;return commit(completionChanges(records,id,date,done,dayKey(),{cascade:true}));},
  async setMissed(id,date,missed){await ready;return commit(missedChanges(records,id,date,missed));},
  async moveOccurrence(id,date,to){await ready;return commit(moveChanges(records,id,date,to));},
  async cancelMove(id,date){await ready;return commit(cancelMoveChanges(records,id,date));},
