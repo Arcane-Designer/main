@@ -1,18 +1,19 @@
-import {dayKey,dateOf,addDays,goalForDate,value,entryKey,sessionKey,periodKey,stepsFor,canComplete,scheduledOn,arrivalForDate,completedOnDay,count} from './core.js?v=14';
+import {dayKey,dateOf,addDays,goalForDate,value,entryKey,sessionKey,periodKey,stepsFor,canComplete,scheduledOn,arrivalForDate,completedOnDay,count,restRule,restOnDay,restsInWeek} from './core.js?v=14';
 export function snapshotGoal(goal,date){const g=structuredClone(goal);delete g.moveConflict;if(g.routines)g.routines={[dateOf(date).getDay()]:stepsFor(g,date)};return g;}
 export function baselineChanges(records,goal){
  const prefix=`version:${goal.id}:`;
  return Object.keys(records).some(k=>k.startsWith(prefix))?{}:{[`${prefix}${goal.start||'2026-10-19'}`]:structuredClone(goal)};
 }
 function activeGoal(records,id,date,today){if(date>today)throw new Error('Future days cannot be checked off.');const g=goalForDate(records,id,date,today);if(!g||g.rescheduledTo||date<(g.start||'2026-10-19'))throw new Error('This goal is unavailable on that day.');return g;}
-// cascade: the parent checkbox drives its steps. Checking it checks every step;
-// unchecking it clears them. Without cascade the steps must already be complete.
+// cascade: checking the parent checks every step. Unchecking the parent leaves steps as they are,
+// so an unfinished workout can stay partly logged. Without cascade the steps must already be complete.
 export function completionChanges(records,id,date,done,today=dayKey(),{cascade=false}={}){
  const g=activeGoal(records,id,date,today),steps=stepsFor(g,date);
  if(done&&g.routines&&!steps.length)throw new Error('Set up this day’s routine first.');
  if(done&&!cascade&&!canComplete(records,g,date))throw new Error('Finish the smaller steps first.');
  const changes={...baselineChanges(records,value(records,`goal:${id}`)),[`snapshot:${id}:${date}`]:snapshotGoal(g,date),[sessionKey(g,date)]:Boolean(done),[`entry:${id}:${date}:missed`]:false,[`entry:${id}:${date}:reopened`]:date<today};
- if(cascade)for(const s of steps)changes[entryKey(g,date,`step-${s.id}`)]=Boolean(done);
+ if(cascade&&done)for(const s of steps)changes[entryKey(g,date,`step-${s.id}`)]=true;
+ if(Object.hasOwn(records,`entry:${id}:${date}:rest`))changes[`entry:${id}:${date}:rest`]=false;
  if(['monthly','once'].includes(g.schedule))changes[`completed:${id}:${periodKey(g,date)}`]=done?date:null;
  return changes;
 }
@@ -93,4 +94,12 @@ export function cancelMoveChanges(records,id,date,today=dayKey()){
  const saved={...snapshotGoal(currentGoal,current),rescheduledTo:null,dayOnly:true};delete saved.occurrenceOrigin;
  if(saved.routines)saved.routines={[dateOf(origin).getDay()]:stepsFor(currentGoal,current)};
  return {[`snapshot:${id}:${origin}`]:saved};
+}
+
+export function restChanges(records,id,date,rest,today=dayKey()){
+ const g=activeGoal(records,id,date,today),rule=restRule(g);
+ if(!rule)throw new Error('This goal has no rest days.');
+ if(rest&&!restOnDay(records,g,date)&&restsInWeek(records,g,date)>=rule.per)throw new Error(`No ${rule.label.toLowerCase()}s left this week.`);
+ const changes=completionChanges(records,id,date,false,today);
+ changes[`entry:${id}:${date}:rest`]=Boolean(rest);changes[`entry:${id}:${date}:reopened`]=!rest&&date<today;return changes;
 }

@@ -66,6 +66,7 @@ export function weeklyProgress(records,goal,date,today=dayKey()){
 export function notCompletedOnDay(records,goal,date,today=dayKey()){
  if(goal.rescheduledTo||!['daily','days','weekly'].includes(goal.schedule))return false;
  if(missedOnDay(records,goal,date))return true;
+ if(restOnDay(records,goal,date))return false;
  if(value(records,sessionKey(goal,date),false)&&canComplete(records,goal,date))return false;
  if(!scheduledOn(records,goal,date))return false;
  // Reopen is explicit and stays open, even on a historical date.
@@ -137,3 +138,63 @@ export function dayTasks(records,date,today=dayKey()){
 }
 export function milestoneDone(records,g,date){return g.metric?Number(value(records,`metric:${g.metric}`,-1))>=g.target:isComplete(records,g,date);}
 export function scheduleLabel(g){return g.schedule==='daily'?'Every day':g.schedule==='days'?g.days.map(d=>DAYS[d]).join(' · '):g.schedule==='weekly'?`${g.target||1} ${(g.target||1)>1?'days':'time'} / week`:g.schedule==='monthly'?'Each month':`By ${dateOf(g.due).toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;}
+
+// ---- Rest and cheat days ----
+// A planned day off for Movement (rest) or Health (cheat) goals. It is never "not completed"
+// and it keeps a streak alive. Completing the goal later that day wins over the rest.
+export const REST_RULES={Movement:{label:'Rest day',per:2},Health:{label:'Cheat day',per:2}};
+export function restRule(g){return g&&['daily','days'].includes(g.schedule)?REST_RULES[g.category]||null:null;}
+export function restOnDay(records,goal,date){const r=records[`entry:${goal.id}:${date}:rest`],done=records[sessionKey(goal,date)];return Boolean(r?.value)&&!(done?.value&&done.stamp>r.stamp);}
+export function restsInWeek(records,goal,date){return weekDays(date).filter(d=>restOnDay(records,goal,d)).length;}
+
+// ---- The forge: heat, streaks and relics ----
+// Every check-off adds heat. A daily goal done on consecutive scheduled days earns more each day
+// (x1, x1.5, x2 ... up to x4). Days a goal isn't scheduled, and rest days, don't break a streak.
+// Temperature compares the last seven days' heat with steady, moderate effort, so it cools when
+// you stop and runs hottest on long streaks. Heat also accumulates for good toward forged relics.
+export const FORGE={step:.5,maxMult:4,weeklyBonus:2,milestone:5,reference:2.5,relicBase:60,relicStep:15};
+export const TIERS=[{min:0,name:'Embers'},{min:.2,name:'Kindled'},{min:.45,name:'Blazing'},{min:.75,name:'White-hot'},{min:1,name:'Dragonfire'}];
+export const RELICS=['Iron Ingot','Rider’s Buckle','Ember Dagger','Forge Gauntlet','Dragonscale Shield','Flamewrought Helm','Wyrmsteel Blade','Skywarden Saddle'];
+export function streakMultiplier(n){return Math.min(FORGE.maxMult,1+FORGE.step*Math.max(0,n-1));}
+export function relicThreshold(k){return k*FORGE.relicBase+FORGE.relicStep*k*(k-1)/2;}
+export function relicName(i){const base=RELICS[i%RELICS.length],round=Math.floor(i/RELICS.length);return round?`${base} ${['II','III','IV','V','VI','VII','VIII','IX','X'][Math.min(round-1,8)]}`:base;}
+export function tierFor(temp){return TIERS.filter(t=>temp>=t.min).at(-1);}
+function goalRecords(records,id){return Object.fromEntries(Object.entries(records).filter(([k])=>k.split(':')[1]===id));}
+export function forgeStats(records,today=dayKey()){
+ const roots=Object.entries(records).filter(([k,r])=>k.startsWith('goal:')&&r.value&&!r.value.metric).map(([,r])=>r.value);
+ const start=roots.reduce((m,g)=>(g.start||'2026-10-19')<m?(g.start||'2026-10-19'):m,today);
+ const days=[];for(let d=start;d<=today;d=addDays(d,1))days.push(d);
+ const heat=Object.fromEntries(days.map(d=>[d,0])),week0=addDays(today,-6),streaks=[];let possible=0;
+ for(const root of roots){
+  const sub=goalRecords(records,root.id);let run=0,best=0,weekly=null;
+  for(const d of days){
+   const g=goalForDate(sub,root.id,d,today);if(!g)continue;
+   if(['daily','days'].includes(g.schedule)){
+    if(!scheduledOn(sub,g,d))continue;
+    const rest=restOnDay(sub,g,d);
+    if(completedOnDay(sub,g,d)){run++;best=Math.max(best,run);heat[d]+=streakMultiplier(run);}
+    else if(!rest&&d<today)run=0;
+    if(d>=week0&&!rest)possible+=FORGE.reference;
+   }else if(g.schedule==='weekly'){
+    weekly=g;if(completedOnDay(sub,g,d))heat[d]+=1;
+   }else if(completedOnDay(sub,g,d))heat[d]+=FORGE.milestone;
+  }
+  const now=goalForDate(sub,root.id,today,today)||root;
+  if(weekly){
+   // Weekly goals: a bonus when the target is hit, growing with consecutive weeks.
+   let weeks=0,bestWeeks=0;
+   for(let w=weekKey(start);w<=weekKey(today);w=addDays(w,7)){
+    let n=0,hitOn=null;for(const d of weekDays(w)){if(d<start||d>today)continue;const g=goalForDate(sub,root.id,d,today);if(g?.schedule==='weekly'&&completedOnDay(sub,g,d)){n++;if(n===(g.target||1))hitOn=d;}}
+    if(hitOn){weeks++;bestWeeks=Math.max(bestWeeks,weeks);heat[hitOn]+=FORGE.weeklyBonus*streakMultiplier(weeks);}
+    else if(w<weekKey(today))weeks=0;
+   }
+   if(!root.archived&&now.schedule==='weekly')streaks.push({id:root.id,title:now.title,icon:now.icon,category:now.category,unit:'week',current:weeks,best:bestWeeks,next:streakMultiplier(weeks+1)});
+  }
+  if(!root.archived&&['daily','days'].includes(now.schedule)){const rule=restRule(now);streaks.push({id:root.id,title:now.title,icon:now.icon,category:now.category,unit:'day',current:run,best,next:streakMultiplier(run+1),rest:rule?{label:rule.label,left:Math.max(0,rule.per-restsInWeek(sub,now,today))}:null});}
+ }
+ const lifetime=days.reduce((n,d)=>n+heat[d],0),earned=days.filter(d=>d>=week0).reduce((n,d)=>n+heat[d],0);
+ const temp=possible?Math.min(1.25,earned/possible):0;let relics=0;while(relicThreshold(relics+1)<=lifetime)relics++;
+ const from=relicThreshold(relics),to=relicThreshold(relics+1);
+ streaks.sort((a,b)=>b.current-a.current||b.best-a.best||a.title.localeCompare(b.title));
+ return {temp,tier:tierFor(temp),earned,possible,lifetime,heat,last7:days.slice(-7).map(d=>({date:d,heat:heat[d]})),relics,progress:(lifetime-from)/(to-from),toNext:Math.ceil(to-lifetime),streaks};
+}

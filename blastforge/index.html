@@ -14,8 +14,8 @@
  <div class="scene" aria-hidden="true"><img class="scene-poster" src="./assets/forge-poster.jpg" alt="" fetchpriority="high"></div><div class="snow" aria-hidden="true"></div>
  <div class="app-shell">
   <header class="masthead">
-   <a class="brand" href="./" aria-label="Blastforge home"><span class="brand-mark"><img src="./assets/anvil.webp" alt="" width="52" height="52"></span><span>BLASTFORGE</span></a>
-   <div class="masthead-actions"><button id="add-goal" class="add-button" aria-label="Add goal"><span data-icon="plus"></span><span class="add-label">Add goal</span></button><button id="settings-open" class="settings-button" aria-label="Settings"><span data-icon="settings"></span></button></div>
+   <a class="brand" href="./" aria-label="Open the forge" title="The forge"><span class="brand-mark"><img src="./assets/anvil.webp" alt="" width="52" height="52"></span><span>BLASTFORGE</span></a>
+   <div class="masthead-actions"><button id="add-goal" class="add-button" aria-label="Add goal" title="Add goal"><span data-icon="plus"></span></button><button id="settings-open" class="settings-button" aria-label="Settings"><span data-icon="settings"></span></button></div>
   </header>
   <nav class="main-nav" aria-label="Main views"><div class="tabs"><button data-view="today" class="active" aria-current="page"><span data-icon="sun"></span>Today</button><button data-view="upcoming"><span data-icon="calendar"></span>Upcoming</button><button data-view="history"><span data-icon="history"></span>History</button><button data-view="goals"><span data-icon="flag"></span>All goals</button></div></nav>
   <main id="main" tabindex="-1"></main>
@@ -28,6 +28,7 @@
   <label id="metric-target-field" hidden>Follower target<input name="metricTarget" type="number" min="1" max="100000000"></label>
   <fieldset id="weekdays"><legend>Which days?</legend><div class="day-picker"></div></fieldset>
   <div class="form-pair"><label id="target-field">Days each week<input name="target" type="number" min="1" max="7" value="2"></label><label id="due-field">Due date<input name="due" type="date"></label><label>Time <span class="muted">(optional)</span><input name="time" type="time"></label></div>
+  <label id="placement-field">Show it<select name="placement"><option value="day">On that day’s list</option><option value="longer">With longer goals</option></select></label>
   <label>Notes <span class="muted">(optional)</span><textarea name="notes" rows="2" maxlength="1200"></textarea></label>
   <label id="routine-day-field">Routine for<select name="routineDay"><option value="1">Monday</option><option value="3">Wednesday</option><option value="5">Friday</option><option value="6">Saturday</option></select></label>
   <label><span id="steps-label">Smaller steps</span> <span class="muted">(one per line)</span><textarea name="steps" rows="4" maxlength="4000"></textarea></label><p id="routine-help" class="help"></p>
@@ -42,5 +43,6 @@
   <p id="connection-message" class="help" role="status"></p><div class="settings-row"><button class="quiet" id="sync-now">Sync now</button><button class="quiet" id="export">Save backup</button><label class="quiet file-label">Restore backup<input id="import" type="file" accept="application/json,.json"></label></div>
  </dialog>
  <dialog id="progress-dialog" class="modal"><form id="progress-form"><header><h2>Keene followers</h2><button type="button" class="icon-button close" aria-label="Close follower update">×</button></header><label>Current follower count<input name="followers" type="number" min="0" max="100000000" required></label><p class="help">One count updates your October, November, and December milestones.</p><div class="dialog-actions"><button type="button" class="quiet close">Cancel</button><button class="primary" type="submit">Save count</button></div></form></dialog>
+ <dialog id="forge-dialog" class="forge-dialog" aria-label="The forge"></dialog>
  <div id="toast" role="status" aria-live="polite"></div><script type="module" src="./app.js?v=14"></script><script type="module" src="./scene.js?v=11"></script>
 </body></html>

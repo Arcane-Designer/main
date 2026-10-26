@@ -1,5 +1,5 @@
 import {seededRecords,mergeRecords,nextStamp,dayKey} from './core.js?v=14';
-import {completionChanges,stepChanges,goalEditChanges,archiveChanges,missedChanges,moveChanges,cancelMoveChanges} from './actions.js?v=14';
+import {completionChanges,stepChanges,goalEditChanges,archiveChanges,missedChanges,moveChanges,cancelMoveChanges,restChanges} from './actions.js?v=14';
 import {SYNC_ENDPOINT} from './config.js?v=14';
 import {validRecord} from './validate.js?v=14';
 const STATE='blastforge-v1', CONNECTION='blastforge-connection-v1';
@@ -29,6 +29,7 @@ export const Store={
  async setMany(changes){return commit(changes);},
  async setCompletion(id,date,done){await ready;return commit(completionChanges(records,id,date,done,dayKey(),{cascade:true}));},
  async setMissed(id,date,missed){await ready;return commit(missedChanges(records,id,date,missed));},
+ async setRest(id,date,rest){await ready;return commit(restChanges(records,id,date,rest));},
  async moveOccurrence(id,date,to){await ready;return commit(moveChanges(records,id,date,to));},
  async cancelMove(id,date){await ready;return commit(cancelMoveChanges(records,id,date));},
  async setStep(id,date,step,done){await ready;return commit(stepChanges(records,id,date,step,done));},
