@@ -8,7 +8,7 @@
  <title>Blastforge</title>
  <link rel="icon" href="./assets/favicon-64.png" type="image/png"><link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
  <link rel="preload" as="image" href="./assets/forge-poster.jpg" fetchpriority="high">
- <link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./style.css?v=14">
+ <link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./style.css?v=15">
 </head>
 <body>
  <div class="scene" aria-hidden="true"><img class="scene-poster" src="./assets/forge-poster.jpg" alt="" fetchpriority="high"></div><div class="snow" aria-hidden="true"></div>
@@ -17,7 +17,8 @@
    <a class="brand" href="./" aria-label="Open the forge" title="The forge"><span class="brand-mark"><img src="./assets/anvil.webp" alt="" width="52" height="52"></span><span>BLASTFORGE</span></a>
    <div class="masthead-actions"><button id="add-goal" class="add-button" aria-label="Add goal" title="Add goal"><span data-icon="plus"></span></button><button id="settings-open" class="settings-button" aria-label="Settings"><span data-icon="settings"></span></button></div>
   </header>
-  <nav class="main-nav" aria-label="Main views"><div class="tabs"><button data-view="today" class="active" aria-current="page"><span data-icon="sun"></span>Today</button><button data-view="upcoming"><span data-icon="calendar"></span>Upcoming</button><button data-view="history"><span data-icon="history"></span>History</button><button data-view="goals"><span data-icon="flag"></span>All goals</button></div></nav>
+  <nav class="game-nav" aria-label="Sections"><button data-section="goals" class="active" aria-current="page"><span data-icon="flag"></span><span>Goals</span></button><button data-section="dragon"><span data-art="dragon"></span><span>Dragon</span></button><button data-section="craft"><span data-art="hammer"></span><span>Craft</span></button><button data-section="games"><span data-art="dice"></span><span>Games</span></button><button data-section="vault"><span data-art="chest"></span><span>Vault</span></button><button data-section="isles"><span data-art="map"></span><span>Isles</span></button></nav>
+  <nav class="main-nav" aria-label="Goal views"><div class="tabs"><button data-view="today" class="active" aria-current="page"><span data-icon="sun"></span>Today</button><button data-view="upcoming"><span data-icon="calendar"></span>Upcoming</button><button data-view="history"><span data-icon="history"></span>History</button><button data-view="goals"><span data-icon="flag"></span>All goals</button></div></nav>
   <main id="main" tabindex="-1"></main>
   <footer><span class="footer-flame" data-icon="flame"></span> Keep the fire going.</footer>
  </div>
@@ -37,6 +38,9 @@
  <dialog id="move-dialog" class="modal"><form id="move-form"><header><h2>Move this time</h2><button type="button" class="icon-button close" aria-label="Close move dialog">×</button></header><p id="move-goal-name"></p><label>Move to<input name="date" type="date" required></label><p class="help">Only this occurrence moves. The repeating schedule stays the same.</p><p id="move-error" class="error" role="alert"></p><div class="dialog-actions"><button type="button" class="quiet close">Cancel</button><button type="submit" class="primary">Move this time</button></div></form></dialog>
  <dialog id="settings-dialog" class="modal"><header><h2>Settings</h2><button class="icon-button close" aria-label="Close settings">×</button></header>
   <label class="motion-setting"><span>Animated background</span><input id="background-motion" type="checkbox" checked></label>
+  <label class="motion-setting"><span>Sound</span><input id="sound-setting" type="checkbox" checked></label>
+  <label class="motion-setting" id="badge-row"><span>Goals left today on the app icon<small class="setting-help">On iPhone, allow notifications when asked so the number can show.</small></span><input id="badge-setting" type="checkbox" checked></label>
+  <label class="motion-setting" id="theme-row" hidden><span>Workshop theme</span><select id="theme-setting"></select></label>
   <div class="settings-status" role="status"><span class="sync-dot"></span><span id="sync-label">Saved on this device</span></div><p id="footer-status" class="help"></p>
   <div class="connection-card"><span class="connection-label">Connection code</span><code id="connection-code"></code><button class="quiet" id="copy-link">Copy link</button></div>
   <form id="connect-form"><label>Connect another device<input name="code" placeholder="Connection code" autocomplete="off" spellcheck="false" required></label><button class="primary" type="submit">Connect</button></form>
@@ -44,5 +48,5 @@
  </dialog>
  <dialog id="progress-dialog" class="modal"><form id="progress-form"><header><h2>Keene followers</h2><button type="button" class="icon-button close" aria-label="Close follower update">×</button></header><label>Current follower count<input name="followers" type="number" min="0" max="100000000" required></label><p class="help">One count updates your October, November, and December milestones.</p><div class="dialog-actions"><button type="button" class="quiet close">Cancel</button><button class="primary" type="submit">Save count</button></div></form></dialog>
  <dialog id="forge-dialog" class="forge-dialog" aria-label="The forge"></dialog>
- <div id="toast" role="status" aria-live="polite"></div><script type="module" src="./app.js?v=14"></script><script type="module" src="./scene.js?v=11"></script>
+ <div id="toast" role="status" aria-live="polite"></div><script type="module" src="./app.js?v=15"></script><script type="module" src="./scene.js?v=11"></script>
 </body></html>

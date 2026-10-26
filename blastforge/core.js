@@ -1,29 +1,37 @@
-import {validRecord} from './validate.js?v=14';
+import {validRecord} from './validate.js?v=15';
 export const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 export function dayKey(date=new Date()){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
 export function dateOf(key){return new Date(`${key}T12:00:00`);}
 export function addDays(key,n){const d=dateOf(key);d.setDate(d.getDate()+n);return dayKey(d);}
 export function weekKey(key){return addDays(key,-((dateOf(key).getDay()+6)%7));}
 export function weekDays(key){const start=weekKey(key);return Array.from({length:7},(_,i)=>addDays(start,i));}
+// Records with a prefix. forgeStats walks one goal's records day by day; it registers that fixed
+// subset here so each prefix is scanned once instead of once per day (a year of history stays fast).
+const PREFIXES=new WeakMap();
+// The live board is cached too, but only through the Store, which marks it changed on every save
+// (records are only ever changed in place there; merges and restores produce new objects).
+export function trackRecords(records){if(!PREFIXES.has(records))PREFIXES.set(records,new Map());return records;}
+export function recordsChanged(records){if(PREFIXES.has(records))PREFIXES.set(records,new Map());}
+function scan(records,prefix){const cache=PREFIXES.get(records);if(!cache)return Object.entries(records).filter(([k])=>k.startsWith(prefix));if(!cache.has(prefix))cache.set(prefix,Object.entries(records).filter(([k])=>k.startsWith(prefix)));return cache.get(prefix);}
 // A move belongs to its original occurrence, never to the recurring goal definition.
 function recordedActivity(records,id,date){const g=value(records,`snapshot:${id}:${date}`);return Boolean(g&&(value(records,sessionKey(g,date),false)||value(records,`entry:${id}:${date}:missed`,false)||stepsFor(g,date).some(s=>value(records,entryKey(g,date,`step-${s.id}`),false))));}
 function protectedArrival(records,id,origin){
  const prefix=`snapshot:${id}:`;
- return Object.entries(records).filter(([k,r])=>k.startsWith(prefix)&&r.value?.occurrenceOrigin===origin&&recordedActivity(records,id,k.slice(prefix.length))).sort(([ka,a],[kb,b])=>a.stamp.localeCompare(b.stamp)||ka.localeCompare(kb)).map(([key,r])=>({date:key.slice(prefix.length),goal:r.value})).at(-1)||null;
+ return scan(records,prefix).filter(([k,r])=>r.value?.occurrenceOrigin===origin&&recordedActivity(records,id,k.slice(prefix.length))).sort(([ka,a],[kb,b])=>a.stamp.localeCompare(b.stamp)||ka.localeCompare(kb)).map(([key,r])=>({date:key.slice(prefix.length),goal:r.value})).at(-1)||null;
 }
 export function arrivalForDate(records,id,date){
  const prefix=`snapshot:${id}:`,saved=value(records,`${prefix}${date}`);
  // A stale offline undo/date change cannot erase work already recorded at the destination.
  if(saved?.occurrenceOrigin&&recordedActivity(records,id,date))return {origin:saved.occurrenceOrigin,goal:value(records,`${prefix}${saved.occurrenceOrigin}`,saved)};
- return Object.entries(records).filter(([k,r])=>{
-  if(!k.startsWith(prefix)||r.value?.rescheduledTo!==date)return false;
+ return scan(records,prefix).filter(([k,r])=>{
+  if(r.value?.rescheduledTo!==date)return false;
   const protectedAt=protectedArrival(records,id,k.slice(prefix.length));return !protectedAt||protectedAt.date===date;
  }).sort(([ka,a],[kb,b])=>a.stamp.localeCompare(b.stamp)||ka.localeCompare(kb)).map(([key,r])=>({origin:key.slice(prefix.length),goal:r.value})).at(-1)||null;
 }
 export function goalForDate(records,id,date,today=dayKey()){
  const root=value(records,`goal:${id}`);if(!root)return null;
  let snapshot=records[`snapshot:${id}:${date}`];const prefix=`version:${id}:`;
- const versions=Object.entries(records).filter(([k])=>k.startsWith(prefix)&&k.slice(prefix.length)<=date).sort(([a],[b])=>a.localeCompare(b));
+ const versions=scan(records,prefix).filter(([k])=>k.slice(prefix.length)<=date).sort(([a],[b])=>a.localeCompare(b));
  const definition=versions.length?versions.at(-1)[1]:records[`goal:${id}`];
  const arrival=arrivalForDate(records,id,date);
  if(arrival){
@@ -152,10 +160,16 @@ export function restsInWeek(records,goal,date){return weekDays(date).filter(d=>r
 // (x1, x1.5, x2 ... up to x4). Days a goal isn't scheduled, and rest days, don't break a streak.
 // Temperature compares the last seven days' heat with steady, moderate effort, so it cools when
 // you stop and runs hottest on long streaks. Heat also accumulates for good toward forged relics.
-export const FORGE={step:.5,maxMult:4,weeklyBonus:2,milestone:5,reference:2.5,relicBase:60,relicStep:15};
+export const FORGE={weeklyBonus:2,milestone:5,reference:2.5,relicBase:40,relicStep:5};
+// Streak multiplier: x1 on day one, x4 by day 7, then still climbing: x5 at 14, x6 at 30, x8 at 50, x10 at 100.
+export const MULT_STEPS=[[1,1],[7,4],[14,5],[30,6],[50,8],[100,10]];
+// Named streak milestones. Reaching one pays a reward once per goal (see game.js).
+export const STREAK_MILESTONES=[{days:3,name:'Spark'},{days:7,name:'Flame'},{days:10,name:'Blaze'},{days:14,name:'Bonfire'},{days:21,name:'Wildfire'},{days:30,name:'Inferno'},{days:50,name:'Firestorm'},{days:75,name:'Sunfire'},{days:100,name:'Dragonheart'},{days:150,name:'Starfire'},{days:200,name:'Eternal Flame'},{days:365,name:'Legend'}];
 export const TIERS=[{min:0,name:'Embers'},{min:.2,name:'Kindled'},{min:.45,name:'Blazing'},{min:.75,name:'White-hot'},{min:1,name:'Dragonfire'}];
 export const RELICS=['Iron Ingot','Rider’s Buckle','Ember Dagger','Forge Gauntlet','Dragonscale Shield','Flamewrought Helm','Wyrmsteel Blade','Skywarden Saddle'];
-export function streakMultiplier(n){return Math.min(FORGE.maxMult,1+FORGE.step*Math.max(0,n-1));}
+export function streakMultiplier(n){if(n<=1)return 1;for(let i=1;i<MULT_STEPS.length;i++){const [d1,m1]=MULT_STEPS[i],[d0,m0]=MULT_STEPS[i-1];if(n<=d1)return Math.round((m0+(m1-m0)*(n-d0)/(d1-d0))*10)/10;}return MULT_STEPS.at(-1)[1];}
+export function streakMilestone(n){return STREAK_MILESTONES.filter(m=>n>=m.days).at(-1)||null;}
+export function nextMilestone(n){return STREAK_MILESTONES.find(m=>m.days>n)||null;}
 export function relicThreshold(k){return k*FORGE.relicBase+FORGE.relicStep*k*(k-1)/2;}
 export function relicName(i){const base=RELICS[i%RELICS.length],round=Math.floor(i/RELICS.length);return round?`${base} ${['II','III','IV','V','VI','VII','VIII','IX','X'][Math.min(round-1,8)]}`:base;}
 export function tierFor(temp){return TIERS.filter(t=>temp>=t.min).at(-1);}
@@ -164,20 +178,22 @@ export function forgeStats(records,today=dayKey()){
  const roots=Object.entries(records).filter(([k,r])=>k.startsWith('goal:')&&r.value&&!r.value.metric).map(([,r])=>r.value);
  const start=roots.reduce((m,g)=>(g.start||'2026-10-19')<m?(g.start||'2026-10-19'):m,today);
  const days=[];for(let d=start;d<=today;d=addDays(d,1))days.push(d);
- const heat=Object.fromEntries(days.map(d=>[d,0])),week0=addDays(today,-6),streaks=[];let possible=0;
+ const heat=Object.fromEntries(days.map(d=>[d,0])),maxRun=Object.fromEntries(days.map(d=>[d,0])),dayTotals=Object.fromEntries(days.map(d=>[d,{planned:0,done:0}])),week0=addDays(today,-6),streaks=[],ledger=[];let possible=0;
+ // Each goal's own records, gathered in one pass over the board.
+ const byGoal={};for(const [k,r]of Object.entries(records)){const id=k.split(':')[1];if(id)(byGoal[id]||={})[k]=r;}
  for(const root of roots){
-  const sub=goalRecords(records,root.id);let run=0,best=0,weekly=null;
+  const sub=byGoal[root.id]||goalRecords(records,root.id);PREFIXES.set(sub,new Map());let run=0,best=0,weekly=null;
   for(const d of days){
    const g=goalForDate(sub,root.id,d,today);if(!g)continue;
    if(['daily','days'].includes(g.schedule)){
     if(!scheduledOn(sub,g,d))continue;
-    const rest=restOnDay(sub,g,d);
-    if(completedOnDay(sub,g,d)){run++;best=Math.max(best,run);heat[d]+=streakMultiplier(run);}
+    const rest=restOnDay(sub,g,d);if(!rest)dayTotals[d].planned++;
+    if(completedOnDay(sub,g,d)){if(!rest)dayTotals[d].done++;run++;best=Math.max(best,run);const mult=streakMultiplier(run);heat[d]+=mult;maxRun[d]=Math.max(maxRun[d],run);ledger.push({date:d,id:root.id,category:g.category,kind:'day',run,mult});}
     else if(!rest&&d<today)run=0;
     if(d>=week0&&!rest)possible+=FORGE.reference;
    }else if(g.schedule==='weekly'){
-    weekly=g;if(completedOnDay(sub,g,d))heat[d]+=1;
-   }else if(completedOnDay(sub,g,d))heat[d]+=FORGE.milestone;
+    weekly=g;if(completedOnDay(sub,g,d)){heat[d]+=1;ledger.push({date:d,id:root.id,category:g.category,kind:'week',run:0,mult:1});}
+   }else if(completedOnDay(sub,g,d)){heat[d]+=FORGE.milestone;ledger.push({date:d,id:root.id,category:g.category,kind:'once',run:0,mult:FORGE.milestone});}
   }
   const now=goalForDate(sub,root.id,today,today)||root;
   if(weekly){
@@ -185,7 +201,7 @@ export function forgeStats(records,today=dayKey()){
    let weeks=0,bestWeeks=0;
    for(let w=weekKey(start);w<=weekKey(today);w=addDays(w,7)){
     let n=0,hitOn=null;for(const d of weekDays(w)){if(d<start||d>today)continue;const g=goalForDate(sub,root.id,d,today);if(g?.schedule==='weekly'&&completedOnDay(sub,g,d)){n++;if(n===(g.target||1))hitOn=d;}}
-    if(hitOn){weeks++;bestWeeks=Math.max(bestWeeks,weeks);heat[hitOn]+=FORGE.weeklyBonus*streakMultiplier(weeks);}
+    if(hitOn){weeks++;bestWeeks=Math.max(bestWeeks,weeks);const bonus=FORGE.weeklyBonus*streakMultiplier(weeks);heat[hitOn]+=bonus;ledger.push({date:hitOn,id:root.id,category:root.category,kind:'target',run:weeks,mult:bonus});}
     else if(w<weekKey(today))weeks=0;
    }
    if(!root.archived&&now.schedule==='weekly')streaks.push({id:root.id,title:now.title,icon:now.icon,category:now.category,unit:'week',current:weeks,best:bestWeeks,next:streakMultiplier(weeks+1)});
@@ -195,6 +211,9 @@ export function forgeStats(records,today=dayKey()){
  const lifetime=days.reduce((n,d)=>n+heat[d],0),earned=days.filter(d=>d>=week0).reduce((n,d)=>n+heat[d],0);
  const temp=possible?Math.min(1.25,earned/possible):0;let relics=0;while(relicThreshold(relics+1)<=lifetime)relics++;
  const from=relicThreshold(relics),to=relicThreshold(relics+1);
+ // The day each relic was forged, and the longest streak running that day (it improves rarity odds).
+ const forged=[];let total=0,k=1,runSoFar=0;for(const d of days){total+=heat[d];runSoFar=Math.max(runSoFar,maxRun[d]);while(k<=relics&&total>=relicThreshold(k)){forged.push({index:k-1,date:d,run:maxRun[d]});k++;}}
  streaks.sort((a,b)=>b.current-a.current||b.best-a.best||a.title.localeCompare(b.title));
- return {temp,tier:tierFor(temp),earned,possible,lifetime,heat,last7:days.slice(-7).map(d=>({date:d,heat:heat[d]})),relics,progress:(lifetime-from)/(to-from),toNext:Math.ceil(to-lifetime),streaks};
+ ledger.sort((a,b)=>a.date.localeCompare(b.date));
+ return {temp,tier:tierFor(temp),earned,possible,lifetime,heat,ledger,forged,maxRun,dayTotals,byGoal,last7:days.slice(-7).map(d=>({date:d,heat:heat[d]})),relics,progress:(lifetime-from)/(to-from),toNext:Math.ceil(to-lifetime),streaks};
 }

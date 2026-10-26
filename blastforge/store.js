@@ -1,7 +1,7 @@
-import {seededRecords,mergeRecords,nextStamp,dayKey} from './core.js?v=14';
-import {completionChanges,stepChanges,goalEditChanges,archiveChanges,missedChanges,moveChanges,cancelMoveChanges,restChanges,grindstoneMergeChanges} from './actions.js?v=14';
-import {SYNC_ENDPOINT} from './config.js?v=14';
-import {validRecord} from './validate.js?v=14';
+import {seededRecords,mergeRecords,nextStamp,dayKey,trackRecords,recordsChanged} from './core.js?v=15';
+import {completionChanges,stepChanges,goalEditChanges,archiveChanges,missedChanges,moveChanges,cancelMoveChanges,restChanges,grindstoneMergeChanges} from './actions.js?v=15';
+import {SYNC_ENDPOINT} from './config.js?v=15';
+import {validRecord} from './validate.js?v=15';
 const STATE='blastforge-v1', CONNECTION='blastforge-connection-v1';
 const random=()=>{const b=crypto.getRandomValues(new Uint8Array(20));return [...b].map(x=>'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'[x&31]).join('');};
 export const cleanCode=s=>String(s||'').toUpperCase().replace(/[018]/g,c=>({'0':'O','1':'I','8':'B'}[c])).replace(/[^A-Z2-7]/g,'');
@@ -20,10 +20,10 @@ function disk(action,key,data){if(!db)return Promise.resolve(null);return new Pr
 async function persist(){let local=false,indexed=false;try{localStorage.setItem(STATE,JSON.stringify(Object.fromEntries(Object.entries(records).sort(([a],[b])=>a.localeCompare(b)))));local=true;}catch{}try{await disk('put','state',{records,connection});indexed=Boolean(db);}catch{}saveConnection();lastPersistOK=local||indexed;if(!lastPersistOK){error='Device storage is unavailable. Keep this tab open and save a backup.';status='Not saved on this device';}return lastPersistOK;}
 function scheduleSync(){clearTimeout(timer);timer=setTimeout(()=>Store.sync(),450);}
 async function commit(changes){await ready;const stamp=nextStamp(records,actor);for(const [key,value]of Object.entries(changes)){if(!validRecord(key,{value,stamp}))throw new Error('This goal or backup contains invalid values. Check its dates and steps.');}
- for(const [key,value]of Object.entries(changes))records[key]={value,stamp};revision++;status='Saving…';notify();const saved=await persist();if(saved){status='Saved · syncing…';error='';}notify();scheduleSync();if(!saved)throw new Error('Could not save on this device. Keep this tab open and save a backup.');return true;
+ for(const [key,value]of Object.entries(changes))records[key]={value,stamp};recordsChanged(records);revision++;status='Saving…';notify();const saved=await persist();if(saved){status='Saved · syncing…';error='';}notify();scheduleSync();if(!saved)throw new Error('Could not save on this device. Keep this tab open and save a backup.');return true;
 }
 export const Store={
- get records(){return records;},get revision(){return revision;},get code(){return connection.code;},get status(){return status;},get error(){return error;},get last(){return last;},get ready(){return ready;},
+ get records(){return trackRecords(records);},get revision(){return revision;},get code(){return connection.code;},get status(){return status;},get error(){return error;},get last(){return last;},get ready(){return ready;},
  subscribe(f){listeners.add(f);},
  async set(key,value){return commit({[key]:value});},
  async setMany(changes){return commit(changes);},

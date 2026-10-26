@@ -1,6 +1,11 @@
 // The forge. Recent consistency sets the fire's heat; lifetime heat fills the crucible and forges relics.
 // Every active streak is a wisp circling the flame. Decorative only: never writes goal records.
-import {relicName,TIERS} from './core.js?v=14';
+import {TIERS} from './core.js?v=15';
+import {art} from './art.js?v=15';
+import {ART_FILES} from './art-files.js?v=15';
+const relicArt=r=>ART_FILES.relics.includes(r.id)?`<img class="art-img" src="./assets/relics/${r.id}.webp" alt="">`:art(r.icon);
+import {RARITIES} from './game.js?v=15';
+import {sfx} from './sound.js?v=15';
 
 const SEEN_KEY='blastforge-relics-seen-v1';
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -32,10 +37,14 @@ const flameSvg=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${FLAME}"/>
 function seenRelics(){try{const n=Number(localStorage.getItem(SEEN_KEY));return Number.isFinite(n)?n:0;}catch{return 0;}}
 function markSeen(n){try{localStorage.setItem(SEEN_KEY,String(n));}catch{}}
 
+// Relics forged so far, in order, from the game layer: {name, rarity, icon}.
+let owned=[];
+const relicName=i=>owned[i]?.name||'next relic';
+const coinOf=(i,cls)=>{const r=owned[i];return r?`<span class="coin ${cls}" style="--r:${RARITIES[r.rarity].color}" title="${esc(r.name)} · ${RARITIES[r.rarity].label}">${relicArt(r)}</span>`:`<span class="coin ${cls}" title="The next relic">${relicSvg(i)}</span>`;};
 function template(s){
  const pct=Math.round(s.temp*100),next=s.relics;
  const chips=s.streaks.filter(x=>x.current>0||x.best>0).slice(0,8).map(x=>{const size=.6+Math.min(x.current,14)/14*.6,col=CATEGORY_COLOR[x.category]||CATEGORY_COLOR.Personal;return `<li class="${x.current?'is-lit':''}" style="--c:${col};--s:${size.toFixed(2)}"><span class="chip-flame">${flameSvg}</span><span class="chip-text"><b>${x.current}</b><small>${x.unit}${x.current===1?'':'s'}</small>${x.rest&&x.rest.left?`<span class="chip-rest" title="${x.rest.left} ${esc(x.rest.label.toLowerCase())}${x.rest.left===1?'':'s'} left this week">${'☾'.repeat(x.rest.left)}</span>`:''}</span><span class="chip-name">${esc(x.title)}</span><span class="chip-mult" title="Heat for the next check-off">×${x.next}</span></li>`;}).join('');
- const coins=Array.from({length:next+1},(_,i)=>i<next?`<span class="coin is-forged" title="${esc(relicName(i))}">${relicSvg(i)}</span>`:`<span class="coin is-next" title="Next: ${esc(relicName(i))}">${relicSvg(i)}</span>`).join('');
+ const coins=Array.from({length:next+1},(_,i)=>coinOf(i,i<next?'is-forged':'is-next')).join('');
  return `<div class="forge-shell">
   <button class="forge-close" type="button" aria-label="Close the forge">×</button>
   <div class="forge-stage">
@@ -43,16 +52,16 @@ function template(s){
    <header class="forge-head"><span class="forge-eyebrow">The forge</span><h2 class="forge-tier">${esc(s.tier.name)}</h2><p class="forge-temp"><b data-count="${pct}">0</b>% heat</p></header>
    <span class="forge-hint">Hold to stoke</span>
   </div>
-  <section class="crucible" aria-label="Crucible"><div class="crucible-bar"><span style="--p:${s.progress.toFixed(3)}"></span></div><span class="crucible-relic" title="${esc(relicName(next))}">${relicSvg(next)}</span></section>
-  <p class="crucible-note"><b>${s.toNext}</b> heat to forge the ${esc(relicName(next))}</p>
+  <section class="crucible" aria-label="Crucible"><div class="crucible-bar"><span style="--p:${s.progress.toFixed(3)}"></span></div><span class="crucible-relic" title="The next relic">${relicSvg(next)}</span></section>
+  <p class="crucible-note"><b>${s.toNext}</b> heat to forge your next relic</p>
   ${chips?`<ul class="streak-chips" aria-label="Streaks">${chips}</ul>`:'<p class="streak-empty">Check something off to light your first streak.</p>'}
   <div class="relic-row" aria-label="Relics forged: ${next}">${coins}</div>
-  <details class="forge-how"><summary>How the forge works</summary><p>Every check-off adds heat. Days in a row add more, up to four times as much. Each lit streak circles the flame. Rest and cheat days keep a streak alive. Heat from the last seven days sets the fire’s tier, so it cools if you stop. All heat you earn fills the crucible, and a full crucible forges a relic.</p></details>
+  <details class="forge-how"><summary>How the forge works</summary><p>Every check-off adds heat. Days in a row add more: four times as much at a week, ten times at a hundred days. Each lit streak circles the flame. Rest and cheat days keep a streak alive. Heat from the last seven days sets the fire’s tier, so it cools if you stop. All heat you earn fills the crucible, and a full crucible forges a relic. Long streaks make rare relics likelier. Find them all in the Vault.</p></details>
  </div>`;
 }
 
-export function openForge(stats){
- const dlg=document.getElementById('forge-dialog');if(!dlg||dlg.open)return;
+export function openForge(stats,relics=[]){
+ const dlg=document.getElementById('forge-dialog');if(!dlg||dlg.open)return;owned=relics;sfx('flame');
  dlg.innerHTML=template(stats);
  const shell=dlg.querySelector('.forge-shell'),pal=paletteAt(stats.temp);
  shell.style.setProperty('--fire',rgba(pal.body,1));shell.style.setProperty('--fire-core',rgba(pal.core,1));shell.style.setProperty('--fire-edge',rgba(pal.edge,1));shell.style.setProperty('--rune',rgba(pal.rune,1));shell.style.setProperty('--glow',rgba(pal.glow,1));
@@ -76,11 +85,11 @@ export function openForge(stats){
 
 function reveal(dlg,shell,fire,stats,seen){
  if(!dlg.open)return;
- const i=stats.relics-1,extra=stats.relics-seen-1;
- fire.forgeRelic();shell.classList.remove('strike');void shell.offsetWidth;shell.classList.add('strike');
+ const i=stats.relics-1,extra=stats.relics-seen-1,r=owned[i],rar=r?RARITIES[r.rarity]:null;
+ fire.forgeRelic();sfx('relic');shell.classList.remove('strike');void shell.offsetWidth;shell.classList.add('strike');
  setTimeout(()=>{if(!dlg.open)return;
   const card=document.createElement('div');card.className='relic-reveal';card.setAttribute('role','alert');
-  card.innerHTML=`<div class="relic-card"><span class="relic-rays"></span>${relicSvg(i)}<small>Forged</small><strong>${esc(relicName(i))}</strong>${extra>0?`<em>and ${extra} more</em>`:''}<button type="button" class="relic-ok">Claim it</button></div>`;
+  card.innerHTML=`<div class="relic-card ${r?'rar-'+r.rarity:''}" ${rar?`style="--r:${rar.color}"`:''}><span class="relic-rays"></span>${r?relicArt(r):relicSvg(i)}<small>${rar?`${rar.label} relic forged`:'Forged'}</small><strong>${esc(relicName(i))}</strong>${extra>0?`<em>and ${extra} more</em>`:''}<button type="button" class="relic-ok">Claim it</button></div>`;
   shell.append(card);markSeen(stats.relics);
   const done=()=>{card.classList.add('is-leaving');setTimeout(()=>card.remove(),350);};
   card.querySelector('.relic-ok').onclick=done;card.onclick=e=>{if(e.target===card)done();};
