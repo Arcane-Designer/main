@@ -3,7 +3,7 @@ export function enhanceSelects(root){
  const controls=[];
  function closeAll(focus=false){for(const c of controls){if(!c.list.hidden){c.list.hidden=true;c.button.setAttribute('aria-expanded','false');if(focus)c.button.focus();}}}
  function refresh(){for(const c of controls){c.button.querySelector('.selected-value').textContent=c.select.selectedOptions[0]?.textContent||'';c.button.setAttribute('aria-label',`${c.name}: ${c.select.selectedOptions[0]?.textContent||''}`);c.list.replaceChildren(...[...c.select.options].map(option=>{const b=document.createElement('button');b.type='button';b.role='option';b.tabIndex=-1;b.textContent=option.textContent;b.dataset.value=option.value;b.setAttribute('aria-selected',String(option.selected));b.addEventListener('click',()=>{c.select.value=option.value;closeAll();c.select.dispatchEvent(new Event('change',{bubbles:true}));refresh();c.button.focus();});return b;}));}}
- for(const [i,select] of [...root.querySelectorAll('select')].entries()){
+ for(const [i,select] of [...root.querySelectorAll('select:not([data-pills])')].entries()){
   const label=select.closest('label'),name=label.firstChild.textContent.trim();
   const wrapper=document.createElement('div');wrapper.className='select-field';select.before(wrapper);wrapper.append(select);select.hidden=true;
   const button=document.createElement('button');button.type='button';button.className='forged-select';button.setAttribute('aria-label',name);button.setAttribute('aria-haspopup','listbox');button.setAttribute('aria-expanded','false');button.innerHTML='<span class="selected-value"></span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>';

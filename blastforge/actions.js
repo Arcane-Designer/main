@@ -1,4 +1,4 @@
-import {dayKey,dateOf,addDays,goalForDate,value,entryKey,sessionKey,periodKey,stepsFor,canComplete,scheduledOn,arrivalForDate,completedOnDay,count,restRule,restOnDay,restsInWeek} from './core.js?v=15';
+import {dayKey,dateOf,addDays,goalForDate,value,entryKey,sessionKey,periodKey,stepsFor,canComplete,scheduledOn,arrivalForDate,completedOnDay,count,restRule,restOnDay,restsInWeek} from './core.js?v=16';
 export function snapshotGoal(goal,date){const g=structuredClone(goal);delete g.moveConflict;if(g.routines)g.routines={[dateOf(date).getDay()]:stepsFor(g,date)};return g;}
 export function baselineChanges(records,goal){
  const prefix=`version:${goal.id}:`;

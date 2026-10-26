@@ -1,4 +1,4 @@
-import {validRecord} from './validate.js?v=15';
+import {validRecord} from './validate.js?v=16';
 export const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 export function dayKey(date=new Date()){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
 export function dateOf(key){return new Date(`${key}T12:00:00`);}
@@ -160,7 +160,7 @@ export function restsInWeek(records,goal,date){return weekDays(date).filter(d=>r
 // (x1, x1.5, x2 ... up to x4). Days a goal isn't scheduled, and rest days, don't break a streak.
 // Temperature compares the last seven days' heat with steady, moderate effort, so it cools when
 // you stop and runs hottest on long streaks. Heat also accumulates for good toward forged relics.
-export const FORGE={weeklyBonus:2,milestone:5,reference:2.5,relicBase:40,relicStep:5};
+export const FORGE={weeklyBonus:2,milestone:5,reference:2.5,relicBase:30,relicStep:5};
 // Streak multiplier: x1 on day one, x4 by day 7, then still climbing: x5 at 14, x6 at 30, x8 at 50, x10 at 100.
 export const MULT_STEPS=[[1,1],[7,4],[14,5],[30,6],[50,8],[100,10]];
 // Named streak milestones. Reaching one pays a reward once per goal (see game.js).
@@ -174,9 +174,10 @@ export function relicThreshold(k){return k*FORGE.relicBase+FORGE.relicStep*k*(k-
 export function relicName(i){const base=RELICS[i%RELICS.length],round=Math.floor(i/RELICS.length);return round?`${base} ${['II','III','IV','V','VI','VII','VIII','IX','X'][Math.min(round-1,8)]}`:base;}
 export function tierFor(temp){return TIERS.filter(t=>temp>=t.min).at(-1);}
 function goalRecords(records,id){return Object.fromEntries(Object.entries(records).filter(([k])=>k.split(':')[1]===id));}
-export function forgeStats(records,today=dayKey()){
+// since: the first day that counts (a game season starts fresh from that day; history is untouched).
+export function forgeStats(records,today=dayKey(),{since=null}={}){
  const roots=Object.entries(records).filter(([k,r])=>k.startsWith('goal:')&&r.value&&!r.value.metric).map(([,r])=>r.value);
- const start=roots.reduce((m,g)=>(g.start||'2026-10-19')<m?(g.start||'2026-10-19'):m,today);
+ let start=roots.reduce((m,g)=>(g.start||'2026-10-19')<m?(g.start||'2026-10-19'):m,today);if(since&&since>start)start=since<today?since:today;
  const days=[];for(let d=start;d<=today;d=addDays(d,1))days.push(d);
  const heat=Object.fromEntries(days.map(d=>[d,0])),maxRun=Object.fromEntries(days.map(d=>[d,0])),dayTotals=Object.fromEntries(days.map(d=>[d,{planned:0,done:0}])),week0=addDays(today,-6),streaks=[],ledger=[];let possible=0;
  // Each goal's own records, gathered in one pass over the board.

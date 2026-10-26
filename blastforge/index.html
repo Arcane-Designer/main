@@ -8,7 +8,7 @@
  <title>Blastforge</title>
  <link rel="icon" href="./assets/favicon-64.png" type="image/png"><link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
  <link rel="preload" as="image" href="./assets/forge-poster.jpg" fetchpriority="high">
- <link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./style.css?v=15">
+ <link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./style.css?v=16">
 </head>
 <body>
  <div class="scene" aria-hidden="true"><img class="scene-poster" src="./assets/forge-poster.jpg" alt="" fetchpriority="high"></div><div class="snow" aria-hidden="true"></div>
@@ -22,31 +22,47 @@
   <main id="main" tabindex="-1"></main>
   <footer><span class="footer-flame" data-icon="flame"></span> Keep the fire going.</footer>
  </div>
- <dialog id="goal-dialog" class="modal"><form id="goal-form"><header><div class="editor-heading"><span class="editor-emblem" aria-hidden="true"><img src="./assets/anvil.webp" alt=""></span><h2 id="goal-dialog-title">New goal</h2></div><button type="button" class="icon-button close" aria-label="Close goal editor">×</button></header>
-  <input name="id" type="hidden"><label>Goal name<input name="title" required maxlength="100"></label>
-  <div class="form-pair"><label>Category<select name="category"><option>Health</option><option>Movement</option><option>Creative</option><option>Learning</option><option>Hobbies</option><option>Personal</option></select></label><label>Repeat<select name="schedule"><option value="daily">Every day</option><option value="days">Specific weekdays</option><option value="weekly">Flexible days each week</option><option value="monthly">Monthly goal</option><option value="once">One-time goal</option></select></label></div>
+ <dialog id="goal-dialog" class="modal sheet"><form id="goal-form"><header><div class="editor-heading"><span class="editor-emblem" aria-hidden="true"><img src="./assets/anvil.webp" alt=""></span><div><span class="editor-eyebrow" id="goal-dialog-eyebrow">At the anvil</span><h2 id="goal-dialog-title">Craft a new goal</h2></div></div><button type="button" class="icon-button close" aria-label="Close goal editor">×</button></header>
+  <input name="id" type="hidden"><input name="icon" type="hidden">
+  <div class="name-row"><button type="button" class="icon-pick" id="icon-pick" aria-label="Choose an icon" aria-expanded="false" aria-controls="icon-grid"></button><label class="name-label">Goal<input name="title" required maxlength="100" placeholder="What will you do?" autocomplete="off"></label></div>
+  <div class="icon-grid" id="icon-grid" role="listbox" aria-label="Icons" hidden></div>
+  <div class="field" id="category-field"><span class="field-label">Category</span><div class="pill-row" id="cat-pills"></div><select name="category" data-pills hidden></select></div>
+  <div class="cat-new" id="cat-new" hidden><label>New category<input id="cat-name" maxlength="24" placeholder="Work, Family, Music…" autocomplete="off"></label><span class="field-label">Icon</span><div class="cat-icons" id="cat-icons"></div><span class="field-label">Its goals drop</span><div class="cat-mats" id="cat-mats"></div><div class="dialog-actions"><button type="button" class="quiet" id="cat-cancel">Cancel</button><button type="button" class="primary" id="cat-save">Add category</button></div></div>
+  <div class="field" id="schedule-field"><span class="field-label">Repeat</span><div class="pill-row" id="schedule-pills"><button type="button" data-schedule="daily">Every day</button><button type="button" data-schedule="days">Some weekdays</button><button type="button" data-schedule="weekly">Times a week</button><button type="button" data-schedule="monthly">Monthly</button><button type="button" data-schedule="once">One time</button></div><select name="schedule" data-pills hidden><option value="daily">Every day</option><option value="days">Specific weekdays</option><option value="weekly">Flexible days each week</option><option value="monthly">Monthly goal</option><option value="once">One-time goal</option></select></div>
   <label id="apply-field">Apply to<select name="applyTo"><option value="future">This goal going forward</option><option value="day">Only this day</option></select></label><p id="apply-help" class="help"></p>
   <label id="metric-target-field" hidden>Follower target<input name="metricTarget" type="number" min="1" max="100000000"></label>
   <fieldset id="weekdays"><legend>Which days?</legend><div class="day-picker"></div></fieldset>
-  <div class="form-pair"><label id="target-field">Days each week<input name="target" type="number" min="1" max="7" value="2"></label><label id="due-field">Due date<input name="due" type="date"></label><label>Time <span class="muted">(optional)</span><input name="time" type="time"></label></div>
+  <div class="form-grid"><label id="target-field">Days a week<input name="target" type="number" min="1" max="7" value="2" inputmode="numeric"></label><label id="due-field">Due<input name="due" type="date"></label><label id="time-field">Time <span class="muted">optional</span><input name="time" type="time"></label></div>
   <label id="placement-field">Show it<select name="placement"><option value="day">On that day’s list</option><option value="longer">With longer goals</option></select></label>
-  <label>Notes <span class="muted">(optional)</span><textarea name="notes" rows="2" maxlength="1200"></textarea></label>
-  <label id="routine-day-field">Routine for<select name="routineDay"><option value="1">Monday</option><option value="3">Wednesday</option><option value="5">Friday</option><option value="6">Saturday</option></select></label>
-  <label><span id="steps-label">Smaller steps</span> <span class="muted">(one per line)</span><textarea name="steps" rows="4" maxlength="4000"></textarea></label><p id="routine-help" class="help"></p>
-  <div class="dialog-actions"><button type="button" id="archive-goal" class="quiet danger">Archive goal</button><button type="button" class="quiet close">Cancel</button><button type="submit" class="primary">Save goal</button></div><p id="goal-error" class="error" role="alert"></p>
+  <details class="more" id="goal-more"><summary>Notes and smaller steps</summary>
+   <label>Notes<textarea name="notes" rows="2" maxlength="1200"></textarea></label>
+   <label id="routine-day-field">Routine for<select name="routineDay"><option value="1">Monday</option><option value="3">Wednesday</option><option value="5">Friday</option><option value="6">Saturday</option></select></label>
+   <label><span id="steps-label">Smaller steps</span> <span class="muted">(one per line)</span><textarea name="steps" rows="3" maxlength="4000"></textarea></label><p id="routine-help" class="help"></p>
+  </details>
+  <div class="dialog-actions"><button type="button" id="archive-goal" class="quiet danger">Archive</button><button type="button" class="quiet close">Cancel</button><button type="submit" class="primary">Craft goal</button></div><p id="goal-error" class="error" role="alert"></p>
  </form></dialog>
  <dialog id="move-dialog" class="modal"><form id="move-form"><header><h2>Move this time</h2><button type="button" class="icon-button close" aria-label="Close move dialog">×</button></header><p id="move-goal-name"></p><label>Move to<input name="date" type="date" required></label><p class="help">Only this occurrence moves. The repeating schedule stays the same.</p><p id="move-error" class="error" role="alert"></p><div class="dialog-actions"><button type="button" class="quiet close">Cancel</button><button type="submit" class="primary">Move this time</button></div></form></dialog>
- <dialog id="settings-dialog" class="modal"><header><h2>Settings</h2><button class="icon-button close" aria-label="Close settings">×</button></header>
-  <label class="motion-setting"><span>Animated background</span><input id="background-motion" type="checkbox" checked></label>
-  <label class="motion-setting"><span>Sound</span><input id="sound-setting" type="checkbox" checked></label>
-  <label class="motion-setting" id="badge-row"><span>Goals left today on the app icon<small class="setting-help">On iPhone, allow notifications when asked so the number can show.</small></span><input id="badge-setting" type="checkbox" checked></label>
-  <label class="motion-setting" id="theme-row" hidden><span>Workshop theme</span><select id="theme-setting"></select></label>
-  <div class="settings-status" role="status"><span class="sync-dot"></span><span id="sync-label">Saved on this device</span></div><p id="footer-status" class="help"></p>
-  <div class="connection-card"><span class="connection-label">Connection code</span><code id="connection-code"></code><button class="quiet" id="copy-link">Copy link</button></div>
-  <form id="connect-form"><label>Connect another device<input name="code" placeholder="Connection code" autocomplete="off" spellcheck="false" required></label><button class="primary" type="submit">Connect</button></form>
-  <p id="connection-message" class="help" role="status"></p><div class="settings-row"><button class="quiet" id="sync-now">Sync now</button><button class="quiet" id="export">Save backup</button><label class="quiet file-label">Restore backup<input id="import" type="file" accept="application/json,.json"></label></div>
+ <dialog id="settings-dialog" class="modal settings-modal"><header class="settings-head"><div class="editor-heading"><span class="editor-emblem" aria-hidden="true"><img src="./assets/anvil.webp" alt=""></span><div><span class="editor-eyebrow">Your workshop</span><h2>Settings</h2></div></div><button class="icon-button close" aria-label="Close settings">×</button></header>
+  <div class="seg settings-tabs" role="tablist"><button type="button" role="tab" class="on" aria-selected="true" data-stab="prefs">Workshop</button><button type="button" role="tab" aria-selected="false" data-stab="guide">How it works</button></div>
+  <div class="stab-pane" data-pane="prefs">
+   <section class="set-card"><h3><span data-art="palette"></span>Look and sound</h3>
+    <label class="motion-setting switch-row"><span>Animated background<small class="setting-help">The fire and snow behind your goals.</small></span><input id="background-motion" class="switch" type="checkbox" checked></label>
+    <label class="motion-setting switch-row"><span>Sound<small class="setting-help">Taps, purrs and game sounds.</small></span><input id="sound-setting" class="switch" type="checkbox" checked></label>
+    <label class="motion-setting switch-row" id="theme-row" hidden><span>Workshop theme<small class="setting-help">Themes you’ve crafted.</small></span><select id="theme-setting"></select></label>
+    <div class="motion-setting switch-row badge-setting" id="badge-row"><label for="badge-setting"><span>Goals left on the app icon<small class="setting-help" id="badge-help">The home-screen app can show how many goals are left.</small></span></label><button type="button" class="quiet small" id="badge-allow" hidden>Allow</button><input id="badge-setting" class="switch" type="checkbox" checked></div>
+   </section>
+   <section class="set-card" id="account-card" hidden><h3><span data-art="dragon"></span>Your account</h3><div class="acct-row"><span class="acct-avatar" aria-hidden="true"></span><div><strong id="acct-name"></strong><small>Sarge &amp; Deputy Games account</small></div><button type="button" class="quiet small" id="acct-signout">Sign out</button></div><p class="help">Change your password, get a new recovery code or delete your account on <a href="/#/me">your games profile</a>.</p></section>
+   <section class="set-card"><h3><span data-art="bolt"></span><span id="sync-title">Sync and backup</span></h3>
+    <p class="help" id="sync-help" hidden>Sign in with the same account on your phone and computer and they stay in step on their own. A backup file is an extra copy you keep.</p>
+    <div class="settings-status" role="status"><span class="sync-dot"></span><span id="sync-label">Saved on this device</span></div><p id="footer-status" class="help"></p>
+    <div class="connection-card"><span class="connection-label">Connection code</span><code id="connection-code"></code><button class="quiet" id="copy-link">Copy link</button></div>
+    <form id="connect-form"><label>Connect another device<input name="code" placeholder="Connection code" autocomplete="off" spellcheck="false" required></label><button class="primary" type="submit">Connect</button></form>
+    <p id="connection-message" class="help" role="status"></p><div class="settings-row"><button class="quiet" id="sync-now">Sync now</button><button class="quiet" id="export">Save backup</button><label class="quiet file-label">Restore backup<input id="import" type="file" accept="application/json,.json"></label></div>
+   </section>
+  </div>
+  <div class="stab-pane guide-pane" data-pane="guide" hidden></div>
  </dialog>
  <dialog id="progress-dialog" class="modal"><form id="progress-form"><header><h2>Keene followers</h2><button type="button" class="icon-button close" aria-label="Close follower update">×</button></header><label>Current follower count<input name="followers" type="number" min="0" max="100000000" required></label><p class="help">One count updates your October, November, and December milestones.</p><div class="dialog-actions"><button type="button" class="quiet close">Cancel</button><button class="primary" type="submit">Save count</button></div></form></dialog>
  <dialog id="forge-dialog" class="forge-dialog" aria-label="The forge"></dialog>
- <div id="toast" role="status" aria-live="polite"></div><script type="module" src="./app.js?v=15"></script><script type="module" src="./scene.js?v=11"></script>
+ <div id="toast" role="status" aria-live="polite" popover="manual"></div><script type="module" src="./app.js?v=16"></script><script type="module" src="./scene.js?v=11"></script>
 </body></html>

@@ -1,13 +1,15 @@
 // Anvil Strike: six blows on a glowing blade. Strike when the needle crosses the gold.
-import {sfx} from './sound.js?v=15';
-import {shell,loop,Particles,Popups,showResult,reduced,mixColor,backdrop} from './play-kit.js?v=15';
+import {sfx} from './sound.js?v=16';
+import {shell,loop,Particles,Popups,showResult,reduced,mixColor,backdrop} from './play-kit.js?v=16';
 const STRIKES=6;
-export function playAnvil(dlg,{zone=.16,rewarded=false,bonus=1,onReward,bg=null,sprites={}}){
+export function playAnvil(dlg,{zone=.16,rewarded=false,bonus=1,onReward,onPractice,forgive=false,bg=null,sprites={},blades=[]}){
+ // Painted blade stages: a rough bar, a half-shaped blade, the finished sword.
+ const bladeImg=blades.map(src=>{const i=new Image();i.src=src;return i;});
  const paint=backdrop(bg),sprite=src=>{if(!src)return null;const i=new Image();i.src=src;return i;},anvilImg=sprite(sprites.anvil),hammerImg=sprite(sprites.hammer),ready=i=>i&&i.complete&&i.naturalWidth;
  const kit=shell(dlg,{title:'Anvil Strike',rewarded,hint:'Tap anywhere when the needle is in the gold'});
  const {ctx,view}=kit,parts=new Particles(),pops=new Popups();
- let st,stopLoop=null,paidOut=false;
- const reset=()=>{st={strike:0,score:0,combo:0,perfects:0,phase:Math.random()*6,speed:2.5,heat:.85,hammer:0,hammerT:-1,shake:0,flash:0,over:false,quench:-1,marks:[],lock:0};kit.result.hidden=true;kit.hint.hidden=false;hud();};
+ let st,stopLoop=null,paidOut=false;const timers=[];
+ const reset=()=>{st={forgive,strike:0,score:0,combo:0,perfects:0,phase:Math.random()*6,speed:2.5,heat:.85,hammer:0,hammerT:-1,shake:0,flash:0,over:false,quench:-1,marks:[],lock:0};kit.result.hidden=true;kit.hint.hidden=false;hud();};
  const hud=()=>{kit.hud.innerHTML=`<span>Blow <b>${Math.min(st.strike+1,STRIKES)}</b>/${STRIKES}</span><span>Score <b>${st.score}</b></span><span class="${st.combo>1?'hot':''}">Combo <b>×${(1+.2*Math.max(0,st.combo-1)).toFixed(1)}</b></span>`;};
  const geo=()=>{const w=view.w,h=view.h;return {w,h,gx:w*.1,gw:w*.8,gy:Math.max(56,h*.16),ax:w/2,ay:h*.66};};
  const zoneNow=()=>Math.max(.07,zone*(1-st.strike*.05));
@@ -18,18 +20,18 @@ export function playAnvil(dlg,{zone=.16,rewarded=false,bonus=1,onReward,bg=null,
   let pts=0,label,color;
   if(perfect){st.combo++;st.perfects++;pts=Math.round(25*(1+.2*(st.combo-1)));label=st.combo>1?`PERFECT ×${(1+.2*(st.combo-1)).toFixed(1)}`:'PERFECT';color='#ffe27a';st.shake=.28;st.flash=.55;st.heat=Math.min(1.25,st.heat+.22);sfx('perfect');}
   else if(good){st.combo=0;pts=12;label='GOOD';color='#ffb45e';st.shake=.12;st.heat=Math.min(1.1,st.heat+.1);sfx('clang');}
-  else{st.combo=0;label='MISS';color='#c9a0a0';st.heat=Math.max(.3,st.heat-.15);sfx('miss');}
+  else{if(st.forgive&&st.combo>0){st.forgive=false;label='MISS · combo kept';}else{st.combo=0;label='MISS';}color='#c9a0a0';st.heat=Math.max(.3,st.heat-.15);sfx('miss');}
   setTimeout(()=>{const bx=g.ax+(Math.random()-.5)*g.w*.12,by=g.ay-14;parts.burst(bx,by,perfect?90:good?36:6,{color:perfect?'#ffe8a0':good?'#ffb45e':'#8a6a5a',speed:perfect?520:good?360:160,spread:Math.PI*1.1});if(perfect)parts.burst(bx,by,30,{color:'#fff4d6',speed:700,size:1.6,life:.5});st.marks.push({x:bx-g.ax,q:perfect?2:good?1:0});pops.add(label,g.ax,g.ay-90,{color,size:perfect?38:30});if(pts)pops.add(`+${pts}`,g.ax,g.ay-50,{color:'#fff1d6',size:24});},70);
   st.score+=pts;st.strike++;st.speed+=.42;hud();
-  if(st.strike>=STRIKES){st.over=true;setTimeout(()=>{st.quench=0;sfx('quench');},650);setTimeout(finish,2300);}
+  if(st.strike>=STRIKES){st.over=true;timers.push(setTimeout(()=>{st.quench=0;sfx('quench');},650),setTimeout(finish,2300));}
  }
  function finish(){
-  const capped=Math.min(150,st.score),embers=Math.max(1,Math.round(capped*bonus)),name=st.score>=140?'Masterwork blade':st.score>=100?'Fine blade':st.score>=60?'Sturdy blade':'Rough blade';
+  const capped=Math.min(150,st.score),embers=Math.max(1,Math.round(capped/2*bonus)),name=st.score>=140?'Masterwork blade':st.score>=100?'Fine blade':st.score>=60?'Sturdy blade':'Rough blade';
   const lines=[['Score',st.score],['Perfect strikes',`${st.perfects} of ${STRIKES}`]];
   if(rewarded&&!paidOut){paidOut=true;lines.push(['Embers earned',`+${embers}`]);if(st.perfects>=3)lines.push(['Starmetal','+1']);sfx('coin');}
-  else lines.push(['Embers','Practice run']);
+  else{try{lines.push(...(onPractice?.({score:st.score,perfects:st.perfects})||[['Embers','Free play']]));}catch{}}
   const pay=paidOut&&rewarded?()=>onReward?.({score:st.score,perfects:st.perfects}):null;
-  showResult(kit,{title:name,lines,again:()=>{rewarded=false;dlg.querySelector('.play-tag').textContent='Practice';dlg.querySelector('.play-tag').classList.remove('rewarded');reset();},done:()=>dlg.close()});
+  showResult(kit,{title:name,lines,again:()=>{rewarded=false;dlg.querySelector('.play-tag').textContent='Free play';dlg.querySelector('.play-tag').classList.remove('rewarded');reset();},done:()=>dlg.close()});
   try{pay?.();}catch{}
  }
  function draw(dt,now){
@@ -55,7 +57,9 @@ export function playAnvil(dlg,{zone=.16,rewarded=false,bonus=1,onReward,bg=null,
   ctx.fillStyle='rgba(255,150,80,.18)';ctx.fillRect(ax-aw*.5,ay,aw*.92,3);}
   // blade
   const heat=Math.min(1,st.heat),core=heat>.75?mixColor('#ffb347','#fff6d8',(heat-.75)/.25):mixColor('#7a1d14','#ffb347',heat/.75),bl=aw*(.52+st.strike*.03);
-  ctx.save();ctx.shadowColor=core;ctx.shadowBlur=20+heat*30;ctx.fillStyle=core;ctx.beginPath();ctx.moveTo(ax-bl/2,ay-4);ctx.lineTo(ax+bl/2-18,ay-4);ctx.lineTo(ax+bl/2,ay-10);ctx.lineTo(ax+bl/2-18,ay-18);ctx.lineTo(ax-bl/2,ay-16);ctx.closePath();ctx.fill();ctx.restore();
+  const stageImg=bladeImg[Math.min(bladeImg.length-1,Math.floor(st.strike/2))];
+  if(stageImg&&stageImg.complete&&stageImg.naturalWidth){const bw=aw*.82,bh=bw*stageImg.naturalHeight/stageImg.naturalWidth;ctx.save();ctx.shadowColor=core;ctx.shadowBlur=14+heat*26;ctx.globalAlpha=.55+heat*.45;ctx.drawImage(stageImg,ax-bw/2,ay-bh*.72,bw,bh);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.max(0,heat-.6)*.6;ctx.drawImage(stageImg,ax-bw/2,ay-bh*.72,bw,bh);ctx.restore();}
+  else{ctx.save();ctx.shadowColor=core;ctx.shadowBlur=20+heat*30;ctx.fillStyle=core;ctx.beginPath();ctx.moveTo(ax-bl/2,ay-4);ctx.lineTo(ax+bl/2-18,ay-4);ctx.lineTo(ax+bl/2,ay-10);ctx.lineTo(ax+bl/2-18,ay-18);ctx.lineTo(ax-bl/2,ay-16);ctx.closePath();ctx.fill();ctx.restore();}
   for(const m of st.marks){ctx.fillStyle=m.q===2?'rgba(255,255,240,.5)':'rgba(80,20,10,.35)';ctx.fillRect(ax+m.x-1,ay-16,2,12);}
   // quench steam
   if(st.quench>=0){st.quench+=dt;if(st.quench<1.2&&Math.random()<.8)parts.burst(ax+(Math.random()-.5)*bl,ay-12,2,{color:'#dfe8ec',speed:80,gravity:-120,life:1.4,size:9,glow:false,spread:.8});}
@@ -66,9 +70,9 @@ export function playAnvil(dlg,{zone=.16,rewarded=false,bonus=1,onReward,bg=null,
   if(st.flash){ctx.fillStyle=`rgba(255,240,210,${st.flash*.5})`;ctx.fillRect(-20,-20,w+40,h+40);}
  }
  function round(c,x,y,w,h,r){c.beginPath();c.roundRect?c.roundRect(x,y,w,h,r):c.rect(x,y,w,h);}
- const down=e=>{if(e.target.closest('button'))return;e.preventDefault();strike();};
+ const down=e=>{if(e.target.closest('button,.play-result'))return;e.preventDefault();strike();};
  const key=e=>{if(e.code==='Space'||e.key==='Enter'){if(!kit.result.hidden)return;e.preventDefault();strike();}};
  kit.stage.addEventListener('pointerdown',down);dlg.addEventListener('keydown',key);
  reset();stopLoop=loop(draw);
- dlg._stop=()=>{stopLoop?.();kit.stop();};
+ dlg._stop=()=>{stopLoop?.();kit.stop();timers.forEach(clearTimeout);};
 }

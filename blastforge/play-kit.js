@@ -2,7 +2,7 @@
 export const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function shell(dlg,{title,rewarded,hint}){
- dlg.innerHTML=`<div class="play-shell"><header class="play-head"><div><h2>${esc(title)}</h2><span class="play-tag ${rewarded?'rewarded':''}">${rewarded?'Rewarded run':'Practice'}</span></div><button type="button" class="icon-button play-quit" aria-label="Close game">×</button></header><div class="play-stage"><canvas></canvas><div class="play-hud"></div><p class="play-hint">${esc(hint)}</p><div class="play-result" hidden></div></div></div>`;
+ dlg.innerHTML=`<div class="play-shell"><header class="play-head"><div><h2>${esc(title)}</h2><span class="play-tag ${rewarded?'rewarded':''}">${rewarded?'Rewarded run':'Free play'}</span></div><button type="button" class="icon-button play-quit" aria-label="Close game">×</button></header><div class="play-stage"><canvas></canvas><div class="play-hud"></div><p class="play-hint">${esc(hint)}</p><div class="play-result" hidden></div></div></div>`;
  dlg.querySelector('.play-quit').onclick=()=>dlg.close();dlg.addEventListener('cancel',()=>dlg._stop?.());
  const canvas=dlg.querySelector('canvas'),ctx=canvas.getContext('2d'),stage=dlg.querySelector('.play-stage');
  const view={w:0,h:0,dpr:1};
