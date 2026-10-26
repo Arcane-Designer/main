@@ -103,3 +103,25 @@ export function restChanges(records,id,date,rest,today=dayKey()){
  const changes=completionChanges(records,id,date,false,today);
  changes[`entry:${id}:${date}:rest`]=Boolean(rest);changes[`entry:${id}:${date}:reopened`]=!rest&&date<today;return changes;
 }
+
+// One-time merge: Cardio & stretch becomes Grindstone on its days, so movement is one daily goal
+// and one streak. Grindstone keeps its lifting routines; Tue/Thu/Sun get Cardio & stretch's steps.
+// Applies from today onward; history and the archived goal stay intact and restorable.
+// Returns null when there is nothing to merge, so it is safe to run on every sync.
+export function grindstoneMergeChanges(records,today=dayKey()){
+ const grind=value(records,'goal:grindstone'),light=value(records,'goal:small-movement');
+ if(!grind||!light||grind.archived||light.archived||grind.schedule!=='days'||light.schedule!=='days')return null;
+ const lightDays=(light.days||[]).filter(d=>!grind.days.includes(d));if(!lightDays.length)return null;
+ const steps=(light.steps||[]).map(s=>({...s}));if(!steps.length)return null;
+ const merged=structuredClone(grind);merged.days=[...new Set([...grind.days,...lightDays])].sort((a,b)=>a-b);merged.routines={...(grind.routines||{})};
+ for(const d of lightDays)if(!merged.routines[d]?.length)merged.routines[d]=steps.map(s=>({...s}));
+ const changes={...goalEditChanges(records,merged,{scope:'future',date:today,today}),...archiveChanges(records,'small-movement',true,today)};
+ // Carry today's Cardio & stretch progress over so nothing checked today is lost.
+ const todayLight=goalForDate(records,'small-movement',today,today);
+ if(todayLight&&lightDays.includes(dateOf(today).getDay())){
+  const g=merged,done=value(records,sessionKey(todayLight,today),false);
+  for(const st of steps)if(value(records,entryKey(todayLight,today,`step-${st.id}`),false))changes[entryKey(g,today,`step-${st.id}`)]=true;
+  if(done){changes[sessionKey(g,today)]=true;}
+ }
+ return changes;
+}

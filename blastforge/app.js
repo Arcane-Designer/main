@@ -21,7 +21,7 @@ const complete=(g,d)=>g.metric?milestoneDone(records(),g,d):isComplete(records()
 const safeLink=g=>/^https:\/\/(arcanedesigner\.com)\//.test(g.link||'')?`<a class="text-link" href="${esc(g.link)}" target="_blank" rel="noopener noreferrer">Open ${g.id==='quick-math'?'Quick Math':'Neosai'} ↗</a>`:'';
 function readFlag(k){try{return localStorage.getItem(k)==='1';}catch{return false;}}
 function writeFlag(k,v){try{localStorage.setItem(k,v?'1':'0');}catch{}}
-function forge(){const r=records(),d=dayKey();if(!forgeCache||forgeCache.r!==r||forgeCache.d!==d)forgeCache={r,d,s:forgeStats(r,d)};return forgeCache.s;}
+function forge(){const r=records(),v=Store.revision,d=dayKey();if(!forgeCache||forgeCache.r!==r||forgeCache.v!==v||forgeCache.d!==d)forgeCache={r,v,d,s:forgeStats(r,d)};return forgeCache.s;}
 // A check-off throws a spark up to the anvil, which flares.
 function spark(from){if(!from||matchMedia('(prefers-reduced-motion: reduce)').matches)return;const logo=$('.brand-mark')?.getBoundingClientRect();if(!logo)return;const el=document.createElement('span');el.className='spark';el.setAttribute('aria-hidden','true');document.body.append(el);
  const x0=from.left+from.width/2,y0=from.top+from.height/2,x1=logo.left+logo.width/2,y1=logo.top+logo.height/2,mx=(x0+x1)/2+(Math.random()*90-45),my=Math.min(y0,y1)-70;
@@ -189,7 +189,8 @@ $('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try
 let swipe=null;
 $('#main').addEventListener('touchstart',e=>{swipe=view==='today'&&e.target.closest('.today-panel')&&!e.target.closest('input,textarea,.day-strip')?{x:e.touches[0].clientX,y:e.touches[0].clientY}:null;},{passive:true});
 $('#main').addEventListener('touchend',e=>{if(!swipe)return;const t=e.changedTouches[0],dx=t.clientX-swipe.x,dy=t.clientY-swipe.y;swipe=null;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.6)shiftDay(dx<0?1:-1);},{passive:true});
-Store.subscribe(()=>{if(!renderQueued){renderQueued=true;requestAnimationFrame(()=>{renderQueued=false;render();});}});
+let migrating=false;
+Store.subscribe(()=>{if(Store.status==='Synced'&&!migrating){migrating=true;Store.migrate().then(done=>{if(done)toast('Cardio & stretch is now part of Grindstone.');}).catch(()=>{}).finally(()=>{migrating=false;});}if(!renderQueued){renderQueued=true;requestAnimationFrame(()=>{renderQueued=false;render();});}});
 render();Store.init();
 let renderedDay=dayKey();
 function checkDay(){if(renderedDay!==dayKey()){renderedDay=dayKey();if(view==='today')selected=renderedDay;expanded.clear();render();}}

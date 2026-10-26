@@ -1,5 +1,5 @@
 import {seededRecords,mergeRecords,nextStamp,dayKey} from './core.js?v=14';
-import {completionChanges,stepChanges,goalEditChanges,archiveChanges,missedChanges,moveChanges,cancelMoveChanges,restChanges} from './actions.js?v=14';
+import {completionChanges,stepChanges,goalEditChanges,archiveChanges,missedChanges,moveChanges,cancelMoveChanges,restChanges,grindstoneMergeChanges} from './actions.js?v=14';
 import {SYNC_ENDPOINT} from './config.js?v=14';
 import {validRecord} from './validate.js?v=14';
 const STATE='blastforge-v1', CONNECTION='blastforge-connection-v1';
@@ -23,13 +23,16 @@ async function commit(changes){await ready;const stamp=nextStamp(records,actor);
  for(const [key,value]of Object.entries(changes))records[key]={value,stamp};revision++;status='Saving…';notify();const saved=await persist();if(saved){status='Saved · syncing…';error='';}notify();scheduleSync();if(!saved)throw new Error('Could not save on this device. Keep this tab open and save a backup.');return true;
 }
 export const Store={
- get records(){return records;},get code(){return connection.code;},get status(){return status;},get error(){return error;},get last(){return last;},get ready(){return ready;},
+ get records(){return records;},get revision(){return revision;},get code(){return connection.code;},get status(){return status;},get error(){return error;},get last(){return last;},get ready(){return ready;},
  subscribe(f){listeners.add(f);},
  async set(key,value){return commit({[key]:value});},
  async setMany(changes){return commit(changes);},
  async setCompletion(id,date,done){await ready;return commit(completionChanges(records,id,date,done,dayKey(),{cascade:true}));},
  async setMissed(id,date,missed){await ready;return commit(missedChanges(records,id,date,missed));},
  async setRest(id,date,rest){await ready;return commit(restChanges(records,id,date,rest));},
+ // Runs only on a board that has synced and has real check-offs, so a brand-new device can't
+ // overwrite the real board's goals with merged copies of the starter goals.
+ async migrate(){await ready;if(status!=='Synced'||!Object.entries(records).some(([k,r])=>k.startsWith('entry:')&&!r.stamp.endsWith(':seed')))return false;const changes=grindstoneMergeChanges(records);if(!changes)return false;await commit(changes);return true;},
  async moveOccurrence(id,date,to){await ready;return commit(moveChanges(records,id,date,to));},
  async cancelMove(id,date){await ready;return commit(cancelMoveChanges(records,id,date));},
  async setStep(id,date,step,done){await ready;return commit(stepChanges(records,id,date,step,done));},
