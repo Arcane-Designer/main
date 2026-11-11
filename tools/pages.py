@@ -230,7 +230,8 @@ def _logo(slug, which):
     for ext in ('svg', 'png'):
         if os.path.exists(f'assets/logos/{slug}-{which}.{ext}'):
             return f'assets/logos/{slug}-{which}.{ext}'
-LOGOS = [(s, _logo(s['slug'], 'old'), _logo(s['slug'], 'new')) for s in SAMPLES_ALL if _logo(s['slug'], 'old') and _logo(s['slug'], 'new')]
+SHOW_LOGOS = False   # hidden until the logo redesigns are redone with Nathan
+LOGOS = [] if not SHOW_LOGOS else [(s, _logo(s['slug'], 'old'), _logo(s['slug'], 'new')) for s in SAMPLES_ALL if _logo(s['slug'], 'old') and _logo(s['slug'], 'new')]
 
 STEPS = [
     ('Send your site', 'Use the contact form or email a link. You&rsquo;ll get back what&rsquo;s worth changing, and a price.'),
