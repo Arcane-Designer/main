@@ -14,7 +14,7 @@ arcanedesigner.com. One-time website and logo redesigns for small businesses in 
 | `questionnaire.html` | Private client questionnaire (noindex). Send the link to clients after they say yes |
 | `404.html` | Not-found page |
 
-`math/`, `neosai/` and `blastforge/` are Nathan's separate personal apps. Leave them alone when working on the business site.
+`neosai/` is Nathan's separate personal app. Leave it alone when working on the business site. The old `math/` and `blastforge/` apps were taken off the site on 2026-11-10 (they now live in Sarge & Deputy Games); their last versions are kept on the `archive/side-apps` branch.
 
 ## Editing
 
