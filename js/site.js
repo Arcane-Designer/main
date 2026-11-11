@@ -2,7 +2,7 @@
 
 /* ---- Settings Nathan fills in once accounts exist ---- */
 const SITE = {
-  email: 'hello@arcanedesigner.com',        // shown on Contact; set up via Google Workspace
+  email: 'hello@arcanedesigner.com',        // set in tools/pages.py too (EMAIL); Google Workspace address
   forms: {
     contact: '',        // Formspree endpoint, e.g. https://formspree.io/f/xxxxxxx
     questionnaire: '',  // Formspree endpoint for the client questionnaire
@@ -14,6 +14,7 @@ const SITE = {
 const REVIEWS = [];
 
 document.documentElement.classList.remove('no-js');
+document.documentElement.classList.add('js');
 
 /* ---- header: shadow on scroll, mobile menu ---- */
 (() => {
@@ -33,74 +34,101 @@ document.documentElement.classList.remove('no-js');
   const y = document.getElementById('year'); if (y) y.textContent = new Date().getFullYear();
 })();
 
-/* ---- hexagon clusters (decoration drawn from the logo's honeycomb) ---- */
-(() => {
-  const ns = 'http://www.w3.org/2000/svg';
-  // one shared set of gradients
-  if (!document.getElementById('hex-defs')) {
-    const defs = document.createElementNS(ns, 'svg');
-    defs.id = 'hex-defs'; defs.setAttribute('aria-hidden', 'true');
-    defs.style.cssText = 'position:absolute;width:0;height:0';
-    defs.innerHTML = `<defs>
-      <linearGradient id="g-teal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0be3a9"/><stop offset="1" stop-color="#07c493"/></linearGradient>
-      <linearGradient id="g-pink" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7aa0"/><stop offset="1" stop-color="#d9557a"/></linearGradient>
-      <linearGradient id="g-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d6f93"/><stop offset="1" stop-color="#2a97c6"/></linearGradient></defs>`;
-    document.body.prepend(defs);
-  }
-  const cells = {
-    // [col,row,color] on a pointy-top hex grid; odd rows are offset
-    a: [[1,0,'pink'],[2,0,'line'],[0,1,'teal'],[1,1,'blue'],[2,1,'teal'],[1,2,'pink'],[2,2,'blue'],[3,2,'line'],[2,3,'teal']],
-    b: [[0,0,'teal'],[1,0,'line'],[0,1,'pink'],[1,1,'teal'],[1,2,'blue'],[0,2,'line'],[1,3,'pink']],
-    c: [[1,0,'blue'],[0,1,'line'],[1,1,'pink'],[2,1,'teal'],[1,2,'teal'],[2,2,'line']],
-  };
-  const R = 50, W = Math.sqrt(3) * R;
-  const pts = (cx, cy) => [0,1,2,3,4,5].map(i => { const a = Math.PI / 180 * (60 * i - 90); return `${(cx + R * Math.cos(a)).toFixed(1)},${(cy + R * Math.sin(a)).toFixed(1)}`; }).join(' ');
-  document.querySelectorAll('.hexes[data-set]').forEach((el) => {
-    const set = cells[el.dataset.set] || cells.a;
-    const svg = document.createElementNS(ns, 'svg');
-    svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
-    let maxX = 0, maxY = 0;
-    set.forEach(([c, r, col]) => {
-      const cx = W / 2 + 4 + c * W + (r % 2 ? W / 2 : 0), cy = R + 4 + r * R * 1.5;
-      const p = document.createElementNS(ns, 'polygon');
-      p.setAttribute('points', pts(cx, cy)); p.setAttribute('class', 'hx-' + col);
-      svg.appendChild(p);
-      maxX = Math.max(maxX, cx + W / 2 + 4); maxY = Math.max(maxY, cy + R + 4);
-    });
-    svg.setAttribute('viewBox', `0 0 ${maxX.toFixed(0)} ${maxY.toFixed(0)}`);
-    el.appendChild(svg);
-  });
-})();
-
 /* ---- before/after sliders ---- */
+const STATIC = /[?&]static\b/.test(location.search);
+if (STATIC) document.documentElement.classList.add('static');
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 document.querySelectorAll('.compare').forEach((box) => {
   const input = box.querySelector('input');
   if (!input) return;
   const set = (v) => box.style.setProperty('--pos', v + '%');
   set(input.value);
-  input.addEventListener('input', () => set(input.value));
-  // when it scrolls into view, sweep from the old site to the new one
-  if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches && !/[?&]static\b/.test(location.search)) {
+  input.addEventListener('input', () => { box.dataset.touched = '1'; set(input.value); });
+  if (box.hasAttribute('data-scroll-wipe')) return; // hero handles its own
+  if ('IntersectionObserver' in window && !REDUCE && !STATIC) {
     const end = +input.value, from = 88;
     set(from);
     const io = new IntersectionObserver((ents) => {
       if (!ents[0].isIntersecting) return;
       io.disconnect();
-      let touched = false;
-      input.addEventListener('pointerdown', () => { touched = true; }, { once: true });
       setTimeout(() => {
         const start = performance.now();
         const tick = (t) => {
-          if (touched) return;
+          if (box.dataset.touched) return;
           const k = Math.min(1, (t - start) / 1600), e = 1 - Math.pow(1 - k, 3);
           set(from + (end - from) * e); if (k < 1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
-      }, 500);
+      }, 450);
     }, { threshold: .55 });
     io.observe(box);
   }
 });
+
+/* ---- hero: scrolling redesigns the old site ---- */
+(() => {
+  const box = document.querySelector('.compare[data-scroll-wipe]');
+  if (!box) return;
+  const stage = box.closest('.hero-stage'), bubble = stage && stage.querySelector('.bubble span');
+  const input = box.querySelector('input');
+  const lines = bubble ? [bubble.dataset.a, bubble.dataset.b] : [];
+  let said = 0;
+  const say = (i) => {
+    if (!bubble || said === i) return; said = i;
+    bubble.classList.add('swap');
+    setTimeout(() => { bubble.textContent = lines[i]; bubble.classList.remove('swap'); }, 220);
+  };
+  const end = 8;
+  if (STATIC || REDUCE) { box.style.setProperty('--pos', end + '%'); input.value = end; if (bubble) bubble.textContent = lines[1]; return; }
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    if (box.dataset.touched) return;
+    const r = box.getBoundingClientRect();
+    const p = Math.min(1, Math.max(0, (innerHeight * .92 - r.top) / (r.height * .95)));
+    const e = p * p * (3 - 2 * p);
+    const v = 97 - (97 - end) * e;
+    box.style.setProperty('--pos', v + '%'); input.value = v;
+    say(p > .9 ? 1 : 0);
+  };
+  addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  addEventListener('resize', update);
+  update();
+})();
+
+/* ---- hexagon of six triangles ---- */
+(() => {
+  // Process page: each step adds a triangle as it reaches the middle of the screen
+  const hex = document.querySelector('.proc-art .hexbuild');
+  const steps = [...document.querySelectorAll('.proc-step')];
+  const count = document.querySelector('.proc-art .count');
+  if (hex && steps.length) {
+    const tris = [...hex.querySelectorAll('.tri')];
+    const show = (n) => {
+      tris.forEach((t, i) => t.classList.toggle('on', i < n));
+      steps.forEach((s, i) => s.classList.toggle('on', i === n - 1));
+      hex.classList.toggle('complete', n >= tris.length);
+      if (count) count.textContent = n ? `Step ${n} of ${tris.length}` : `${tris.length} steps`;
+    };
+    if (STATIC || REDUCE || !('IntersectionObserver' in window)) { show(tris.length); steps.forEach((s) => s.classList.add('on')); }
+    else {
+      const io = new IntersectionObserver((ents) => {
+        ents.forEach((e) => { if (e.isIntersecting) show(steps.indexOf(e.target) + 1); });
+      }, { rootMargin: '-48% 0px -48% 0px' });
+      steps.forEach((s) => io.observe(s));
+      addEventListener('scroll', () => { if (steps[0].getBoundingClientRect().top > innerHeight * .52) show(0); }, { passive: true });
+      show(0);
+    }
+  }
+  // Elsewhere: the hexagon assembles itself once it scrolls into view
+  document.querySelectorAll('.hexbuild[data-auto]').forEach((h) => {
+    const tris = [...h.querySelectorAll('.tri')];
+    const go = () => tris.forEach((t, i) => setTimeout(() => { t.classList.add('on'); if (i === tris.length - 1) setTimeout(() => h.classList.add('complete'), 500); }, i * 260));
+    if (STATIC || REDUCE || !('IntersectionObserver' in window)) { tris.forEach((t) => t.classList.add('on')); h.classList.add('complete'); return; }
+    const io = new IntersectionObserver((ents) => { if (ents[0].isIntersecting) { io.disconnect(); go(); } }, { threshold: .45 });
+    io.observe(h);
+  });
+})();
 
 /* ---- reviews carousel ---- */
 (() => {
@@ -148,24 +176,15 @@ document.querySelectorAll('.compare').forEach((box) => {
   go(0); restart();
 })();
 
-/* ---- reveal on scroll ---- */
+/* ---- things slide and build in as you scroll ---- */
 (() => {
-  const els = document.querySelectorAll('.reveal');
-  if (!('IntersectionObserver' in window) || /[?&]static\b/.test(location.search)) { els.forEach((e) => e.classList.add('in')); return; }
-  const io = new IntersectionObserver((ents) => ents.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
+  // the hero animates on load, not on scroll
+  requestAnimationFrame(() => setTimeout(() => document.querySelectorAll('.hero [data-anim]').forEach((e) => e.classList.add('in')), 60));
+  const els = document.querySelectorAll('[data-anim]:not(.hero [data-anim]), .redpen');
+  if (STATIC || !('IntersectionObserver' in window)) { els.forEach((e) => e.classList.add('in')); return; }
+  const io = new IntersectionObserver((ents) => ents.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -12% 0px', threshold: .08 });
   els.forEach((e) => io.observe(e));
 })();
-
-/* ---- email shown as text with a copy button ---- */
-document.querySelectorAll('[data-email]').forEach((el) => {
-  el.textContent = SITE.email;
-  const btn = el.parentElement.querySelector('button[data-copy]');
-  if (btn) btn.addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(SITE.email); btn.textContent = 'Copied'; }
-    catch { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Selected'; }
-    setTimeout(() => { btn.textContent = 'Copy'; }, 1800);
-  });
-});
 
 /* ---- forms ---- */
 document.querySelectorAll('form[data-form]').forEach((form) => {
@@ -200,7 +219,7 @@ document.querySelectorAll('form[data-form]').forEach((form) => {
       const res = await fetch(endpoint, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
       if (!res.ok) throw new Error(res.status);
       form.reset(); try { localStorage.removeItem(draftKey); } catch {}
-      show('ok', form.dataset.thanks || 'Thanks. I read every message myself and will reply within two business days.');
+      show('ok', form.dataset.thanks || 'Thanks, it came through. You\'ll hear back by email.');
     } catch {
       show('err', `Something went wrong sending that. Please try again, or email ${SITE.email}.`);
     } finally { btn.disabled = false; }

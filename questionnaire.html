@@ -12,15 +12,16 @@
 <meta property="og:url" content="https://arcanedesigner.com/questionnaire.html">
 <meta property="og:image" content="https://arcanedesigner.com/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#f7f2ea" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#130d2c" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#100b28" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32x32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@600&family=Figtree:wght@400;500;600;700&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..600,0..100&display=swap">
-<link rel="stylesheet" href="css/site.css?v=2">
+<link rel="stylesheet" href="css/site.css?v=4">
+<script>document.documentElement.className='js'</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -30,56 +31,53 @@
 <polygon points="20,3 29.5,8.5 29.5,19.5 20,25 10.5,19.5 10.5,8.5" fill="#238DBB"/>
 <polygon points="14.5,14 24,19.5 24,30.5 14.5,36 5,30.5 5,19.5" fill="#FF6B93"/>
 <polygon points="25.5,14 35,19.5 35,30.5 25.5,36 16,30.5 16,19.5" fill="#08D8A0"/></g></svg><span>Arcane Designer</span></a>
-    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-    <nav class="nav" id="nav" aria-label="Main"><a href="work.html">Work</a><a href="process.html">Process</a><a href="pricing.html">Pricing</a><a class="btn" href="contact.html">Start a project</a></nav>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+    <nav class="nav" id="nav" aria-label="Main"><a href="work.html">Work</a><a href="process.html">Process</a><a href="pricing.html">Pricing</a><a class="btn " href="contact.html"><span>Start a project</span></a></nav>
   </div>
 </header>
 <main id="main">
-<section class="page-head">
-  <div class="wrap">
-    <div class="hexes" data-set="b"></div>
-    <div class="inner">
-      <span class="eyebrow">Client questionnaire</span>
-      <h1>Let&rsquo;s get to know <em>your business.</em></h1>
-      <p class="lede">About 20 minutes. Short answers are fine, and anything you skip we can cover later. Your answers save in this browser as you go, so you can come back to it.</p>
-    </div>
+<section class="intro glow">
+  <div class="wrap q-wrap">
+    <h1 data-anim="up">About your business.</h1>
+    <p class="big" data-anim="up" style="--d:.1s">Takes about 20 minutes. Short answers are fine, and you can skip anything. Your answers save in this browser, so you can finish later.</p>
   </div>
 </section>
-<section class="sec" style="padding-top:8px">
+<section class="sec" style="padding-top:0">
   <div class="wrap q-wrap">
-    <form class="form" data-form="questionnaire" data-draft data-thanks="Got it, thank you. I&rsquo;ll start on your three designs and send them over within about a week." novalidate>
+    <form class="form" data-form="questionnaire" data-draft data-thanks="Got it, thank you. Next up: your three designs." novalidate>
       <div class="q-progress" aria-hidden="true"><div class="track"><div class="fill"></div></div><div class="lbl"><span class="count"></span><span>Saved in this browser</span></div></div>
-      <div class="q-section"><h2><span class="n">1</span>About you</h2><div class="row"><div class="field"><label for="q-name">Your name</label><input id="q-name" name="name" type="text" required></div><div class="field"><label for="q-business">Business name</label><input id="q-business" name="business" type="text" required></div></div><div class="row"><div class="field"><label for="q-email">Email</label><input id="q-email" name="email" type="email" required></div><div class="field"><label for="q-website">Current website</label><input id="q-website" name="website" type="text" placeholder="yourbusiness.com"></div></div><div class="field"><label for="q-about">In a few sentences, what does your business do?</label><span class="hint">Say it the way you would to a new customer at the counter.</span><textarea id="q-about" name="about"></textarea></div><div class="field"><label for="q-different">What makes you different from others who do the same thing?</label><textarea id="q-different" name="different"></textarea></div></div>
+      <div class="q-section"><h2><span class="n">1</span>About you</h2><div class="row"><div class="field"><label for="q-name">Your name</label><input id="q-name" name="name" type="text" required></div><div class="field"><label for="q-business">Business name</label><input id="q-business" name="business" type="text" required></div></div><div class="row"><div class="field"><label for="q-email">Email</label><input id="q-email" name="email" type="email" required></div><div class="field"><label for="q-website">Current website</label><input id="q-website" name="website" type="text" placeholder="yourbusiness.com"></div></div><div class="field"><label for="q-about">In a few sentences, what does your business do?</label><span class="hint">Say it the way you would to a new customer.</span><textarea id="q-about" name="about"></textarea></div><div class="field"><label for="q-different">What makes you different from others who do the same thing?</label><textarea id="q-different" name="different"></textarea></div></div>
       <div class="q-section"><h2><span class="n">2</span>Your customers</h2><div class="field"><label for="q-customers">Who are your best customers?</label><span class="hint">Age, where they live, what they need, how they usually find you.</span><textarea id="q-customers" name="customers"></textarea></div><div class="field"><label for="q-action">What&rsquo;s the one thing you most want people to do on your website?</label><span class="hint">Call, book, order, visit, request a quote, something else.</span><textarea id="q-action" name="action"></textarea></div><div class="field"><label for="q-questions">What do customers ask you about most often?</label><span class="hint">These usually belong on the site.</span><textarea id="q-questions" name="questions"></textarea></div></div>
-      <div class="q-section"><h2><span class="n">3</span>Your current website</h2><div class="field"><label for="q-keep">What do you like about your current site and want to keep?</label><textarea id="q-keep" name="keep"></textarea></div><div class="field"><label for="q-fix">What frustrates you about it, or what do customers complain about?</label><textarea id="q-fix" name="fix"></textarea></div><fieldset class="field"><legend>Which platform is it built on?</legend><span class="hint">If you&rsquo;re not sure, that&rsquo;s fine. I can tell from the site.</span><div class="choices"><label><input type="radio" name="platform" value="Squarespace"> Squarespace</label><label><input type="radio" name="platform" value="Wix"> Wix</label><label><input type="radio" name="platform" value="WordPress"> WordPress</label><label><input type="radio" name="platform" value="Shopify"> Shopify</label><label><input type="radio" name="platform" value="GoDaddy"> GoDaddy</label><label><input type="radio" name="platform" value="Webflow"> Webflow</label><label><input type="radio" name="platform" value="Not sure"> Not sure</label><label><input type="radio" name="platform" value="Other"> Other</label></div></fieldset><div class="field"><label for="q-pages">Which pages should the new site have?</label><span class="hint">A rough list is great: Home, Services, About, Menu, Contact, and so on.</span><textarea id="q-pages" name="pages"></textarea></div></div>
-      <div class="q-section"><h2><span class="n">4</span>Look and feel</h2><div class="field"><label for="q-likes">Send a few websites you like, and what you like about them</label><span class="hint">They don&rsquo;t need to be in your industry.</span><textarea id="q-likes" name="likes"></textarea></div><div class="field"><label for="q-dislikes">Any websites or styles you really don&rsquo;t like?</label><textarea id="q-dislikes" name="dislikes"></textarea></div><fieldset class="field"><legend>Which words fit how you want to come across?</legend><span class="hint">Pick as many as you like.</span><div class="choices"><label><input type="checkbox" name="feel" value="Warm"> Warm</label><label><input type="checkbox" name="feel" value="Professional"> Professional</label><label><input type="checkbox" name="feel" value="Playful"> Playful</label><label><input type="checkbox" name="feel" value="Calm"> Calm</label><label><input type="checkbox" name="feel" value="Bold"> Bold</label><label><input type="checkbox" name="feel" value="Classic"> Classic</label><label><input type="checkbox" name="feel" value="Modern"> Modern</label><label><input type="checkbox" name="feel" value="Rugged"> Rugged</label><label><input type="checkbox" name="feel" value="Elegant"> Elegant</label><label><input type="checkbox" name="feel" value="Down to earth"> Down to earth</label><label><input type="checkbox" name="feel" value="Premium"> Premium</label><label><input type="checkbox" name="feel" value="Quirky"> Quirky</label></div></fieldset><div class="field"><label for="q-colors">Colors and fonts</label><span class="hint">Brand colors you have, colors you love, colors you never want to see.</span><textarea id="q-colors" name="colors"></textarea></div><fieldset class="field"><legend>Your logo</legend><div class="choices"><label><input type="radio" name="logo" value="Keep it as is"> Keep it as is</label><label><input type="radio" name="logo" value="Open to a refresh"> Open to a refresh</label><label><input type="radio" name="logo" value="I need a new one"> I need a new one</label><label><input type="radio" name="logo" value="I don&rsquo;t have one"> I don&rsquo;t have one</label></div></fieldset></div>
-      <div class="q-section"><h2><span class="n">5</span>Do this, definitely don&rsquo;t do that</h2><div class="field"><label for="q-dos">Things the new site must do or include</label><textarea id="q-dos" name="dos"></textarea></div><div class="field"><label for="q-donts">Things it must never do or include</label><textarea id="q-donts" name="donts"></textarea></div></div>
-      <div class="q-section"><h2><span class="n">6</span>Practical bits</h2><div class="field"><label for="q-photos">Do you have photos you&rsquo;d like to use?</label><span class="hint">Of your work, your space, your team. Phone photos are often great.</span><textarea id="q-photos" name="photos"></textarea></div><div class="field"><label for="q-deadline">Any deadline or season I should know about?</label><input id="q-deadline" name="deadline" type="text"></div><div class="field"><label for="q-access">Who manages your website account today?</label><span class="hint">You, someone on your team, a past designer, nobody sure.</span><input id="q-access" name="access" type="text"></div><div class="field"><label for="q-notes">Anything else on your mind?</label><textarea id="q-notes" name="notes"></textarea></div></div>
+      <div class="q-section"><h2><span class="n">3</span>Your current website</h2><div class="field"><label for="q-keep">What do you like about your current site and want to keep?</label><textarea id="q-keep" name="keep"></textarea></div><div class="field"><label for="q-fix">What frustrates you about it, or what do customers complain about?</label><textarea id="q-fix" name="fix"></textarea></div><fieldset class="field"><legend>Which platform is it built on?</legend><span class="hint">Not sure is fine. It&rsquo;s easy to tell from the site.</span><div class="choices"><label><input type="radio" name="platform" value="Squarespace"> Squarespace</label><label><input type="radio" name="platform" value="Wix"> Wix</label><label><input type="radio" name="platform" value="WordPress"> WordPress</label><label><input type="radio" name="platform" value="Shopify"> Shopify</label><label><input type="radio" name="platform" value="GoDaddy"> GoDaddy</label><label><input type="radio" name="platform" value="Webflow"> Webflow</label><label><input type="radio" name="platform" value="Not sure"> Not sure</label><label><input type="radio" name="platform" value="Other"> Other</label></div></fieldset><div class="field"><label for="q-pages">Which pages should the new site have?</label><span class="hint">A rough list is great: Home, Services, About, Contact, and so on.</span><textarea id="q-pages" name="pages"></textarea></div></div>
+      <div class="q-section"><h2><span class="n">4</span>Look and feel</h2><div class="field"><label for="q-likes">Share a few websites you like, and what you like about them</label><span class="hint">They don&rsquo;t need to be in your industry.</span><textarea id="q-likes" name="likes"></textarea></div><div class="field"><label for="q-dislikes">Any websites or styles you really don&rsquo;t like?</label><textarea id="q-dislikes" name="dislikes"></textarea></div><fieldset class="field"><legend>Which words fit how you want to come across?</legend><span class="hint">Pick as many as you like.</span><div class="choices"><label><input type="checkbox" name="feel" value="Warm"> Warm</label><label><input type="checkbox" name="feel" value="Professional"> Professional</label><label><input type="checkbox" name="feel" value="Playful"> Playful</label><label><input type="checkbox" name="feel" value="Calm"> Calm</label><label><input type="checkbox" name="feel" value="Bold"> Bold</label><label><input type="checkbox" name="feel" value="Classic"> Classic</label><label><input type="checkbox" name="feel" value="Modern"> Modern</label><label><input type="checkbox" name="feel" value="Rugged"> Rugged</label><label><input type="checkbox" name="feel" value="Elegant"> Elegant</label><label><input type="checkbox" name="feel" value="Down to earth"> Down to earth</label><label><input type="checkbox" name="feel" value="Premium"> Premium</label><label><input type="checkbox" name="feel" value="Quirky"> Quirky</label></div></fieldset><div class="field"><label for="q-colors">Colors and fonts</label><span class="hint">Brand colors you have, colors you love, colors you never want to see.</span><textarea id="q-colors" name="colors"></textarea></div><fieldset class="field"><legend>Your logo</legend><div class="choices"><label><input type="radio" name="logo" value="Keep it as is"> Keep it as is</label><label><input type="radio" name="logo" value="Open to a refresh"> Open to a refresh</label><label><input type="radio" name="logo" value="I need a new one"> I need a new one</label><label><input type="radio" name="logo" value="I don&rsquo;t have one"> I don&rsquo;t have one</label></div></fieldset></div>
+      <div class="q-section"><h2><span class="n">5</span>Must do, must not do</h2><div class="field"><label for="q-dos">Things the new site must do or include</label><textarea id="q-dos" name="dos"></textarea></div><div class="field"><label for="q-donts">Things it must never do or include</label><textarea id="q-donts" name="donts"></textarea></div></div>
+      <div class="q-section"><h2><span class="n">6</span>Practical bits</h2><div class="field"><label for="q-photos">Do you have photos you&rsquo;d like to use?</label><span class="hint">Of your work, your space, your team. Phone photos are often great.</span><textarea id="q-photos" name="photos"></textarea></div><div class="field"><label for="q-deadline">Any deadline or busy season to plan around?</label><input id="q-deadline" name="deadline" type="text"></div><div class="field"><label for="q-access">Who manages your website account today?</label><span class="hint">You, someone on your team, a past designer, nobody sure.</span><input id="q-access" name="access" type="text"></div><div class="field"><label for="q-notes">Anything else on your mind?</label><textarea id="q-notes" name="notes"></textarea></div></div>
       <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <div><button class="btn teal" type="submit">Send my answers <span class="arr" aria-hidden="true">→</span></button></div>
+      <div><button class="btn alt" type="submit"><span>Send my answers</span></button></div>
       <div class="form-status" role="status" tabindex="-1" hidden></div>
     </form>
   </div>
 </section>
 </main>
 <footer class="site-foot">
-  <div class="zig" aria-hidden="true" style="margin-top:-34px;margin-bottom:28px"></div>
+  <div class="zig" aria-hidden="true" style="transform:translateY(-25px);margin-bottom:-25px"></div>
   <div class="wrap">
     <div class="foot-row">
-      <div style="display:grid;gap:10px">
+      <div style="display:grid;gap:12px">
         <a class="brand" href="./"><svg viewBox="0 0 40 40" aria-hidden="true"><g stroke="currentColor" stroke-width="2.2" stroke-linejoin="round">
 <polygon points="20,3 29.5,8.5 29.5,19.5 20,25 10.5,19.5 10.5,8.5" fill="#238DBB"/>
 <polygon points="14.5,14 24,19.5 24,30.5 14.5,36 5,30.5 5,19.5" fill="#FF6B93"/>
 <polygon points="25.5,14 35,19.5 35,30.5 25.5,36 16,30.5 16,19.5" fill="#08D8A0"/></g></svg><span>Arcane Designer</span></a>
-        <span>Website and logo redesigns for small businesses.<br>Arcane Designer LLC, Spokane, Washington.</span>
+        <span>Website and logo redesigns.<br>Arcane Designer LLC, Spokane, Washington.</span>
       </div>
       <div style="display:grid;gap:12px;align-content:start">
         <nav aria-label="Footer"><a href="work.html">Work</a><a href="process.html">Process</a><a href="pricing.html">Pricing</a><a href="contact.html">Contact</a></nav>
+        <a href="mailto:hello@arcanedesigner.com">hello@arcanedesigner.com</a>
         <span>&copy; <span id="year">2026</span> Arcane Designer LLC</span>
       </div>
     </div>
   </div>
 </footer>
-<script src="js/site.js?v=2" defer></script>
+<script src="js/site.js?v=4" defer></script>
 </body>
 </html>

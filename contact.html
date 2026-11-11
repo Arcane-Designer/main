@@ -4,23 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Start a Project | Arcane Designer</title>
-<meta name="description" content="Send Arcane Designer your current website. Nathan will reply within two business days with what he would change and what it would cost.">
+<meta name="description" content="Send Arcane Designer a link to your current website. You will get back ideas for what to change and a price.">
 <link rel="canonical" href="https://arcanedesigner.com/contact.html">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Start a Project | Arcane Designer">
-<meta property="og:description" content="Send Arcane Designer your current website. Nathan will reply within two business days with what he would change and what it would cost.">
+<meta property="og:description" content="Send Arcane Designer a link to your current website. You will get back ideas for what to change and a price.">
 <meta property="og:url" content="https://arcanedesigner.com/contact.html">
 <meta property="og:image" content="https://arcanedesigner.com/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#f7f2ea" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#130d2c" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#100b28" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32x32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@600&family=Figtree:wght@400;500;600;700&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..600,0..100&display=swap">
-<link rel="stylesheet" href="css/site.css?v=2">
+<link rel="stylesheet" href="css/site.css?v=4">
+<script>document.documentElement.className='js'</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -30,79 +31,69 @@
 <polygon points="20,3 29.5,8.5 29.5,19.5 20,25 10.5,19.5 10.5,8.5" fill="#238DBB"/>
 <polygon points="14.5,14 24,19.5 24,30.5 14.5,36 5,30.5 5,19.5" fill="#FF6B93"/>
 <polygon points="25.5,14 35,19.5 35,30.5 25.5,36 16,30.5 16,19.5" fill="#08D8A0"/></g></svg><span>Arcane Designer</span></a>
-    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-    <nav class="nav" id="nav" aria-label="Main"><a href="work.html">Work</a><a href="process.html">Process</a><a href="pricing.html">Pricing</a><a class="btn" href="contact.html" aria-current="page">Start a project</a></nav>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+    <nav class="nav" id="nav" aria-label="Main"><a href="work.html">Work</a><a href="process.html">Process</a><a href="pricing.html">Pricing</a><a class="btn " href="contact.html"><span>Start a project</span></a></nav>
   </div>
 </header>
 <main id="main">
-<section class="page-head">
+<section class="intro glow">
   <div class="wrap">
-    <div class="hexes" data-set="c"></div>
-    <div class="inner">
-      <span class="eyebrow">Start a project</span>
-      <h1>Tell me about <em>your website.</em></h1>
-      <p class="lede">A link and a sentence is plenty. I read every message myself and reply within two business days.</p>
-    </div>
+    <h1 data-anim="up">Start a project.</h1>
+    <p class="big" data-anim="up" style="--d:.1s">Send a link to your current site and a little about what you want. You&rsquo;ll get a reply by email with ideas and a price.</p>
   </div>
 </section>
-<section class="sec" style="padding-top:20px">
+<section class="sec" style="padding-top:10px">
   <div class="wrap contact-grid">
-    <form class="form" data-form="contact" novalidate>
+    <form class="form" data-form="contact" novalidate data-anim="up">
       <div class="row">
         <div class="field"><label for="c-name">Your name</label><input id="c-name" name="name" autocomplete="name" required></div>
-        <div class="field"><label for="c-biz">Business name</label><input id="c-biz" name="business" autocomplete="organization"></div>
+        <div class="field"><label for="c-biz">Business name</label><input id="c-biz" name="business" autocomplete="organization" required></div>
       </div>
       <div class="row">
         <div class="field"><label for="c-email">Email</label><input id="c-email" name="email" type="email" autocomplete="email" required></div>
-        <div class="field"><label for="c-site">Current website</label><input id="c-site" name="website" type="text" inputmode="url" placeholder="yourbusiness.com"></div>
+        <div class="field"><label for="c-site">Current website</label><input id="c-site" name="website" type="text" inputmode="url" placeholder="yourbusiness.com" required></div>
       </div>
       <fieldset class="field">
-        <legend>What are you thinking about?</legend>
+        <legend>What are you interested in? <span class="opt">(optional)</span></legend>
         <div class="choices">
-          <label><input type="checkbox" name="interest" value="Website redesign" checked> Website redesign</label>
+          <label><input type="checkbox" name="interest" value="Website redesign"> Website redesign</label>
           <label><input type="checkbox" name="interest" value="Logo redesign"> Logo redesign</label>
+          <label><input type="checkbox" name="interest" value="Something else"> Something else</label>
           <label><input type="checkbox" name="interest" value="Not sure yet"> Not sure yet</label>
         </div>
       </fieldset>
-      <div class="field"><label for="c-msg">Anything else?</label><span class="hint">What bugs you about your current site, a deadline, a budget. Whatever&rsquo;s useful.</span><textarea id="c-msg" name="message"></textarea></div>
+      <div class="field"><label for="c-msg">Anything else? <span class="opt">(optional)</span></label><span class="hint">Something else you need, a deadline, a budget. Whatever&rsquo;s useful.</span><textarea id="c-msg" name="message"></textarea></div>
       <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <div><button class="btn teal" type="submit">Send it <span class="arr" aria-hidden="true">→</span></button></div>
+      <div><button class="btn alt" type="submit"><span>Send</span></button></div>
       <div class="form-status" role="status" tabindex="-1" hidden></div>
     </form>
-    <aside class="contact-side">
-      <div class="card">
-        <h3>Rather email?</h3>
-        <div class="copyline"><code data-email>hello@arcanedesigner.com</code><button type="button" data-copy>Copy</button></div>
-        <p class="muted small">Send your website link and I&rsquo;ll take it from there.</p>
-      </div>
-      <div class="card">
-        <h3>What happens next</h3>
-        <p class="muted small">I look at your current site and reply with what I&rsquo;d change and a price. If it&rsquo;s a fit, you get a short questionnaire and a deposit invoice. That&rsquo;s it. No sales calls unless you want one.</p>
-        <a class="link small" href="process.html">See the full process</a>
-      </div>
-      <img src="assets/arc/relaxed.webp" alt="" width="640" height="312" loading="lazy" style="width:78%;justify-self:center">
+    <aside class="contact-side" data-anim="right">
+      <div class="card"><h3>Prefer email?</h3><a class="mail" href="mailto:hello@arcanedesigner.com">hello@arcanedesigner.com</a></div>
+      <div class="card"><h3>What happens next</h3><p>You&rsquo;ll get a short list of what&rsquo;s worth changing and a price. If you want to go ahead, a questionnaire and a deposit invoice come next.</p><a class="tlink small" href="process.html" style="justify-self:start">The full process</a></div>
+      <img src="assets/arc/relaxed.webp" alt="" width="640" height="312" loading="lazy">
     </aside>
   </div>
 </section>
 </main>
 <footer class="site-foot">
-  <div class="zig" aria-hidden="true" style="margin-top:-34px;margin-bottom:28px"></div>
+  <div class="zig" aria-hidden="true" style="transform:translateY(-25px);margin-bottom:-25px"></div>
   <div class="wrap">
     <div class="foot-row">
-      <div style="display:grid;gap:10px">
+      <div style="display:grid;gap:12px">
         <a class="brand" href="./"><svg viewBox="0 0 40 40" aria-hidden="true"><g stroke="currentColor" stroke-width="2.2" stroke-linejoin="round">
 <polygon points="20,3 29.5,8.5 29.5,19.5 20,25 10.5,19.5 10.5,8.5" fill="#238DBB"/>
 <polygon points="14.5,14 24,19.5 24,30.5 14.5,36 5,30.5 5,19.5" fill="#FF6B93"/>
 <polygon points="25.5,14 35,19.5 35,30.5 25.5,36 16,30.5 16,19.5" fill="#08D8A0"/></g></svg><span>Arcane Designer</span></a>
-        <span>Website and logo redesigns for small businesses.<br>Arcane Designer LLC, Spokane, Washington.</span>
+        <span>Website and logo redesigns.<br>Arcane Designer LLC, Spokane, Washington.</span>
       </div>
       <div style="display:grid;gap:12px;align-content:start">
         <nav aria-label="Footer"><a href="work.html">Work</a><a href="process.html">Process</a><a href="pricing.html">Pricing</a><a href="contact.html">Contact</a></nav>
+        <a href="mailto:hello@arcanedesigner.com">hello@arcanedesigner.com</a>
         <span>&copy; <span id="year">2026</span> Arcane Designer LLC</span>
       </div>
     </div>
   </div>
 </footer>
-<script src="js/site.js?v=2" defer></script>
+<script src="js/site.js?v=4" defer></script>
 </body>
 </html>
