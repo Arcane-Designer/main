@@ -4,11 +4,11 @@ Run from the repo root:  python3 tools/pages.py
 Edit copy here, then re-run. The generated .html files are what GitHub Pages serves."""
 import json, math, os
 
-V = '17'                      # bump after CSS/JS changes so browsers refetch
+V = '21'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = ''            # Arcane Designer company page URL (footer). Empty = hidden.
-LINKEDIN_PERSON = ''         # Nathan's profile URL (About block on Process). Empty = hidden.
+LINKEDIN_PERSON = 'https://www.linkedin.com/in/nathan-gellatly/'         # Nathan's profile URL (About block on Process). Empty = hidden.
 FONTS = ('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@600'
          '&family=Figtree:wght@400;500;600;700&family=Archivo:wdth,wght@62..125,400..900&display=swap')
 
@@ -128,8 +128,11 @@ def compare(slug, label, pos=16, eager=False, wipe=False):
 </div>'''
 
 
+LOCK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 7V5a3.5 3.5 0 0 1 7 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="7" width="10" height="7.5" rx="2" fill="currentColor"/></svg>'
+
+
 def browser(url, inner):
-    return f'<div class="browser"><div class="bar"><i></i><i></i><i></i><b>{url}</b></div>{inner}</div>'
+    return f'<div class="browser"><div class="bar"><span class="dots"><i></i><i></i><i></i></span><b>{LOCK}{url}</b><span class="dots ghost"></span></div>{inner}</div>'
 
 
 def hexsvg(label='Six steps'):
@@ -160,7 +163,7 @@ def hexsvg(label='Six steps'):
         rot = 28 if k % 2 else -28
         top = ' '.join(f'{x:.1f},{y:.1f}' for x, y in tri)
         bev = ' '.join(f'{cx + (x - cx) * .82:.1f},{cy + (y - cy) * .82:.1f}' for x, y in tri)
-        groups.append((cy, f'<g class="tri" data-i="{k}" style="--tx:{tx:.0f}px;--ty:{ty:.0f}px;--rot:{rot}deg">{"".join(side)}<polygon class="top" points="{top}" fill="{tops[k]}"/><polygon class="bevel" points="{bev}"/><text x="{cx:.1f}" y="{cy:.1f}">{k + 1}</text></g>'))
+        groups.append((cy, f'<g class="tri" data-i="{k}" style="--tx:{tx:.0f}px;--ty:{ty:.0f}px;--rot:{rot}deg">{"".join(side)}<polygon class="top" points="{top}" fill="{tops[k]}"/><polygon class="gloss" points="{top}" fill="url(#hg-gloss)"/><polygon class="bevel" points="{bev}"/><text x="{cx:.1f}" y="{cy:.1f}">{k + 1}</text></g>'))
     groups.sort(key=lambda g: g[0])   # back to front, so lower pieces cover the walls of upper ones
     outline = ' '.join(f'{x:.1f},{y:.1f}' for x, y in pts)
     return f'''<svg class="hexbuild" viewBox="0 0 400 420" role="img" aria-label="{label}">
@@ -168,6 +171,7 @@ def hexsvg(label='Six steps'):
     <linearGradient id="hg-teal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6ff8d3"/><stop offset="1" stop-color="#08cf99"/></linearGradient>
     <linearGradient id="hg-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#78cdf2"/><stop offset="1" stop-color="#2385b4"/></linearGradient>
     <linearGradient id="hg-pink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb3c8"/><stop offset="1" stop-color="#f0547f"/></linearGradient>
+    <linearGradient id="hg-gloss" x1="0" y1="0" x2="0.25" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset=".38" stop-color="#fff" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".12"/></linearGradient>
     <linearGradient id="hw-teal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05a77b"/><stop offset="1" stop-color="#026448"/></linearGradient>
     <linearGradient id="hw-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b6d95"/><stop offset="1" stop-color="#0f4560"/></linearGradient>
     <linearGradient id="hw-pink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cc3a63"/><stop offset="1" stop-color="#8a1e3e"/></linearGradient>
@@ -187,7 +191,7 @@ def write(name, html):
 PRICES = [
     dict(name='Website redesign', amt='1,500', blurb='For most small business websites.',
          items=['Up to 10 pages', 'Three design options to click through', 'One round of changes', 'Built on the platform you already use',
-                'Works on phones, tablets and computers', 'Search basics on every page', 'A week of fixes after launch'], main=True),
+                'Works on phones, tablets and computers', 'Search basics on every page', 'A week of fine-tuning after launch'], main=True),
     dict(name='Larger website', amt='3,500', blurb='For sites with more than 10 pages, or extras like online booking, ordering or a small store.',
          items=['11 to 25 pages', 'Everything in the website redesign', 'Booking, ordering or store features set up on your platform',
                 'Existing content moved over and tidied', 'A written quote before work starts']),
@@ -251,16 +255,16 @@ LOGOS = [] if not SHOW_LOGOS else [(s, _logo(s['slug'], 'old'), _logo(s['slug'],
 
 STEPS = [
     ('Send your site', 'Use the contact form or email a link. You&rsquo;ll get back what&rsquo;s worth changing, and a price.'),
-    ('Deposit and questions', 'Half the price up front, by card or bank transfer. Then a short questionnaire about your customers, your taste and what has to stay.'),
-    ('Three designs', 'Three different directions, built as real web pages you can click through on your phone. Pick one, or mix parts of each.'),
+    ('Deposit and questionnaire', 'Half the price up front, by card or bank transfer. Then a short questionnaire about your customers, your taste and what has to stay.'),
+    ('Three designs to choose from', 'Three different directions, built as real web pages you can click through on your phone. Pick one, or mix parts of each.'),
     ('One round of changes', 'Send one list of changes. They get made, and you sign off before anything is built.'),
     ('Build and launch', 'The new design goes onto the platform you already use. You add a helper login, so your password stays yours. The second half is due at launch.'),
-    ('A week of fixes', 'Anything that looks off in the first week gets fixed. Then you delete the helper login, and the site is entirely yours.'),
+    ('A week of fine-tuning', 'For a week after launch, anything you want adjusted gets fine-tuned. Then you delete the helper login, and the site is entirely yours.'),
 ]
 STEP_COLORS = ['var(--teal-ink)', 'var(--blue-ink)', 'var(--pink-ink)'] * 2
 
 # ---------------------------------------------------------------- home
-s0 = next(x for x in SAMPLES_ALL if x['slug'] == 'lilac-row-bakery')
+s0 = next(x for x in SAMPLES_ALL if x['slug'] == 'hillyard-hounds')
 home = head('Arcane Designer | Website Redesigns for Small Businesses',
             'One-time website redesigns for small businesses, from $1,500. Pick from three designs, built on the platform you already use, no monthly fees. Logo redesigns from $500.',
             'index.html', extra=f'<link rel="preload" as="image" href="assets/samples/{s0["slug"]}-before.webp">\n', schema=ORG)
@@ -291,7 +295,7 @@ home += f'''<section class="hero-x dark-stage">
   <div class="wrap split-head">
     <h2 data-anim="left">No two businesses should look alike.</h2>
     <div data-anim="right" style="display:grid;gap:18px">
-      <p class="big">A plumber, a dog groomer and a breakfast caf&eacute; need very different things from a website. A few examples, each with its own look.</p>
+      <p class="big">A plumber, a dog groomer and a breakfast caf&eacute; need very different things from a website.</p>
       <a class="tlink" href="work.html" style="justify-self:start">See them up close</a>
     </div>
   </div>
@@ -305,12 +309,12 @@ notes = ['The phone number is in tiny print. On a phone, you&rsquo;d have to zoo
          'A narrow box built for 2009 screens. Huge empty edges on a monitor, squished on a phone.',
          'A paragraph stuffed with &ldquo;Spokane plumber&rdquo; for Google. People skip right over it.',
          '&ldquo;Best viewed in Internet Explorer 8.&rdquo; That browser retired years ago.']
-pin_html = ''.join(f'<span class="pin" style="left:{x}%;top:{y}%;--i:{i}">{i + 1}</span>' for i, (x, y) in enumerate(pins))
-note_html = ''.join(f'<li style="--i:{i}"><b>{i + 1}</b><span>{t}</span></li>' for i, t in enumerate(notes))
+pin_html = ''.join(f'<span class="pin" data-n="{i}" style="left:{x}%;top:{y}%;--i:{i}">{i + 1}</span>' for i, (x, y) in enumerate(pins))
+note_html = ''.join(f'<li data-n="{i}" style="--i:{i}"><b>{i + 1}</b><span>{t}</span></li>' for i, t in enumerate(notes))
 home += f'''  </div></div>
 </section>
 
-<section class="sec gray-sec">
+<section class="sec redpen-sec">
   <div class="wrap">
     <div class="split-head">
       <h2 data-anim="left">Sound familiar?</h2>
@@ -432,14 +436,14 @@ write('work.html', work)
 
 # ---------------------------------------------------------------- process
 proc = head('How It Works | Arcane Designer',
-            'How an Arcane Designer website redesign works, in six steps: send your site, questionnaire, three clickable designs, one round of changes, build and launch, a week of fixes.',
+            'How an Arcane Designer website redesign works, in six steps: send your site, questionnaire, three clickable designs, one round of changes, build and launch, a week of fine-tuning.',
             'process.html')
 proc += header('process.html')
 proc += '''<section class="intro glow">
   <div class="wrap proc-intro">
     <div data-anim="up">
       <h1>From old site to new one, in six steps.</h1>
-      <p class="big">Here&rsquo;s what happens, and what you&rsquo;ll need to do along the way.</p>
+      <p class="big">What happens, and what you&rsquo;ll need to do along the way.</p>
     </div>
     <img class="arc" src="assets/arc/stands.webp" alt="" width="336" height="900" data-anim="right">
   </div>
@@ -507,7 +511,7 @@ pr += '''<section class="intro glow">
 for i, p in enumerate(PRICES):
     items = ''.join(f'<li>{x}</li>' for x in p['items'])
     flag = '<span class="flag">Most common</span>' if p.get('main') else ''
-    pr += f'''      <div class="price{" main" if p.get("main") else ""}" data-anim="up" style="--d:{i * .12:.2f}s">{flag}<h3>{p["name"]}</h3><span class="from">Starting at</span><span class="amt">${p["amt"]}</span><p>{p["blurb"]}</p><ul>{items}</ul>{btn("contact.html", "Get started", "" if p.get("main") else "dark")}</div>
+    pr += f'''      <div class="price{" main" if p.get("main") else ""}" data-anim="up" style="--d:{i * .12:.2f}s">{flag}<h3>{p["name"]}</h3><span class="from">Starting at</span><span class="amt">${p["amt"]}</span><p>{p["blurb"]}</p><ul>{items}</ul>{btn("contact.html", "Get started", "" if p.get("main") else "blue")}</div>
 '''
 pr += '''    </div>
     <p class="muted small" style="margin-top:30px;max-width:68ch">These are early prices and will go up as the portfolio grows. Doing a website and a logo together lowers the total.</p>
@@ -518,7 +522,7 @@ pr += '''    </div>
     <div class="copy" data-anim="left">
       <h2 style="color:var(--ink)">What stays with you.</h2>
       <p>Your platform, hosting and domain stay with you, billed by the same companies as now. Nothing gets marked up or taken over.</p>
-      <p>There&rsquo;s no maintenance plan. After the week of fixes the project is done, and later changes can be quoted as a small new project.</p>
+      <p>There&rsquo;s no maintenance plan. After the week of fine-tuning the project is done, and later changes can be quoted as a small new project.</p>
     </div>
     <ul class="checks" data-anim="right" style="align-self:center">
       <li>Your site keeps its address and its accounts</li>

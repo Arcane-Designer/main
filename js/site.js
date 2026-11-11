@@ -237,30 +237,53 @@ onScroll();
   hero.addEventListener('pointerleave', () => fls.forEach((f) => { f.style.setProperty('--mx', '0px'); f.style.setProperty('--my', '0px'); }));
 })();
 
-/* ---- logo: the three hexagons juggle into new spots on hover, and swap back on leave ---- */
+/* ---- logo: hover makes the three hexagons charge outward, snap together past each other, bounce,
+        and settle into swapped spots; leaving plays it back so they return home ---- */
 document.querySelectorAll('.brand .mark3d').forEach((mark) => {
   if (REDUCE) return;
   const brand = mark.closest('.brand');
-  const T = (x, y, s = 1) => `translate(${x}px, ${y}px) scale(${s})`;
-  // top (blue) -> bottom right, bottom left (pink) -> top passing OVER, bottom right (teal) -> bottom left passing UNDER
-  const paths = {
-    b: [{ transform: T(10, 0), zIndex: 1 }, { transform: T(14, -9, 1.22), zIndex: 4, offset: .25 }, { transform: T(30, 2, 1.12), zIndex: 4, offset: .6 }, { transform: T(21, 17, .96), zIndex: 2, offset: .85 }, { transform: T(20, 16), zIndex: 2 }],
-    p: [{ transform: T(0, 16), zIndex: 2 }, { transform: T(-4, 6, 1.3), zIndex: 5, offset: .3 }, { transform: T(4, -10, 1.32), zIndex: 5, offset: .62 }, { transform: T(10, 1, .97), zIndex: 3, offset: .86 }, { transform: T(10, 0), zIndex: 3 }],
-    t: [{ transform: T(20, 16), zIndex: 3 }, { transform: T(24, 22, .86), zIndex: 0, offset: .3 }, { transform: T(10, 25, .7), zIndex: 0, offset: .62 }, { transform: T(-1, 17, .97), zIndex: 1, offset: .86 }, { transform: T(0, 16), zIndex: 1 }],
+  const home = { b: [10, 0], p: [0, 16], t: [20, 16] };
+  const dest = { b: 't', p: 'b', t: 'p' };            // each hexagon takes the next one's spot
+  const C = [10, 10.67];
+  const unit = ([x, y]) => { const dx = x - C[0], dy = y - C[1], d = Math.hypot(dx, dy) || 1; return [dx / d, dy / d]; };
+  const T = ([x, y], s = 1) => `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) scale(${s})`;
+  const zMid = { p: 5, b: 4, t: 1 }, zEnd = { b: 2, p: 3, t: 1 }, zStart = { b: 1, p: 2, t: 3 };
+  const frames = (h) => {
+    const A = home[h], B = home[dest[h]], ua = unit(A), ub = unit(B);
+    const mid = [C[0] + (B[0] - C[0]) * .22, C[1] + (B[1] - C[1]) * .22];
+    return [
+      { transform: T(A), zIndex: zStart[h], easing: 'cubic-bezier(.3,0,.5,1)' },
+      { transform: T([A[0] + ua[0] * 4, A[1] + ua[1] * 4], .93), zIndex: zStart[h], offset: .24, easing: 'cubic-bezier(.6,0,.9,.5)' },
+      { transform: T(mid, 1.1), zIndex: zMid[h], offset: .5, easing: 'cubic-bezier(.1,.5,.3,1)' },
+      { transform: T([B[0] + ub[0] * 4, B[1] + ub[1] * 4], 1.03), zIndex: zEnd[h], offset: .72, easing: 'ease-in-out' },
+      { transform: T([B[0] - ub[0] * 1.2, B[1] - ub[1] * 1.2], .99), zIndex: zEnd[h], offset: .88, easing: 'ease-out' },
+      { transform: T(B), zIndex: zEnd[h] },
+    ];
   };
-  const delay = { p: 0, b: 90, t: 160 };
   let anims = null;
   const play = (dir) => {
-    if (!anims) anims = [...mark.querySelectorAll('.hx')].map((h) => {
-      const a = h.animate(paths[h.dataset.h], { duration: 1500, delay: delay[h.dataset.h], easing: 'cubic-bezier(.45,.05,.25,1)', fill: 'both' });
-      a.pause(); return a;
-    });
+    if (!anims) anims = [...mark.querySelectorAll('.hx')].map((h) => { const a = h.animate(frames(h.dataset.h), { duration: 1300, fill: 'both' }); a.pause(); return a; });
     anims.forEach((a) => { a.playbackRate = dir; a.play(); });
   };
   brand.addEventListener('mouseenter', () => play(1));
   brand.addEventListener('mouseleave', () => play(-1));
   brand.addEventListener('focus', () => play(1));
   brand.addEventListener('blur', () => play(-1));
+});
+
+/* ---- price cards: a soft light follows the mouse ---- */
+document.querySelectorAll('.price').forEach((c) => c.addEventListener('pointermove', (e) => {
+  const r = c.getBoundingClientRect();
+  c.style.setProperty('--mx', (e.clientX - r.left) + 'px'); c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+}));
+
+/* ---- "Sound familiar?": hovering a note highlights its marker on the old site, and the other way round ---- */
+document.querySelectorAll('.redpen').forEach((rp) => {
+  const pair = (n, on) => rp.querySelectorAll(`[data-n="${n}"]`).forEach((el) => el.classList.toggle('hot', on));
+  rp.querySelectorAll('[data-n]').forEach((el) => {
+    el.addEventListener('mouseenter', () => pair(el.dataset.n, true));
+    el.addEventListener('mouseleave', () => pair(el.dataset.n, false));
+  });
 });
 
 /* ---- FAQ: one open at a time, smooth open and close ---- */
