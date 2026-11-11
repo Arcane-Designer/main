@@ -4,7 +4,7 @@ Run from the repo root:  python3 tools/pages.py
 Edit copy here, then re-run. The generated .html files are what GitHub Pages serves."""
 import json, math, os
 
-V = '7'                      # bump after CSS/JS changes so browsers refetch
+V = '8'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'hello@arcanedesigner.com'
 LINKEDIN_BIZ = ''            # Arcane Designer company page URL (footer). Empty = hidden.
@@ -79,7 +79,7 @@ def closer(title='Got an old website?', body='Send the link. You&rsquo;ll get ba
       <p>{body}</p>
       {btn("contact.html", "Start a project")}
     </div>
-    <img class="arc" src="assets/arc/hands-up.webp" alt="" width="599" height="900" loading="lazy" data-anim="right">
+    <img class="arc" src="assets/arc/hands-up.webp" alt="" width="456" height="900" loading="lazy" data-anim="right">
   </div>
 </section>
 '''
@@ -266,7 +266,7 @@ home += f'''<section class="hero glow">
   <div class="pin-sticky">
     <div class="wrap">
       <div class="hero-stage">
-        <div class="perch"><img src="assets/arc/relaxed.webp" alt="Arc, the Arcane Designer mascot, lounging on top of the browser window" width="900" height="596"></div>
+        <div class="perch"><img src="assets/arc/relaxed.webp" alt="Arc, the Arcane Designer mascot, lounging on top of the browser window" width="900" height="452"></div>
         <div class="bubble" aria-hidden="true"><span data-a="Scroll down. Watch this." data-b="Much better.">Scroll down. Watch this.</span></div>
         {browser(s0['url'], compare(s0['slug'], s0['name'], 100, eager=True, wipe=True))}
       </div>
@@ -367,7 +367,7 @@ work += '''<section class="intro glow">
       <h1>Before and after.</h1>
       <p class="big">Drag the slider on any of them. These are samples for businesses that don&rsquo;t exist, each in a different style. Client projects and their reviews will join them here.</p>
     </div>
-    <img src="assets/arc/presents.webp" alt="" width="606" height="900" data-anim="right">
+    <img src="assets/arc/presents.webp" alt="" width="499" height="900" data-anim="right">
   </div>
 </section>
 <section class="sec" style="padding-top:30px">
@@ -411,7 +411,7 @@ proc += '''<section class="intro glow">
       <h1>From old site to new one, in six steps.</h1>
       <p class="big">Here&rsquo;s what happens, and what you&rsquo;ll need to do along the way.</p>
     </div>
-    <img class="arc" src="assets/arc/stands.webp" alt="" width="585" height="900" data-anim="right">
+    <img class="arc" src="assets/arc/stands.webp" alt="" width="336" height="900" data-anim="right">
   </div>
 </section>
 <section class="sec" style="padding-top:10px">
@@ -428,7 +428,7 @@ proc += f'''    </div>
 </section>
 <section class="sec navy-sec">
   <div class="wrap ai-block">
-    <img src="assets/arc/presents-floor.webp" alt="" width="608" height="900" loading="lazy" data-anim="left">
+    <img src="assets/arc/presents-floor.webp" alt="" width="499" height="900" loading="lazy" data-anim="left">
     <div class="copy" data-anim="right">
       <h2>Yes, we use AI.</h2>
       <p>It&rsquo;s how we keep projects quick and prices low without cutting corners on quality. We just didn&rsquo;t want it to be a surprise.</p>
@@ -551,7 +551,7 @@ ct += f'''<section class="intro glow">
     <aside class="contact-side" data-anim="right">
       <div class="card"><h3>Prefer email?</h3><a class="mail" href="mailto:{EMAIL}">{EMAIL}</a></div>
       <div class="card"><h3>What happens next</h3><p>You&rsquo;ll get a short list of what&rsquo;s worth changing and a price. If you want to go ahead, a questionnaire and a deposit invoice come next.</p><a class="tlink small" href="process.html" style="justify-self:start">The full process</a></div>
-      <img src="assets/arc/relaxed.webp" alt="" width="900" height="596" loading="lazy">
+      <img src="assets/arc/relaxed.webp" alt="" width="900" height="452" loading="lazy">
     </aside>
   </div>
 </section>
@@ -640,7 +640,7 @@ nf = head('Page Not Found | Arcane Designer', 'This page does not exist.', '404.
 nf += header('')
 nf += f'''<section class="sec glow">
   <div class="wrap" style="display:grid;grid-template-columns:auto 1fr;gap:clamp(24px,5vw,60px);align-items:center;max-width:960px">
-    <img src="assets/arc/flabbergasted.webp" alt="" width="610" height="900" style="width:clamp(110px,14vw,170px)">
+    <img src="assets/arc/flabbergasted.webp" alt="" width="395" height="900" style="width:clamp(110px,14vw,170px)">
     <div style="display:grid;gap:22px;justify-items:start">
       <h1 style="font-size:clamp(2.4rem,1.6rem + 3vw,4rem)">That page isn&rsquo;t here.</h1>
       <p class="big">It probably moved when the site was redesigned. A little ironic.</p>
