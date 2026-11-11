@@ -4,9 +4,9 @@ Run from the repo root:  python3 tools/pages.py
 Edit copy here, then re-run. The generated .html files are what GitHub Pages serves."""
 import json, math, os
 
-V = '8'                      # bump after CSS/JS changes so browsers refetch
+V = '17'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
-EMAIL = 'hello@arcanedesigner.com'
+EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = ''            # Arcane Designer company page URL (footer). Empty = hidden.
 LINKEDIN_PERSON = ''         # Nathan's profile URL (About block on Process). Empty = hidden.
 FONTS = ('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@600'
@@ -16,6 +16,11 @@ LOGO = '''<svg viewBox="0 0 40 40" aria-hidden="true"><g stroke="currentColor" s
 <polygon points="20,3 29.5,8.5 29.5,19.5 20,25 10.5,19.5 10.5,8.5" fill="#238DBB"/>
 <polygon points="14.5,14 24,19.5 24,30.5 14.5,36 5,30.5 5,19.5" fill="#FF6B93"/>
 <polygon points="25.5,14 35,19.5 35,30.5 25.5,36 16,30.5 16,19.5" fill="#08D8A0"/></g></svg>'''
+BRAND = ('<span class="mark3d" aria-hidden="true">'
+         '<img class="hx" data-h="b" src="assets/brand/hex-blue.webp" alt="" width="64" height="64">'
+         '<img class="hx" data-h="p" src="assets/brand/hex-pink.webp" alt="" width="64" height="64">'
+         '<img class="hx" data-h="t" src="assets/brand/hex-teal.webp" alt="" width="64" height="64">'
+         '</span><span class="word">Arcane Designer</span>')
 NAV = [('work.html', 'Work'), ('process.html', 'Process'), ('pricing.html', 'Pricing')]
 AC = ' aria-current="page"'
 
@@ -42,9 +47,9 @@ def head(title, desc, path, extra='', noindex=False, schema=None):
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#100b28" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="icon" href="/favicon-32x32.png" sizes="32x32">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="favicon-48x48.png" sizes="48x48" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="{FONTS}">
@@ -62,7 +67,7 @@ def header(cur):
 <a class="skip" href="#main">Skip to content</a>
 <header class="site-head">
   <div class="wrap head-row">
-    <a class="brand" href="./" aria-label="Arcane Designer home">{LOGO}<span>Arcane Designer</span></a>
+    <a class="brand" href="./" aria-label="Arcane Designer home">{BRAND}</a>
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
     <nav class="nav" id="nav" aria-label="Main">{links}{btn("contact.html", "Start a project")}</nav>
   </div>
@@ -79,7 +84,7 @@ def closer(title='Got an old website?', body='Send the link. You&rsquo;ll get ba
       <p>{body}</p>
       {btn("contact.html", "Start a project")}
     </div>
-    <img class="arc" src="assets/arc/hands-up.webp" alt="" width="456" height="900" loading="lazy" data-anim="right">
+    <img class="arc" src="assets/arc/hands-up.webp" alt="" width="459" height="900" loading="lazy" data-anim="right">
   </div>
 </section>
 '''
@@ -94,7 +99,7 @@ def footer():
   <div class="wrap">
     <div class="foot-row">
       <div style="display:grid;gap:12px">
-        <a class="brand" href="./">{LOGO}<span>Arcane Designer</span></a>
+        <a class="brand" href="./">{BRAND}</a>
         <span>Website and logo redesigns.<br>Arcane Designer LLC, Spokane, Washington.</span>
       </div>
       <div style="display:grid;gap:12px;align-content:start">
@@ -128,31 +133,44 @@ def browser(url, inner):
 
 
 def hexsvg(label='Six steps'):
-    """A 3D hexagon cut into six triangles. Each triangle flies in when its step turns on (js/site.js)."""
-    C, R, D = 200, 172, 18           # center, radius, extrusion depth
+    """A 3D hexagon made of six thick triangular pieces. Each piece flies in when its step turns on (js/site.js).
+    Each piece is a slab: a top face plus the side walls you'd see from slightly above (walls facing down)."""
+    C, R, D = 200, 170, 22           # center, radius, slab thickness
     pts = [(C + R * math.cos(math.radians(-90 + 60 * k)), C + R * math.sin(math.radians(-90 + 60 * k))) for k in range(6)]
     tops = ['url(#hg-teal)', 'url(#hg-blue)', 'url(#hg-pink)'] * 2
-    sides = ['#037a5b', '#145a7c', '#a82d52'] * 2
+    walls = ['url(#hw-teal)', 'url(#hw-blue)', 'url(#hw-pink)'] * 2
     groups = []
     for k in range(6):
         a, b = pts[k], pts[(k + 1) % 6]
-        cx, cy = (C + a[0] + b[0]) / 3, (C + a[1] + b[1]) / 3
+        tri = [(C, C), a, b]
+        cx, cy = sum(x for x, _ in tri) / 3, sum(y for _, y in tri) / 3
+        side = []
+        for i in range(3):
+            p1, p2 = tri[i], tri[(i + 1) % 3]
+            ex, ey = p2[0] - p1[0], p2[1] - p1[1]
+            nx, ny = ey, -ex                              # a normal of the edge
+            mx, my = (p1[0] + p2[0]) / 2 - cx, (p1[1] + p2[1]) / 2 - cy
+            if nx * mx + ny * my < 0: nx, ny = -nx, -ny   # make it point outward
+            if ny > 1e-6:                                 # wall faces down, so it is visible
+                q = f'{p1[0]:.1f},{p1[1]:.1f} {p2[0]:.1f},{p2[1]:.1f} {p2[0]:.1f},{p2[1] + D:.1f} {p1[0]:.1f},{p1[1] + D:.1f}'
+                side.append(f'<polygon class="wall" points="{q}" fill="{walls[k]}"/>')
         dx, dy = cx - C, cy - C
         dd = math.hypot(dx, dy)
         tx, ty = dx / dd * 170, dy / dd * 170 - 60
         rot = 28 if k % 2 else -28
-        tri = [(C, C), a, b]
         top = ' '.join(f'{x:.1f},{y:.1f}' for x, y in tri)
-        side = ' '.join(f'{x:.1f},{y + D:.1f}' for x, y in tri)
-        bev = ' '.join(f'{cx + (x - cx) * .8:.1f},{cy + (y - cy) * .8:.1f}' for x, y in tri)
-        groups.append((cy, f'<g class="tri" data-i="{k}" style="--tx:{tx:.0f}px;--ty:{ty:.0f}px;--rot:{rot}deg"><polygon class="side" points="{side}" fill="{sides[k]}"/><polygon class="top" points="{top}" fill="{tops[k]}"/><polygon class="bevel" points="{bev}"/><text x="{cx:.1f}" y="{cy:.1f}">{k + 1}</text></g>'))
-    groups.sort(key=lambda g: g[0])   # draw back to front so the depth stacks correctly
+        bev = ' '.join(f'{cx + (x - cx) * .82:.1f},{cy + (y - cy) * .82:.1f}' for x, y in tri)
+        groups.append((cy, f'<g class="tri" data-i="{k}" style="--tx:{tx:.0f}px;--ty:{ty:.0f}px;--rot:{rot}deg">{"".join(side)}<polygon class="top" points="{top}" fill="{tops[k]}"/><polygon class="bevel" points="{bev}"/><text x="{cx:.1f}" y="{cy:.1f}">{k + 1}</text></g>'))
+    groups.sort(key=lambda g: g[0])   # back to front, so lower pieces cover the walls of upper ones
     outline = ' '.join(f'{x:.1f},{y:.1f}' for x, y in pts)
     return f'''<svg class="hexbuild" viewBox="0 0 400 420" role="img" aria-label="{label}">
   <defs>
-    <linearGradient id="hg-teal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5ff6cd"/><stop offset="1" stop-color="#06c493"/></linearGradient>
-    <linearGradient id="hg-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6cc6ee"/><stop offset="1" stop-color="#1d76a0"/></linearGradient>
-    <linearGradient id="hg-pink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa9c1"/><stop offset="1" stop-color="#ec4a78"/></linearGradient>
+    <linearGradient id="hg-teal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6ff8d3"/><stop offset="1" stop-color="#08cf99"/></linearGradient>
+    <linearGradient id="hg-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#78cdf2"/><stop offset="1" stop-color="#2385b4"/></linearGradient>
+    <linearGradient id="hg-pink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb3c8"/><stop offset="1" stop-color="#f0547f"/></linearGradient>
+    <linearGradient id="hw-teal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05a77b"/><stop offset="1" stop-color="#026448"/></linearGradient>
+    <linearGradient id="hw-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b6d95"/><stop offset="1" stop-color="#0f4560"/></linearGradient>
+    <linearGradient id="hw-pink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cc3a63"/><stop offset="1" stop-color="#8a1e3e"/></linearGradient>
   </defs>
   <polygon class="ghost" points="{outline}"/>
   {''.join(g for _, g in groups)}
@@ -207,13 +225,6 @@ if LINKEDIN_BIZ:
 
 # Work samples. Only ones with both images on disk are shown.
 SAMPLES_ALL = [
-    dict(slug='lilac-row-bakery', name='Lilac Row Bakery', kind='Neighborhood bakery', url='lilacrowbakery.com',
-         notes=[('Hours up top', 'They used to be buried in a sidebar. Now they sit above everything else.'),
-                ('Food first', 'A warm, editorial look built around what they actually bake.'),
-                ('One clear next step', 'Order ahead, or come by. Everything else gets out of the way.')]),
-    dict(slug='ferrous-coffee', name='Ferrous Coffee Roasters', kind='Specialty coffee roaster', url='ferrouscoffee.com',
-         notes=[('Quiet confidence', 'Dark, spare and editorial, like the bags on their shelf.'),
-                ('The coffee does the talking', 'Big photography and tasting notes instead of a slideshow of stock beans.')]),
     dict(slug='northbank-plumbing', name='Northbank Plumbing &amp; Heat', kind='Plumbing and furnace repair', url='northbankplumbing.com',
          notes=[('Call in one tap', 'When the basement is flooding, the phone number should be the biggest thing on the page.'),
                 ('Less to read', 'The old site said everything at once. The new one says the important part, big.'),
@@ -224,7 +235,12 @@ SAMPLES_ALL = [
     dict(slug='sunny-side-cafe', name='Sunny Side Caf&eacute;', kind='Breakfast caf&eacute;', url='sunnysidecafe.com',
          notes=[('All sunshine', 'Bright colors, wavy shapes and a lot of pancakes.'),
                 ('Menu in reach', 'Today&rsquo;s menu and hours, without downloading a PDF.')]),
+    dict(slug='lilac-row-bakery', name='Lilac Row Bakery', kind='Neighborhood bakery', url='lilacrowbakery.com',
+         notes=[('Hours up top', 'They used to be buried in a sidebar. Now they sit above everything else.'),
+                ('Food first', 'A warm, editorial look built around what they actually bake.'),
+                ('One clear next step', 'Order ahead, or come by. Everything else gets out of the way.')]),
 ]
+# ferrous-coffee is parked (source files kept in tools/samples-src) until it is redone.
 SAMPLES = [s for s in SAMPLES_ALL if os.path.exists(f'assets/samples/{s["slug"]}-after.webp') and os.path.exists(f'assets/samples/{s["slug"]}-before.webp')]
 def _logo(slug, which):
     for ext in ('svg', 'png'):
@@ -244,25 +260,22 @@ STEPS = [
 STEP_COLORS = ['var(--teal-ink)', 'var(--blue-ink)', 'var(--pink-ink)'] * 2
 
 # ---------------------------------------------------------------- home
-s0 = SAMPLES_ALL[0]
+s0 = next(x for x in SAMPLES_ALL if x['slug'] == 'lilac-row-bakery')
 home = head('Arcane Designer | Website Redesigns for Small Businesses',
             'One-time website redesigns for small businesses, from $1,500. Pick from three designs, built on the platform you already use, no monthly fees. Logo redesigns from $500.',
             'index.html', extra=f'<link rel="preload" as="image" href="assets/samples/{s0["slug"]}-before.webp">\n', schema=ORG)
 home += header('')
-home += f'''<section class="hero glow">
-  <div class="wrap">
-    <div class="hero-top">
-      <h1 data-anim="up">New websites for businesses with old ones.</h1>
-      <div class="hero-side" data-anim="up" style="--d:.15s">
-        <p class="big">We take a tired small business website and make it something you&rsquo;re proud to send people to. One project, built on the platform you already have, and then it&rsquo;s all yours.</p>
-        <div class="row">{btn("contact.html", "Start a project")}<a class="tlink" href="work.html">See examples</a></div>
-        <p class="muted small">Websites from $1,500. Logos from $500.</p>
-      </div>
-    </div>
+home += f'''<section class="hero-x dark-stage">
+  <div class="floaters" aria-hidden="true"><img class="fl" src="assets/brand/hex-teal.webp" alt="" style="--x:7%;--y:18%;--s:120px;--k:0.7;--r:-14deg;--i:0"><img class="fl" src="assets/brand/hex-pink.webp" alt="" style="--x:86%;--y:14%;--s:92px;--k:0.5;--r:10deg;--i:1"><img class="fl" src="assets/brand/hex-blue.webp" alt="" style="--x:14%;--y:70%;--s:70px;--k:0.9;--r:8deg;--i:2"><img class="fl" src="assets/brand/hex-teal.webp" alt="" style="--x:80%;--y:64%;--s:140px;--k:0.35;--r:-6deg;--i:3"><img class="fl" src="assets/brand/hex-pink.webp" alt="" style="--x:27%;--y:8%;--s:46px;--k:1.1;--r:20deg;--i:4"><img class="fl" src="assets/brand/hex-blue.webp" alt="" style="--x:66%;--y:6%;--s:58px;--k:0.8;--r:-18deg;--i:5"><img class="fl" src="assets/brand/hex-pink.webp" alt="" style="--x:93%;--y:48%;--s:44px;--k:1.2;--r:4deg;--i:6"><img class="fl" src="assets/brand/hex-teal.webp" alt="" style="--x:3%;--y:48%;--s:40px;--k:1.3;--r:30deg;--i:7"></div>
+  <div class="wrap hero-x-inner">
+    <h1 class="tag"><span class="w">Look</span> <span class="w">the</span> <span class="w">part.</span></h1>
+    <p class="big">Website and logo redesigns for small businesses that have outgrown their old look. One project, built on the platform you already have, and then it&rsquo;s all yours.</p>
+    <div class="row">{btn("contact.html", "Start a project")}<a class="tlink light" href="work.html">See the work</a></div>
+    <p class="price-note">Websites from $1,500 <i></i> Logos from $500</p>
   </div>
 </section>
 
-<section class="pin-reveal" aria-label="Example redesign: scroll to see the new version">
+<section class="pin-reveal dark-stage" aria-label="Example redesign: scroll to see the new version">
   <div class="pin-sticky">
     <div class="wrap">
       <div class="hero-stage">
@@ -278,7 +291,7 @@ home += f'''<section class="hero glow">
   <div class="wrap split-head">
     <h2 data-anim="left">No two businesses should look alike.</h2>
     <div data-anim="right" style="display:grid;gap:18px">
-      <p class="big">A bakery, a plumber and a coffee roaster need different things from a website. These are sample redesigns for made-up businesses.</p>
+      <p class="big">A plumber, a dog groomer and a breakfast caf&eacute; need very different things from a website. A few examples, each with its own look.</p>
       <a class="tlink" href="work.html" style="justify-self:start">See them up close</a>
     </div>
   </div>
@@ -301,7 +314,7 @@ home += f'''  </div></div>
   <div class="wrap">
     <div class="split-head">
       <h2 data-anim="left">Sound familiar?</h2>
-      <p class="big" data-anim="right">A made-up plumber with very real problems. We run into these on old sites all the time.</p>
+      <p class="big" data-anim="right">The kinds of problems we run into on old sites all the time.</p>
     </div>
     <div class="redpen">
       {browser('northbankplumbing.com', f'<div class="shot"><img src="assets/samples/redpen-plumbing.webp" alt="An outdated plumbing company website from around 2013" width="1440" height="900" loading="lazy">{pin_html}</div>')}
@@ -353,7 +366,24 @@ home += '''    </div>
   </div>
 </section>
 '''
-home += closer() + footer()
+home += """<section class="pin-laptop navy-sec" aria-label="Where to next">
+  <div class="pin-sticky">
+    <div class="wrap laptop-scene">
+      <div class="arc-desk"><img src="assets/arc/laptop.webp" alt="Arc working on a laptop" width="849" height="1012" loading="lazy"><span class="emit" aria-hidden="true"></span></div>
+      <div class="launch">
+        <h2>Where to next?</h2>
+        <div class="cards">
+          <a class="lcard" href="work.html"><b>Work</b><span>Every before and after, up close.</span></a>
+          <a class="lcard" href="process.html"><b>Process</b><span>How a project runs, step by step.</span></a>
+          <a class="lcard" href="pricing.html"><b>Pricing</b><span>What it costs and what&rsquo;s included.</span></a>
+          <a class="lcard go" href="contact.html"><b>Start a project</b><span>Send your site and we&rsquo;ll take a look.</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+"""
+home += footer()
 write('index.html', home)
 
 # ---------------------------------------------------------------- work
@@ -365,7 +395,7 @@ work += '''<section class="intro glow">
   <div class="wrap work-intro">
     <div data-anim="up">
       <h1>Before and after.</h1>
-      <p class="big">Drag the slider on any of them. These are samples for businesses that don&rsquo;t exist, each in a different style. Client projects and their reviews will join them here.</p>
+      <p class="big">Drag the slider on any of them. A few examples, each in a different style. Client projects and their reviews will join them here.</p>
     </div>
     <img src="assets/arc/presents.webp" alt="" width="499" height="900" data-anim="right">
   </div>
@@ -376,7 +406,7 @@ work += '''<section class="intro glow">
 for s in SAMPLES:
     notes = ''.join(f'<div><b>{t}</b>{d}</div>' for t, d in s['notes'])
     work += f'''    <article class="work-item" id="{s["slug"]}">
-      <div class="meta" data-anim="up"><h3>{s["name"]}</h3><span class="kind">{s["kind"]} &middot; <i>sample</i></span></div>
+      <div class="meta" data-anim="up"><h3>{s["name"]}</h3><span class="kind">{s["kind"]} &middot; <i>example</i></span></div>
       <div data-anim="tilt">{browser(s["url"], compare(s["slug"], s["name"]))}</div>
       <div class="work-notes" data-anim="up">{notes}</div>
     </article>
@@ -422,7 +452,7 @@ proc += '''<section class="intro glow">
 for i, (t, d) in enumerate(STEPS):
     proc += f'''      <div class="proc-step" style="--c:{STEP_COLORS[i]}"><span class="n">{i + 1:02d}</span><h3>{t}</h3><p>{d}</p></div>
 '''
-li = f' More on <a class="tlink" href="{LINKEDIN_PERSON}" rel="noopener">LinkedIn</a>.' if LINKEDIN_PERSON else ''
+who = f'<a class="tlink" href="{LINKEDIN_PERSON}" rel="noopener">Nathan Gellatly</a>' if LINKEDIN_PERSON else '<span class="tlink">Nathan Gellatly</span>'
 proc += f'''    </div>
   </div>
 </section>
@@ -449,7 +479,7 @@ proc += f'''    </div>
   <div class="wrap about">
     <h2 data-anim="left">Who&rsquo;s behind it.</h2>
     <div class="copy" data-anim="right">
-      <p>Arcane Designer is a one-person studio in Spokane, Washington, run by Nathan Gellatly. Most of the week goes to design and web work for a couple of local companies, and this is where the rest goes.{li}</p>
+      <p>Arcane Designer is a one-person design studio in Spokane, Washington, run by {who}.</p>
     </div>
   </div>
 </section>
@@ -483,7 +513,7 @@ pr += '''    </div>
     <p class="muted small" style="margin-top:30px;max-width:68ch">These are early prices and will go up as the portfolio grows. Doing a website and a logo together lowers the total.</p>
   </div>
 </section>
-<section class="sec gray-sec">
+<section class="sec gray-sec" style="padding-block:clamp(56px,6vw,84px)">
   <div class="wrap extra">
     <div class="copy" data-anim="left">
       <h2 style="color:var(--ink)">What stays with you.</h2>
@@ -517,15 +547,18 @@ ct = head('Start a Project | Arcane Designer',
           'Send Arcane Designer a link to your current website. You will get back ideas for what to change and a price.',
           'contact.html')
 ct += header('contact.html')
-ct += f'''<section class="intro glow">
+ct += f'''<section class="intro glow contact-intro">
   <div class="wrap">
-    <h1 data-anim="up">Start a project.</h1>
-    <p class="big" data-anim="up" style="--d:.1s">Send a link to your current site and a little about what you want. You&rsquo;ll get a reply by email with ideas and a price.</p>
+    <div data-anim="up">
+      <h1>Start a project.</h1>
+      <p class="big">Send a link to your current site and a little about what you want. You&rsquo;ll get a reply by email with ideas and a price.</p>
+    </div>
+    <img src="assets/arc/presents-floor.webp" alt="" width="499" height="900" data-anim="right">
   </div>
 </section>
-<section class="sec" style="padding-top:10px">
+<section class="sec" style="padding-top:0">
   <div class="wrap contact-grid">
-    <form class="form" data-form="contact" novalidate data-anim="up">
+    <form class="form form-card" data-form="contact" novalidate data-anim="up">
       <div class="row">
         <div class="field"><label for="c-name">Your name</label><input id="c-name" name="name" autocomplete="name" required></div>
         <div class="field"><label for="c-biz">Business name</label><input id="c-biz" name="business" autocomplete="organization" required></div>
@@ -545,13 +578,18 @@ ct += f'''<section class="intro glow">
       </fieldset>
       <div class="field"><label for="c-msg">Anything else? <span class="opt">(optional)</span></label><span class="hint">Something else you need, a deadline, a budget. Whatever&rsquo;s useful.</span><textarea id="c-msg" name="message"></textarea></div>
       <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <div>{'<button class="btn" type="submit"><span>Send</span></button>'}</div>
+      <div class="form-foot"><button class="btn" type="submit"><span>Send it over</span></button></div>
       <div class="form-status" role="status" tabindex="-1" hidden></div>
     </form>
     <aside class="contact-side" data-anim="right">
       <div class="card"><h3>Prefer email?</h3><a class="mail" href="mailto:{EMAIL}">{EMAIL}</a></div>
-      <div class="card"><h3>What happens next</h3><p>You&rsquo;ll get a short list of what&rsquo;s worth changing and a price. If you want to go ahead, a questionnaire and a deposit invoice come next.</p><a class="tlink small" href="process.html" style="justify-self:start">The full process</a></div>
-      <img src="assets/arc/relaxed.webp" alt="" width="900" height="452" loading="lazy">
+      <div class="card"><h3>What happens next</h3>
+        <ol class="next-steps">
+          <li><b>1</b><span>You get a short list of what&rsquo;s worth changing, and a price.</span></li>
+          <li><b>2</b><span>If you want to go ahead, a questionnaire and a deposit invoice come next.</span></li>
+          <li><b>3</b><span>Then the three designs. <a class="tlink" href="process.html">The full process</a></span></li>
+        </ol>
+      </div>
     </aside>
   </div>
 </section>

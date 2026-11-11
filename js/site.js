@@ -2,7 +2,7 @@
 
 /* ---- Settings Nathan fills in once accounts exist ---- */
 const SITE = {
-  email: 'hello@arcanedesigner.com',        // set in tools/pages.py too (EMAIL); Google Workspace address
+  email: 'nathan@arcanedesigner.com',        // set in tools/pages.py too (EMAIL); Google Workspace address
   forms: {
     contact: '',        // Formspree endpoint, e.g. https://formspree.io/f/xxxxxxx
     questionnaire: '',  // Formspree endpoint for the client questionnaire
@@ -37,6 +37,9 @@ document.documentElement.classList.add('js');
 /* ---- before/after sliders ---- */
 const STATIC = /[?&]static\b/.test(location.search);
 if (STATIC) document.documentElement.classList.add('static');
+// preview helper: ?static&y=1200 opens the page scrolled to that point (used for screenshots)
+const Y0 = +(new URLSearchParams(location.search).get('y') || 0);
+if (Y0) addEventListener('load', () => scrollTo(0, Y0));
 const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 document.querySelectorAll('.compare').forEach((box) => {
   const input = box.querySelector('input');
@@ -114,6 +117,31 @@ addEventListener('resize', onScroll);
   };
   if (STATIC || REDUCE) { document.documentElement.classList.add('no-pin'); show(6); return; }
   scenes.push(() => show(Math.round(clamp((pinProgress(sec) - .04) / .8) * 6)));
+})();
+
+// 2b. Home: the rest of the site pops out of Arc's laptop as you scroll
+(() => {
+  const sec = document.querySelector('.pin-laptop');
+  if (!sec) return;
+  const emit = sec.querySelector('.emit'), desk = sec.querySelector('.arc-desk'), h2 = sec.querySelector('.launch h2');
+  const cards = [...sec.querySelectorAll('.lcard')];
+  const measure = () => {
+    cards.forEach((c) => c.style.setProperty('--p', 1));
+    const e = emit.getBoundingClientRect();
+    cards.forEach((c) => {
+      const r = c.getBoundingClientRect();
+      c.style.setProperty('--fx', (e.left - (r.left + r.width / 2)) + 'px');
+      c.style.setProperty('--fy', (e.top - (r.top + r.height / 2)) + 'px');
+    });
+  };
+  if (STATIC || REDUCE) { document.documentElement.classList.add('no-pin'); return; }
+  measure(); addEventListener('resize', measure);
+  scenes.push(() => {
+    const p = pinProgress(sec);
+    sec.style.setProperty('--hp', ease(clamp((p - .02) / .15)));
+    desk.style.setProperty('--glow', clamp(p * 4) * (1 - clamp((p - .85) / .15)) * .9 + .1 * clamp(p * 4));
+    cards.forEach((c, i) => c.style.setProperty('--p', ease(clamp((p - .12 - i * .16) / .26)).toFixed(4)));
+  });
 })();
 
 // 3. Process page: each step's triangle arrives as that step enters the screen and the step dims as it leaves
@@ -195,6 +223,70 @@ onScroll();
   const io = new IntersectionObserver((ents) => ents.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -12% 0px', threshold: .08 });
   els.forEach((e) => io.observe(e));
 })();
+
+/* ---- hero: floating hexagons lean away from the mouse ---- */
+(() => {
+  const hero = document.querySelector('.hero-x');
+  if (!hero || REDUCE || matchMedia('(hover: none)').matches) return;
+  const fls = [...hero.querySelectorAll('.fl')];
+  hero.addEventListener('pointermove', (e) => {
+    const r = hero.getBoundingClientRect();
+    const dx = (e.clientX - r.left) / r.width - .5, dy = (e.clientY - r.top) / r.height - .5;
+    fls.forEach((f) => { const k = +getComputedStyle(f).getPropertyValue('--k') || .5; f.style.setProperty('--mx', (-dx * 46 * k).toFixed(1) + 'px'); f.style.setProperty('--my', (-dy * 36 * k).toFixed(1) + 'px'); });
+  });
+  hero.addEventListener('pointerleave', () => fls.forEach((f) => { f.style.setProperty('--mx', '0px'); f.style.setProperty('--my', '0px'); }));
+})();
+
+/* ---- logo: the three hexagons juggle into new spots on hover, and swap back on leave ---- */
+document.querySelectorAll('.brand .mark3d').forEach((mark) => {
+  if (REDUCE) return;
+  const brand = mark.closest('.brand');
+  const T = (x, y, s = 1) => `translate(${x}px, ${y}px) scale(${s})`;
+  // top (blue) -> bottom right, bottom left (pink) -> top passing OVER, bottom right (teal) -> bottom left passing UNDER
+  const paths = {
+    b: [{ transform: T(10, 0), zIndex: 1 }, { transform: T(14, -9, 1.22), zIndex: 4, offset: .25 }, { transform: T(30, 2, 1.12), zIndex: 4, offset: .6 }, { transform: T(21, 17, .96), zIndex: 2, offset: .85 }, { transform: T(20, 16), zIndex: 2 }],
+    p: [{ transform: T(0, 16), zIndex: 2 }, { transform: T(-4, 6, 1.3), zIndex: 5, offset: .3 }, { transform: T(4, -10, 1.32), zIndex: 5, offset: .62 }, { transform: T(10, 1, .97), zIndex: 3, offset: .86 }, { transform: T(10, 0), zIndex: 3 }],
+    t: [{ transform: T(20, 16), zIndex: 3 }, { transform: T(24, 22, .86), zIndex: 0, offset: .3 }, { transform: T(10, 25, .7), zIndex: 0, offset: .62 }, { transform: T(-1, 17, .97), zIndex: 1, offset: .86 }, { transform: T(0, 16), zIndex: 1 }],
+  };
+  const delay = { p: 0, b: 90, t: 160 };
+  let anims = null;
+  const play = (dir) => {
+    if (!anims) anims = [...mark.querySelectorAll('.hx')].map((h) => {
+      const a = h.animate(paths[h.dataset.h], { duration: 1500, delay: delay[h.dataset.h], easing: 'cubic-bezier(.45,.05,.25,1)', fill: 'both' });
+      a.pause(); return a;
+    });
+    anims.forEach((a) => { a.playbackRate = dir; a.play(); });
+  };
+  brand.addEventListener('mouseenter', () => play(1));
+  brand.addEventListener('mouseleave', () => play(-1));
+  brand.addEventListener('focus', () => play(1));
+  brand.addEventListener('blur', () => play(-1));
+});
+
+/* ---- FAQ: one open at a time, smooth open and close ---- */
+document.querySelectorAll('.faq').forEach((faq) => {
+  const items = [...faq.querySelectorAll('details')];
+  const animate = (d, open) => {
+    const sum = d.querySelector('summary');
+    if (d._anim) d._anim.cancel();
+    const start = d.offsetHeight;
+    if (open) d.open = true;
+    const end = open ? d.scrollHeight : sum.offsetHeight;
+    if (REDUCE) { if (!open) d.open = false; return; }
+    d.style.overflow = 'hidden';
+    d._anim = d.animate({ height: [start + 'px', end + 'px'] }, { duration: 320, easing: 'cubic-bezier(.3,.7,.2,1)' });
+    d._anim.onfinish = () => { d._anim = null; d.style.overflow = ''; if (!open) d.open = false; };
+    d._anim.oncancel = () => { d._anim = null; };
+    const body = d.querySelector('summary + *');
+    if (body && open) body.animate({ opacity: [0, 1], transform: ['translateY(-6px)', 'none'] }, { duration: 320, easing: 'ease-out' });
+  };
+  items.forEach((d) => d.querySelector('summary').addEventListener('click', (e) => {
+    e.preventDefault();
+    const opening = !d.open || d._closing;
+    items.forEach((o) => { if (o !== d && o.open) animate(o, false); });
+    animate(d, opening);
+  }));
+});
 
 /* ---- forms ---- */
 document.querySelectorAll('form[data-form]').forEach((form) => {

@@ -5,49 +5,103 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Lilac Row Bakery</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..800,0..100,0..1&family=Caveat:wght@500;700&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#2a1f18;--soft:#6a5a4d;--cream:#f5ede2;--lilac:#7a5f94;--crust:#9a5a2c}
+:root{--crust:#7a3f1d;--crust-d:#5a2c12;--cream:#f7eedf;--flour:#fbf6ec;--ink:#2b1d14;--soft:#6e5847;--board:#2a2b26}
 *{box-sizing:border-box;margin:0;padding:0}
-body{width:1440px;height:900px;overflow:hidden;position:relative;font-family:Figtree,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;background:var(--cream)}
+body{width:1440px;height:900px;overflow:hidden;position:relative;font-family:Karla,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;background:var(--cream)}
 a{color:inherit;text-decoration:none}
-.photo{position:absolute;left:668px;top:0;right:0;bottom:0;background:url(img/lilac-loaves.jpg) 22% 60%/auto 108%}
-.photo:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(30,18,8,.38) 0,rgba(30,18,8,0) 20%),linear-gradient(0deg,rgba(30,18,8,.25) 0,rgba(30,18,8,0) 30%)}
-header{position:absolute;left:64px;right:56px;top:36px;display:flex;align-items:center;z-index:3}
-.logo{font-family:"Instrument Serif";font-size:34px;letter-spacing:-.01em;line-height:1}
-.logo i{color:var(--lilac)}
-nav{display:flex;gap:32px;margin-left:68px;font-size:15px;font-weight:500;color:var(--soft)}
-.right{margin-left:auto;display:flex;align-items:center;gap:22px}
-.open{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:500;color:#fff}
-.open i{width:8px;height:8px;border-radius:50%;background:#a6e48a;box-shadow:0 0 0 4px rgba(166,228,138,.28)}
-.order{background:#fffaf3;padding:13px 22px;border-radius:999px;font-size:15px;font-weight:600;box-shadow:0 10px 26px -12px rgba(20,10,0,.6)}
-h1{position:absolute;left:58px;top:160px;z-index:2;font-family:"Instrument Serif";font-weight:400;font-size:138px;line-height:.88;letter-spacing:-.035em}
-h1 em{color:var(--lilac);font-style:italic;letter-spacing:-.025em}
-.lede{position:absolute;left:64px;top:546px;width:410px;font-size:19px;line-height:1.5;color:#45362b;z-index:2}
-.ctas{position:absolute;left:64px;top:650px;display:flex;align-items:center;gap:26px;z-index:2}
-.btn{background:var(--ink);color:var(--cream);padding:18px 30px;border-radius:999px;font-size:16px;font-weight:600;box-shadow:0 14px 30px -16px rgba(30,18,10,.8)}
-.link{font-size:16px;font-weight:600;border-bottom:1.5px solid currentColor;padding-bottom:3px}
-.where{position:absolute;left:64px;bottom:50px;z-index:2;font-size:14px;color:var(--soft);display:flex;gap:30px}
-.where b{color:var(--ink);font-weight:600}
-.inset{position:absolute;left:548px;top:500px;width:250px;height:318px;z-index:3;border-radius:18px;background:url(img/lilac-buns.jpg) 50% 40%/cover;box-shadow:0 0 0 10px var(--cream),0 40px 70px -30px rgba(40,20,5,.65)}
-.cap{position:absolute;left:836px;bottom:50px;z-index:3;width:380px;color:#fff;font-family:"Instrument Serif";font-size:27px;line-height:1.12;text-shadow:0 2px 18px rgba(20,10,0,.55)}
-.cap span{display:block;font-family:Figtree;font-size:14px;line-height:1.45;margin-top:8px;opacity:.9;text-shadow:0 1px 10px rgba(20,10,0,.6)}
+.fr{font-family:Fraunces,serif;font-variation-settings:"SOFT" 100,"WONK" 0}
+
+/* hero */
+.hero{position:absolute;left:0;top:0;width:1440px;height:640px;background:url(img/lilac-shop.jpg) 50% 46%/cover;}
+.hero:after{content:"";position:absolute;inset:0;background:
+  linear-gradient(180deg,rgba(38,20,8,.55) 0,rgba(38,20,8,0) 22%),
+  linear-gradient(90deg,rgba(46,24,10,.78) 0,rgba(46,24,10,.5) 34%,rgba(46,24,10,0) 62%),
+  linear-gradient(0deg,rgba(46,24,10,.55) 0,rgba(46,24,10,0) 45%)}
+
+header{position:absolute;left:64px;right:64px;top:30px;display:flex;align-items:center;z-index:3;color:var(--flour)}
+.logo{display:flex;align-items:center;gap:14px}
+.logo svg{width:44px;height:44px}
+.logo b{font-family:Fraunces;font-variation-settings:"SOFT" 100,"WONK" 1;font-weight:650;font-size:27px;letter-spacing:-.01em;line-height:1}
+.logo small{display:block;font-family:Karla;font-size:14px;font-weight:500;opacity:.82;margin-top:3px}
+nav{display:flex;gap:34px;margin-left:72px;font-size:17px;font-weight:500}
+nav a{opacity:.92}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:26px;font-size:16px;font-weight:500}
+.phone{opacity:.92}
+.pickup{background:var(--flour);color:var(--crust-d);padding:14px 24px;border-radius:12px;font-weight:700;font-size:16px;box-shadow:0 12px 24px -14px rgba(0,0,0,.7)}
+
+.copy{position:absolute;left:64px;top:190px;width:640px;z-index:2;color:var(--flour)}
+.copy .hi{font-family:Caveat;font-weight:700;font-size:40px;color:#f3c98b;transform:rotate(-2deg);display:inline-block;margin-left:4px}
+.copy h1{font-family:Fraunces;font-variation-settings:"SOFT" 100,"WONK" 1;font-weight:700;font-size:88px;line-height:.98;letter-spacing:-.02em;margin-top:8px;text-shadow:0 2px 30px rgba(30,14,4,.35)}
+.copy p{font-size:20px;line-height:1.5;margin-top:22px;width:560px;opacity:.94}
+
+/* board + visit */
+.board{position:absolute;left:48px;top:560px;width:900px;height:310px;border-radius:10px;z-index:4;
+  background:
+   radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.07),transparent 60%),
+   radial-gradient(ellipse at 80% 90%,rgba(255,255,255,.05),transparent 55%),
+   var(--board);
+  box-shadow:0 0 0 12px #8a5a34,0 0 0 14px #6b4224,0 40px 60px -30px rgba(30,15,5,.75);overflow:hidden}
+.board:before{content:"";position:absolute;inset:0;opacity:.32;mix-blend-mode:screen;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .35 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.board h2{position:relative;font-family:Caveat;font-weight:700;font-size:44px;color:#f4efe4;padding:20px 36px 0;display:flex;align-items:baseline;gap:18px;text-shadow:0 0 1px rgba(255,255,255,.4)}
+.board h2 span{font-size:26px;font-weight:500;color:#e9c98f}
+.items{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:22px;padding:14px 36px 0}
+.item .ph{height:124px;border-radius:8px;background-size:cover;box-shadow:0 8px 18px -8px rgba(0,0,0,.7)}
+.item .nm{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-top:10px;font-family:Caveat;color:#f6f1e6;font-size:27px;font-weight:700;line-height:1;white-space:nowrap}
+.item .nm em{font-style:normal;color:#f0c27e}
+.item .ds{font-family:Caveat;font-size:21px;font-weight:500;color:rgba(246,241,230,.72);line-height:1.05;margin-top:4px}
+
+.visit{position:absolute;left:986px;top:576px;width:400px;height:296px;z-index:4;background:var(--flour);border-radius:14px;padding:22px 30px;
+  box-shadow:0 30px 50px -28px rgba(60,30,10,.55),0 0 0 1px rgba(122,63,29,.12)}
+.visit .open{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:#3f6b2c}
+.visit .open i{width:10px;height:10px;border-radius:50%;background:#5c9a3c;box-shadow:0 0 0 4px rgba(92,154,60,.2)}
+.visit .hours{margin-top:14px;font-size:16px;line-height:1.7;color:var(--soft)}
+.visit .hours b{color:var(--ink);font-weight:700;display:inline-block;width:118px}
+.visit .addr{margin-top:10px;font-family:Fraunces;font-variation-settings:"SOFT" 100;font-weight:600;font-size:21px;line-height:1.25}
+.visit .addr small{display:block;font-family:Karla;font-weight:400;font-size:15px;color:var(--soft);margin-top:2px}
+.visit .btn{display:block;text-align:center;margin-top:16px;background:var(--crust);color:var(--flour);padding:16px 0;border-radius:12px;font-weight:700;font-size:18px;box-shadow:0 12px 22px -12px rgba(90,44,18,.9)}
+
+.visit .note{margin-top:12px;text-align:center;font-size:15px;color:var(--soft)}
+/* flour-dust cream under the board */
+.dust{position:absolute;left:0;right:0;top:640px;bottom:0;opacity:.5;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .55  0 0 0 0 .38  0 0 0 0 .22  0 0 0 .22 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
 </style>
 </head>
 <body>
-<div class="photo"></div>
+<div class="hero"></div>
+<div class="dust"></div>
+
 <header>
-  <a class="logo" href="#">Lilac <i>Row</i></a>
-  <nav><a href="#">Today's bake</a><a href="#">Cakes</a><a href="#">Our story</a><a href="#">Visit</a></nav>
-  <div class="right"><span class="open"><i></i>Open until 2 today</span><a class="order" href="#">Order for tomorrow</a></div>
+  <a class="logo" href="#">
+    <svg viewBox="0 0 44 44" fill="none" stroke="#fbf6ec" stroke-width="1.8" stroke-linecap="round"><circle cx="22" cy="22" r="20.5" stroke-opacity=".55"/><path d="M22 34V12"/><path d="M22 17c-3-1-5-3.5-5.5-6.5 3 .5 5 2.5 5.5 5.5M22 17c3-1 5-3.5 5.5-6.5-3 .5-5 2.5-5.5 5.5M22 23c-3-1-5-3.5-5.5-6.5 3 .5 5 2.5 5.5 5.5M22 23c3-1 5-3.5 5.5-6.5-3 .5-5 2.5-5.5 5.5M22 29c-3-1-5-3.5-5.5-6.5 3 .5 5 2.5 5.5 5.5M22 29c3-1 5-3.5 5.5-6.5-3 .5-5 2.5-5.5 5.5"/></svg>
+    <span><b>Lilac Row Bakery</b><small>Spokane, since 1987</small></span>
+  </a>
+  <nav><a href="#">Today's bake</a><a href="#">Cakes &amp; orders</a><a href="#">Our story</a><a href="#">Visit</a></nav>
+  <div class="hdr-r"><span class="phone">(509) 555-0142</span><a class="pickup" href="#">Order for pickup</a></div>
 </header>
 
-<h1>Bread worth<br>getting up<br><em>early</em> for.</h1>
-<p class="lede">Naturally leavened sourdough and Swedish cardamom buns, baked before sunrise on Lilac Row in Spokane.</p>
-<div class="ctas"><a class="btn" href="#">See today's bake</a><a class="link" href="#">Plan a wedding cake</a></div>
-<div class="where"><span><b>Tue to Sun</b> &nbsp;7 am to 2 pm</span><span><b>1418 W Lilac Row</b> &nbsp;Spokane</span></div>
+<div class="copy">
+  <span class="hi">Good morning, Spokane.</span>
+  <h1>The bread's<br>still warm.</h1>
+  <p>Our family has baked sourdough, rye and cardamom knots on Lilac Row since 1987. Come early, the buns go fast.</p>
+</div>
 
-<div class="inset"></div>
-<p class="cap">Cardamom buns leave the oven at nine.<span>Twisted by hand and finished with pearl sugar. Usually gone by eleven.</span></p>
+<section class="board">
+  <h2>Today's bake <span>Tuesday, fresh from 6 am</span></h2>
+  <div class="items">
+    <div class="item"><div class="ph" style="background-image:url(img/lilac-loaves.jpg);background-size:340%;background-position:54% 74%"></div><div class="nm">Country loaf <em>$9</em></div><div class="ds">Slow 48-hour rise</div></div>
+    <div class="item"><div class="ph" style="background-image:url(img/lilac-buns.jpg);background-size:150%;background-position:40% 55%"></div><div class="nm">Cardamom bun <em>$4.50</em></div><div class="ds">Pearl sugar, out at 9</div></div>
+    <div class="item"><div class="ph" style="background-image:url(img/lilac-shop.jpg);background-size:500%;background-position:96% 51%"></div><div class="nm">Croissant <em>$4</em></div><div class="ds">All butter, rolled by hand</div></div>
+    <div class="item"><div class="ph" style="background-image:url(img/lilac-loaves.jpg);background-size:340%;background-position:93% 76%"></div><div class="nm">Seeded batard <em>$8</em></div><div class="ds">Flax, sesame, sunflower</div></div>
+  </div>
+</section>
+
+<aside class="visit">
+  <div class="open"><i></i>Open now, until 2 pm</div>
+  <div class="hours"><b>Tue to Fri</b>7 am to 2 pm<br><b>Sat and Sun</b>7 am to 1 pm</div>
+  <div class="addr">1418 W Lilac Row<small>Corner of Monroe, street parking out front</small></div>
+  <a class="btn" href="#">Order for pickup</a>
+  <div class="note">Order by 8 pm, pick it up warm in the morning.</div>
+</aside>
 </body>
 </html>

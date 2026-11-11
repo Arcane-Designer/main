@@ -14,37 +14,37 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#100b28" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="icon" href="/favicon-32x32.png" sizes="32x32">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="favicon-48x48.png" sizes="48x48" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@600&family=Figtree:wght@400;500;600;700&family=Archivo:wdth,wght@62..125,400..900&display=swap">
-<link rel="stylesheet" href="css/site.css?v=8">
+<link rel="stylesheet" href="css/site.css?v=17">
 <script>document.documentElement.className='js'</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="site-head">
   <div class="wrap head-row">
-    <a class="brand" href="./" aria-label="Arcane Designer home"><svg viewBox="0 0 40 40" aria-hidden="true"><g stroke="currentColor" stroke-width="2.2" stroke-linejoin="round">
-<polygon points="20,3 29.5,8.5 29.5,19.5 20,25 10.5,19.5 10.5,8.5" fill="#238DBB"/>
-<polygon points="14.5,14 24,19.5 24,30.5 14.5,36 5,30.5 5,19.5" fill="#FF6B93"/>
-<polygon points="25.5,14 35,19.5 35,30.5 25.5,36 16,30.5 16,19.5" fill="#08D8A0"/></g></svg><span>Arcane Designer</span></a>
+    <a class="brand" href="./" aria-label="Arcane Designer home"><span class="mark3d" aria-hidden="true"><img class="hx" data-h="b" src="assets/brand/hex-blue.webp" alt="" width="64" height="64"><img class="hx" data-h="p" src="assets/brand/hex-pink.webp" alt="" width="64" height="64"><img class="hx" data-h="t" src="assets/brand/hex-teal.webp" alt="" width="64" height="64"></span><span class="word">Arcane Designer</span></a>
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
     <nav class="nav" id="nav" aria-label="Main"><a href="work.html">Work</a><a href="process.html">Process</a><a href="pricing.html">Pricing</a><a class="btn " href="contact.html"><span>Start a project</span></a></nav>
   </div>
 </header>
 <main id="main">
-<section class="intro glow">
+<section class="intro glow contact-intro">
   <div class="wrap">
-    <h1 data-anim="up">Start a project.</h1>
-    <p class="big" data-anim="up" style="--d:.1s">Send a link to your current site and a little about what you want. You&rsquo;ll get a reply by email with ideas and a price.</p>
+    <div data-anim="up">
+      <h1>Start a project.</h1>
+      <p class="big">Send a link to your current site and a little about what you want. You&rsquo;ll get a reply by email with ideas and a price.</p>
+    </div>
+    <img src="assets/arc/presents-floor.webp" alt="" width="499" height="900" data-anim="right">
   </div>
 </section>
-<section class="sec" style="padding-top:10px">
+<section class="sec" style="padding-top:0">
   <div class="wrap contact-grid">
-    <form class="form" data-form="contact" novalidate data-anim="up">
+    <form class="form form-card" data-form="contact" novalidate data-anim="up">
       <div class="row">
         <div class="field"><label for="c-name">Your name</label><input id="c-name" name="name" autocomplete="name" required></div>
         <div class="field"><label for="c-biz">Business name</label><input id="c-biz" name="business" autocomplete="organization" required></div>
@@ -64,13 +64,18 @@
       </fieldset>
       <div class="field"><label for="c-msg">Anything else? <span class="opt">(optional)</span></label><span class="hint">Something else you need, a deadline, a budget. Whatever&rsquo;s useful.</span><textarea id="c-msg" name="message"></textarea></div>
       <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <div><button class="btn" type="submit"><span>Send</span></button></div>
+      <div class="form-foot"><button class="btn" type="submit"><span>Send it over</span></button></div>
       <div class="form-status" role="status" tabindex="-1" hidden></div>
     </form>
     <aside class="contact-side" data-anim="right">
-      <div class="card"><h3>Prefer email?</h3><a class="mail" href="mailto:hello@arcanedesigner.com">hello@arcanedesigner.com</a></div>
-      <div class="card"><h3>What happens next</h3><p>You&rsquo;ll get a short list of what&rsquo;s worth changing and a price. If you want to go ahead, a questionnaire and a deposit invoice come next.</p><a class="tlink small" href="process.html" style="justify-self:start">The full process</a></div>
-      <img src="assets/arc/relaxed.webp" alt="" width="900" height="452" loading="lazy">
+      <div class="card"><h3>Prefer email?</h3><a class="mail" href="mailto:nathan@arcanedesigner.com">nathan@arcanedesigner.com</a></div>
+      <div class="card"><h3>What happens next</h3>
+        <ol class="next-steps">
+          <li><b>1</b><span>You get a short list of what&rsquo;s worth changing, and a price.</span></li>
+          <li><b>2</b><span>If you want to go ahead, a questionnaire and a deposit invoice come next.</span></li>
+          <li><b>3</b><span>Then the three designs. <a class="tlink" href="process.html">The full process</a></span></li>
+        </ol>
+      </div>
     </aside>
   </div>
 </section>
@@ -79,20 +84,17 @@
   <div class="wrap">
     <div class="foot-row">
       <div style="display:grid;gap:12px">
-        <a class="brand" href="./"><svg viewBox="0 0 40 40" aria-hidden="true"><g stroke="currentColor" stroke-width="2.2" stroke-linejoin="round">
-<polygon points="20,3 29.5,8.5 29.5,19.5 20,25 10.5,19.5 10.5,8.5" fill="#238DBB"/>
-<polygon points="14.5,14 24,19.5 24,30.5 14.5,36 5,30.5 5,19.5" fill="#FF6B93"/>
-<polygon points="25.5,14 35,19.5 35,30.5 25.5,36 16,30.5 16,19.5" fill="#08D8A0"/></g></svg><span>Arcane Designer</span></a>
+        <a class="brand" href="./"><span class="mark3d" aria-hidden="true"><img class="hx" data-h="b" src="assets/brand/hex-blue.webp" alt="" width="64" height="64"><img class="hx" data-h="p" src="assets/brand/hex-pink.webp" alt="" width="64" height="64"><img class="hx" data-h="t" src="assets/brand/hex-teal.webp" alt="" width="64" height="64"></span><span class="word">Arcane Designer</span></a>
         <span>Website and logo redesigns.<br>Arcane Designer LLC, Spokane, Washington.</span>
       </div>
       <div style="display:grid;gap:12px;align-content:start">
         <nav aria-label="Footer"><a href="work.html">Work</a><a href="process.html">Process</a><a href="pricing.html">Pricing</a><a href="contact.html">Contact</a></nav>
-        <a href="mailto:hello@arcanedesigner.com">hello@arcanedesigner.com</a>
+        <a href="mailto:nathan@arcanedesigner.com">nathan@arcanedesigner.com</a>
         <span>&copy; <span id="year">2026</span> Arcane Designer LLC</span>
       </div>
     </div>
   </div>
 </footer>
-<script src="js/site.js?v=8" defer></script>
+<script src="js/site.js?v=17" defer></script>
 </body>
 </html>
