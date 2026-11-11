@@ -666,3 +666,5 @@ p { text-wrap: pretty; }
 .link-card { grid-template-rows: auto auto auto 1fr auto; align-content: stretch; }
 .closer .arc { margin-right: clamp(0px, 7vw, 120px); }
 @media (max-width: 720px) { .closer .arc { margin-right: 6vw; } }
+.proc-intro .arc, .work-intro img { margin-right: clamp(0px, 6vw, 110px); }
+@media (max-width: 700px) { .work-intro img { margin-right: 6vw; } }
