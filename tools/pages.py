@@ -4,7 +4,7 @@ Run from the repo root:  python3 tools/pages.py
 Edit copy here, then re-run. The generated .html files are what GitHub Pages serves."""
 import json, math, os, re
 
-V = '26'                      # bump after CSS/JS changes so browsers refetch
+V = '28'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -30,7 +30,8 @@ def btn(href, text, cls=''):
 
 
 def head(title, desc, path, extra='', noindex=False, schema=None):
-    canon = BASE + '/' + ('' if path == 'index.html' else path.replace('.html', ''))
+    stem = path[:-5]
+    canon = BASE + '/' + ('' if path == 'index.html' else (stem + '/' if stem in FOLDER_PAGES else stem))
     s = f'''<!doctype html>
 <html lang="en" class="no-js">
 <head>
@@ -183,10 +184,25 @@ def hexsvg(label='Six steps'):
 </svg>'''
 
 
+FOLDER_PAGES = ('work', 'process', 'pricing', 'questionnaire')   # new pages: served as /name/ with no .html version
+
+
 def write(name, html):
-    # clean addresses: link to /pricing instead of /pricing.html (GitHub Pages serves both)
-    html = re.sub(r'href="(work|process|pricing|contact|questionnaire)\.html', r'href="\1', html)
-    html = html.replace('href="./"', 'href="/"').replace('href="/"', 'href="/"')
+    # Clean addresses. New pages live in folders (/pricing/), contact keeps contact.html because the old site used it.
+    # Everything else is linked from the site root so it works from inside a folder.
+    html = re.sub(r'href="(work|process|pricing|questionnaire)\.html', r'href="/\1/', html)
+    html = re.sub(r'href="(work|process|pricing|questionnaire)(?=[#?"])', r'href="/\1/', html)
+    html = re.sub(r'href="contact\.html', 'href="/contact', html)
+    html = re.sub(r'href="contact(?=[#?"])', 'href="/contact', html)
+    html = re.sub(r'(src|href)="(css|js|assets)/', r'\1="/\2/', html)
+    html = re.sub(r'href="(favicon-[^"]+|apple-touch-icon\.png)"', r'href="/\1"', html)
+    html = html.replace('href="./"', 'href="/"')
+    stem = name[:-5]
+    if stem in FOLDER_PAGES:
+        os.makedirs(stem, exist_ok=True)
+        if os.path.exists(name):
+            os.remove(name)
+        name = f'{stem}/index.html'
     with open(name, 'w') as f:
         f.write(html)
     print('wrote', name)

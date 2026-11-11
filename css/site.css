@@ -664,3 +664,5 @@ p { text-wrap: pretty; }
 .compare.auto { cursor: default; touch-action: auto; }
 @media (max-width: 760px) { .compare .tag { font-size: .62rem; padding: 6px 9px 6px 8px; gap: 6px; top: 10px; } .compare .tag.l { left: 10px; } .compare .tag.r { right: 10px; } .compare .tag i { width: 6px; height: 6px; } }
 .link-card { grid-template-rows: auto auto auto 1fr auto; align-content: stretch; }
+.closer .arc { margin-right: clamp(0px, 7vw, 120px); }
+@media (max-width: 720px) { .closer .arc { margin-right: 6vw; } }
