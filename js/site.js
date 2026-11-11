@@ -44,7 +44,7 @@ document.querySelectorAll('.compare').forEach((box) => {
   const set = (v) => box.style.setProperty('--pos', v + '%');
   set(input.value);
   input.addEventListener('input', () => { box.dataset.touched = '1'; set(input.value); });
-  if (box.hasAttribute('data-scroll-wipe')) return; // hero handles its own
+  if (box.closest('.pin-reveal')) return; // the pinned scene drives this one
   if ('IntersectionObserver' in window && !REDUCE && !STATIC) {
     const end = +input.value, from = 88;
     set(from);
@@ -65,70 +65,80 @@ document.querySelectorAll('.compare').forEach((box) => {
   }
 });
 
-/* ---- hero: scrolling redesigns the old site ---- */
+/* ---- pinned scroll scenes ---- */
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const ease = (t) => t * t * (3 - 2 * t);
+// progress 0..1 while a tall .pin-* section's sticky content is held on screen
+const pinProgress = (sec) => { const r = sec.getBoundingClientRect(); return clamp(-r.top / Math.max(1, r.height - innerHeight)); };
+const scenes = [];
+const onScroll = () => scenes.forEach((f) => f());
+let raf = 0;
+addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; onScroll(); }); }, { passive: true });
+addEventListener('resize', onScroll);
+
+// 1. Home: the page holds still while scrolling wipes the old site into the new one
 (() => {
-  const box = document.querySelector('.compare[data-scroll-wipe]');
+  const sec = document.querySelector('.pin-reveal');
+  const box = sec && sec.querySelector('.compare');
   if (!box) return;
-  const stage = box.closest('.hero-stage'), bubble = stage && stage.querySelector('.bubble span');
-  const input = box.querySelector('input');
+  const input = box.querySelector('input'), bubble = sec.querySelector('.bubble span');
   const lines = bubble ? [bubble.dataset.a, bubble.dataset.b] : [];
   let said = 0;
   const say = (i) => {
     if (!bubble || said === i) return; said = i;
     bubble.classList.add('swap');
-    setTimeout(() => { bubble.textContent = lines[i]; bubble.classList.remove('swap'); }, 220);
+    setTimeout(() => { bubble.textContent = lines[i]; bubble.classList.remove('swap'); }, 200);
   };
-  const end = 8;
-  if (STATIC || REDUCE) { box.style.setProperty('--pos', end + '%'); input.value = end; if (bubble) bubble.textContent = lines[1]; return; }
-  let ticking = false;
-  const update = () => {
-    ticking = false;
+  const set = (v) => { box.style.setProperty('--pos', v + '%'); input.value = v; box.classList.toggle('revealed', v < 4); box.classList.toggle('fresh', v > 96); };
+  if (STATIC || REDUCE) { document.documentElement.classList.add('no-pin'); set(6); if (bubble) bubble.textContent = lines[1]; return; }
+  box.addEventListener('pointerdown', () => { box.dataset.touched = '1'; });
+  scenes.push(() => {
+    const p = pinProgress(sec);
+    if (p <= 0 || p >= 1) delete box.dataset.touched;   // hand control back to scrolling outside the pinned part
     if (box.dataset.touched) return;
-    const r = box.getBoundingClientRect();
-    const p = Math.min(1, Math.max(0, (innerHeight * .92 - r.top) / (r.height * .95)));
-    const e = p * p * (3 - 2 * p);
-    const v = 97 - (97 - end) * e;
-    box.style.setProperty('--pos', v + '%'); input.value = v;
-    say(p > .9 ? 1 : 0);
-  };
-  addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
-  addEventListener('resize', update);
-  update();
+    const t = ease(clamp((p - .08) / .74));
+    set(100 - 100 * t);
+    say(t > .97 ? 1 : 0);
+  });
 })();
 
-/* ---- hexagon of six triangles ---- */
+// 2. Home: the hexagon gains a triangle for each step as you scroll
 (() => {
-  // Process page: each step adds a triangle as it reaches the middle of the screen
+  const sec = document.querySelector('.pin-steps');
+  if (!sec) return;
+  const tris = [...sec.querySelectorAll('.tri')].sort((a, b) => a.dataset.i - b.dataset.i);
+  const items = [...sec.querySelectorAll('li[data-step]')];
+  const show = (n) => {
+    tris.forEach((t, i) => t.classList.toggle('on', i < n));
+    items.forEach((li, i) => { li.classList.toggle('on', i < n); li.classList.toggle('cur', i === n - 1); });
+  };
+  if (STATIC || REDUCE) { document.documentElement.classList.add('no-pin'); show(6); return; }
+  scenes.push(() => show(Math.round(clamp((pinProgress(sec) - .04) / .8) * 6)));
+})();
+
+// 3. Process page: each step's triangle arrives as that step enters the screen and the step dims as it leaves
+(() => {
   const hex = document.querySelector('.proc-art .hexbuild');
   const steps = [...document.querySelectorAll('.proc-step')];
   const count = document.querySelector('.proc-art .count');
-  if (hex && steps.length) {
-    const tris = [...hex.querySelectorAll('.tri')];
-    const show = (n) => {
-      tris.forEach((t, i) => t.classList.toggle('on', i < n));
-      steps.forEach((s, i) => s.classList.toggle('on', i === n - 1));
-      hex.classList.toggle('complete', n >= tris.length);
-      if (count) count.textContent = n ? `Step ${n} of ${tris.length}` : `${tris.length} steps`;
-    };
-    if (STATIC || REDUCE || !('IntersectionObserver' in window)) { show(tris.length); steps.forEach((s) => s.classList.add('on')); }
-    else {
-      const io = new IntersectionObserver((ents) => {
-        ents.forEach((e) => { if (e.isIntersecting) show(steps.indexOf(e.target) + 1); });
-      }, { rootMargin: '-48% 0px -48% 0px' });
-      steps.forEach((s) => io.observe(s));
-      addEventListener('scroll', () => { if (steps[0].getBoundingClientRect().top > innerHeight * .52) show(0); }, { passive: true });
-      show(0);
-    }
-  }
-  // Elsewhere: the hexagon assembles itself once it scrolls into view
-  document.querySelectorAll('.hexbuild[data-auto]').forEach((h) => {
-    const tris = [...h.querySelectorAll('.tri')];
-    const go = () => tris.forEach((t, i) => setTimeout(() => { t.classList.add('on'); if (i === tris.length - 1) setTimeout(() => h.classList.add('complete'), 500); }, i * 260));
-    if (STATIC || REDUCE || !('IntersectionObserver' in window)) { tris.forEach((t) => t.classList.add('on')); h.classList.add('complete'); return; }
-    const io = new IntersectionObserver((ents) => { if (ents[0].isIntersecting) { io.disconnect(); go(); } }, { threshold: .45 });
-    io.observe(h);
-  });
+  if (!hex || !steps.length) return;
+  const tris = [...hex.querySelectorAll('.tri')].sort((a, b) => a.dataset.i - b.dataset.i);
+  const update = () => {
+    const h = innerHeight;
+    let n = 0;
+    steps.forEach((s, i) => {
+      const r = s.getBoundingClientRect();
+      const head = s.querySelector('h3').getBoundingClientRect();
+      if (head.top < h * .85) n = i + 1;                       // entered
+      s.classList.toggle('on', head.top < h * .85 && r.bottom > h * .22);   // lit while on screen
+    });
+    tris.forEach((t, i) => t.classList.toggle('on', i < n));
+    if (count) count.textContent = n ? `Step ${n} of ${tris.length}` : `${tris.length} steps`;
+  };
+  if (STATIC || REDUCE) { tris.forEach((t) => t.classList.add('on')); steps.forEach((s) => s.classList.add('on')); return; }
+  scenes.push(update);
 })();
+onScroll();
 
 /* ---- reviews carousel ---- */
 (() => {

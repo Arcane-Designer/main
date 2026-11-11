@@ -2,77 +2,75 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Sunny Side Cafe - Home</title>
+<title>Sunny Side Cafe | Just another WordPress site</title>
 <style>
-body{margin:0;font-family:"Comic Sans MS","Comic Sans",cursive;font-size:14px;color:#663300;
-  background-color:#fff799;
-  background-image:radial-gradient(circle at 30px 30px,#ffe14d 0 9px,transparent 10px),radial-gradient(circle at 90px 90px,#ffd24d 0 6px,transparent 7px);
-  background-size:120px 120px}
-#wrap{width:860px;margin:14px auto 0;background:#fff;border:4px double #ff9900}
-#head{height:150px;background:linear-gradient(#ffcc00,#ff9900);position:relative;border-bottom:3px solid #cc6600;overflow:hidden}
-.sun{position:absolute;left:18px;top:12px}
-.title{position:absolute;left:150px;top:22px;font:bold 54px "Comic Sans MS",cursive;color:#ff3300;
-  text-shadow:3px 3px 0 #ffff66,5px 5px 0 #993300;letter-spacing:1px;transform:skew(-6deg)}
-.tag{position:absolute;left:170px;top:96px;font:italic bold 18px "Times New Roman";color:#663300}
-.phone{position:absolute;right:16px;top:20px;background:#ffff99;border:2px dashed #cc0000;padding:8px 12px;font:bold 15px Arial;color:#cc0000;text-align:center;transform:rotate(4deg)}
-#nav{background:#cc6600;text-align:center;padding:6px 0;font:bold 14px Arial}
-#nav a{color:#ffff99;margin:0 9px}
-marquee,.marq{display:block;background:#ffff66;color:#cc0000;font:bold 15px "Comic Sans MS";padding:5px 0;border-bottom:1px solid #ff9900;white-space:nowrap;overflow:hidden}
-.marq span{display:inline-block;padding-left:140px}
-table.lay{width:100%;border-collapse:collapse}
-td.side{width:190px;vertical-align:top;background:#fff2cc;border-right:2px solid #ffcc66;padding:10px}
-td.main{vertical-align:top;padding:12px 16px}
-.side h4{margin:0 0 6px;background:#ff9900;color:#fff;padding:3px 6px;font:bold 13px Arial}
-.side ul{margin:0 0 12px;padding-left:18px;line-height:1.7}
-.side a{color:#0000ee}
-.hit{display:inline-block;background:#000;color:#33ff33;font:bold 14px "Courier New";padding:2px 5px;letter-spacing:2px;border:2px inset #999}
-h2{margin:0 0 8px;color:#ff6600;font:bold 26px "Comic Sans MS";text-align:center}
-.pic{text-align:center;margin:6px 0 10px}
-.pic img{width:470px;height:300px;object-fit:cover;border:5px ridge #ff9900}
-.pic small{display:block;font:italic 11px Arial;color:#999}
-p{margin:0 0 9px;line-height:1.5}
-.special{background:#ffffcc;border:3px dotted #ff3300;padding:8px 10px;text-align:center;font-weight:bold;color:#cc0000}
-.special big{font-size:20px}
-.blink{color:#ff0000}
-a{color:#0000ee}
-.new{display:inline-block;background:red;color:#ff0;font:bold 10px Arial;padding:1px 4px;transform:rotate(-8deg)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Georgia,"Times New Roman",serif;font-size:14px;color:#333;background:#fff;overflow:hidden;height:900px}
+a{color:#21759b;text-decoration:none}
+.adminbar{height:28px;background:#464646;background:linear-gradient(#5f5f5f,#464646);color:#ccc;font-family:Arial;font-size:12px;display:flex;align-items:center;gap:22px;padding:0 14px}
+.adminbar b{color:#fff}
+.in{width:1100px;margin:0 auto}
+header{padding:34px 0 20px;display:flex;justify-content:space-between;align-items:flex-end}
+.title{font-family:Georgia;font-size:40px;font-weight:bold;color:#e0661a;letter-spacing:-1px}
+.desc{font-style:italic;color:#888;font-size:15px;margin-top:2px}
+.search{border:1px solid #ccc;padding:6px 10px;width:220px;color:#aaa;font-size:13px;border-radius:3px;box-shadow:inset 0 1px 2px #ddd}
+nav{background:#2b2b2b;border-top:3px solid #e0661a}
+nav .in{display:flex}
+nav a{color:#eee;font-family:Arial;font-size:13px;font-weight:bold;padding:13px 18px}
+nav a.on{background:#e0661a;color:#fff}
+.wrap{display:flex;gap:30px;margin-top:22px}
+main{flex:1}
+.slider{position:relative;height:350px;overflow:hidden;border:1px solid #ddd;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.slider .img{position:absolute;inset:0;background:url(img/sunny-stock-old.jpg) center 55%/cover}
+.slider .cap{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);color:#fff;padding:12px 18px;font-family:Arial}
+.slider .cap b{font-size:19px;display:block}
+.slider .cap span{font-size:13px;color:#ddd}
+.slider .ar{position:absolute;top:140px;width:38px;height:56px;background:rgba(0,0,0,.45);color:#fff;font:bold 26px Arial;display:grid;place-items:center}
+.slider .l{left:0}.slider .r{right:0}
+.sdots{position:absolute;right:16px;bottom:54px;display:flex;gap:6px}
+.sdots i{width:11px;height:11px;border-radius:50%;background:#fff;opacity:.5}
+.sdots i:first-child{opacity:1;background:#e0661a}
+article{margin-top:26px;overflow:hidden}
+article h2{font-size:24px;color:#222;font-weight:normal}
+article .meta{font-family:Arial;font-size:11px;color:#999;margin:6px 0 12px;text-transform:uppercase;letter-spacing:.05em}
+article .thumb{float:left;width:210px;height:150px;margin:0 16px 8px 0;background:url(img/sunny-storefront-old.jpg) center/cover;border:1px solid #ccc;padding:4px;background-clip:content-box}
+article p{line-height:1.65;margin-bottom:10px}
+aside{width:300px;font-size:13px}
+.w{margin-bottom:22px}
+.w h3{font-family:Arial;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#555;border-bottom:2px solid #e0661a;padding-bottom:6px;margin-bottom:10px}
+.w ul{list-style:none}
+.w li{border-bottom:1px dotted #ddd;padding:5px 0}
+.fb{border:1px solid #c4cde0;background:#f7f8fb;padding:10px;font-family:Arial;font-size:12px;color:#555}
+.fb b{color:#3b5998}
+.fb .like{display:inline-block;margin-top:6px;background:#4c66a4;color:#fff;font-weight:bold;padding:3px 8px;border-radius:2px;font-size:11px}
+.fb .faces{display:flex;gap:4px;margin-top:8px}
+.fb .faces i{width:30px;height:30px;background:#c9cfdc}
+.tags a{display:inline-block;margin:0 6px 4px 0}
 </style>
 </head>
 <body>
-<div id="wrap">
-  <div id="head">
-    <svg class="sun" width="120" height="120" viewBox="0 0 120 120">
-      <g stroke="#ff6600" stroke-width="6" stroke-linecap="round"><path d="M60 4v20M60 96v20M4 60h20M96 60h20M20 20l14 14M86 86l14 14M20 100l14-14M86 34l14-14"/></g>
-      <circle cx="60" cy="60" r="30" fill="#ffff00" stroke="#ff6600" stroke-width="4"/>
-      <circle cx="50" cy="54" r="4" fill="#663300"/><circle cx="70" cy="54" r="4" fill="#663300"/>
-      <path d="M46 68q14 12 28 0" stroke="#663300" stroke-width="4" fill="none" stroke-linecap="round"/>
-      <path d="M38 50l10-3M82 50l-10-3" stroke="#000" stroke-width="3"/>
-    </svg>
-    <div class="title">Sunny Side Cafe</div>
-    <div class="tag">"Where Every Morning is a Sunny One!!"</div>
-    <div class="phone">CALL AHEAD!!<br>(253) 555-0129</div>
-  </div>
-  <div id="nav"><a href="#">HOME</a>|<a href="#">MENU</a>|<a href="#">BREAKFAST</a>|<a href="#">LUNCH</a>|<a href="#">PHOTOS</a>|<a href="#">DIRECTIONS</a>|<a href="#">GUESTBOOK</a>|<a href="#">CONTACT US</a></div>
-  <div class="marq"><span>*** NOW OPEN SUNDAYS!!! *** Try our NEW Strawberry Pancakes!! *** Free coffee refills all day *** We accept Visa and Mastercard ***</span></div>
-  <table class="lay"><tr>
-    <td class="side">
-      <h4>QUICK LINKS</h4>
-      <ul><li><a href="#">Our Menu</a> <span class="new">NEW!</span></li><li><a href="#">Daily Specials</a></li><li><a href="#">Catering</a></li><li><a href="#">Gift Certificates</a></li><li><a href="#">Sign Our Guestbook!</a></li><li><a href="#">Links</a></li></ul>
-      <h4>HOURS</h4>
-      <p style="font-size:13px">Mon-Fri 6:30am-2pm<br>Sat-Sun 7am-2pm<br><b>Closed Christmas</b></p>
-      <h4>WE'RE ON 6TH AVE!</h4>
-      <p style="font-size:13px">2214 6th Ave<br>Tacoma WA 98403<br><a href="#">Click for Map</a></p>
-      <h4>VISITORS</h4>
-      <p style="text-align:center"><span class="hit">004817</span><br><small>since Jan 2008</small></p>
-    </td>
-    <td class="main">
-      <h2>~*~ Welcome to Sunny Side Cafe!!! ~*~</h2>
-      <div class="pic"><img src="img/sunny-stock.jpg" alt=""><small>Our famous "Sunrise Special" breakfast!</small></div>
-      <p>Hello and welcome to our website!! Sunny Side Cafe is a family owned restaurant serving <b>Breakfast and Lunch</b> in Tacoma since 1994. We make everything from scratch with lots of love. Our pancakes are famous!! Come in and see us, we would love to have you.</p>
-      <div class="special"><big>THIS WEEKS SPECIAL:</big><br>2 Eggs, Bacon, Hashbrowns &amp; Toast only $5.99!!! <span class="blink">(Weekdays before 9am)</span></div>
-      <p style="text-align:center;margin-top:9px;font-size:12px">Best viewed in Internet Explorer at 800x600 &nbsp;|&nbsp; <a href="#">Email the Webmaster</a></p>
-    </td>
-  </tr></table>
+<div class="adminbar"><b>W</b><span>Sunny Side Cafe</span><span>+ New</span><span>Edit Page</span><span style="margin-left:auto">Howdy, admin</span></div>
+<div class="in">
+  <header><div><div class="title">Sunny Side Cafe</div><div class="desc">Breakfast &amp; Lunch on 6th Ave. in Tacoma, WA</div></div><div class="search">Search...</div></header>
+</div>
+<nav><div class="in"><a class="on" href="#">Home</a><a href="#">Menu</a><a href="#">Breakfast</a><a href="#">Lunch</a><a href="#">Catering</a><a href="#">Gift Cards</a><a href="#">Blog</a><a href="#">Contact Us</a></div></nav>
+<div class="in wrap">
+  <main>
+    <div class="slider"><div class="img"></div><span class="ar l">&lsaquo;</span><span class="ar r">&rsaquo;</span><div class="sdots"><i></i><i></i><i></i><i></i><i></i></div><div class="cap"><b>Try our famous Sunrise Special!</b><span>2 eggs, bacon, hashbrowns &amp; toast. Only $5.99 weekdays before 9am</span></div></div>
+    <article>
+      <h2>We are now open on Sundays!!</h2>
+      <div class="meta">Posted on March 3, 2013 by admin &nbsp;|&nbsp; 2 Comments &nbsp;|&nbsp; Filed under: News, Uncategorized</div>
+      <div class="thumb"></div>
+      <p>Great news everyone! Starting this weekend Sunny Side Cafe will be open on Sundays from 7am to 2pm. We have been getting so many requests for this and we finally did it! Come in and try our new Strawberry Pancakes, they have been a big hit so far.</p>
+      <p>As always thank you to all our wonderful customers for your support. We could not do it without you. See you Sunday!! <a href="#">Continue reading &rarr;</a></p>
+    </article>
+  </main>
+  <aside>
+    <div class="w"><h3>Hours</h3><ul><li>Monday - Friday: 6:30am - 2pm</li><li>Saturday - Sunday: 7am - 2pm</li><li>Closed Christmas Day</li></ul></div>
+    <div class="w"><h3>Find Us</h3>2214 6th Ave, Tacoma WA 98403<br>Phone: (253) 555-0129<br><a href="#">Get Directions</a></div>
+    <div class="w"><h3>Recent Posts</h3><ul><li><a href="#">We are now open on Sundays!!</a></li><li><a href="#">Happy Valentines Day from Sunny Side</a></li><li><a href="#">New Catering Menu</a></li></ul></div>
+    <div class="w fb"><b>Sunny Side Cafe</b> on Facebook<br><span class="like">Like</span> &nbsp;486 people like Sunny Side Cafe.<br><span style="color:#888">Facebook social plugin</span></div>
+  </aside>
 </div>
 </body>
 </html>

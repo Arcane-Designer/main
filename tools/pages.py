@@ -4,13 +4,13 @@ Run from the repo root:  python3 tools/pages.py
 Edit copy here, then re-run. The generated .html files are what GitHub Pages serves."""
 import json, math, os
 
-V = '4'                      # bump after CSS/JS changes so browsers refetch
+V = '6'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'hello@arcanedesigner.com'
 LINKEDIN_BIZ = ''            # Arcane Designer company page URL (footer). Empty = hidden.
 LINKEDIN_PERSON = ''         # Nathan's profile URL (About block on Process). Empty = hidden.
 FONTS = ('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@600'
-         '&family=Figtree:wght@400;500;600;700&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..600,0..100&display=swap')
+         '&family=Figtree:wght@400;500;600;700&family=Archivo:wdth,wght@62..125,400..900&display=swap')
 
 LOGO = '''<svg viewBox="0 0 40 40" aria-hidden="true"><g stroke="currentColor" stroke-width="2.2" stroke-linejoin="round">
 <polygon points="20,3 29.5,8.5 29.5,19.5 20,25 10.5,19.5 10.5,8.5" fill="#238DBB"/>
@@ -77,9 +77,9 @@ def closer(title='Got an old website?', body='Send the link. You&rsquo;ll get ba
     <div data-anim="left">
       <h2>{title}</h2>
       <p>{body}</p>
-      {btn("contact.html", "Start a project", "light")}
+      {btn("contact.html", "Start a project")}
     </div>
-    <img class="arc" src="assets/arc/hands-up.webp" alt="" width="328" height="640" loading="lazy" data-anim="right">
+    <img class="arc" src="assets/arc/hands-up.webp" alt="" width="599" height="900" loading="lazy" data-anim="right">
   </div>
 </section>
 '''
@@ -91,7 +91,6 @@ def footer():
         links += f'<a href="{LINKEDIN_BIZ}" rel="noopener">LinkedIn</a>'
     return f'''</main>
 <footer class="site-foot">
-  <div class="zig" aria-hidden="true" style="transform:translateY(-25px);margin-bottom:-25px"></div>
   <div class="wrap">
     <div class="foot-row">
       <div style="display:grid;gap:12px">
@@ -128,33 +127,35 @@ def browser(url, inner):
     return f'<div class="browser"><div class="bar"><i></i><i></i><i></i><b>{url}</b></div>{inner}</div>'
 
 
-def hexsvg(auto=False, label='Six steps'):
-    """A hexagon cut into six triangles; each one flies in when it turns on."""
-    C, R = 200, 178
+def hexsvg(label='Six steps'):
+    """A 3D hexagon cut into six triangles. Each triangle flies in when its step turns on (js/site.js)."""
+    C, R, D = 200, 172, 18           # center, radius, extrusion depth
     pts = [(C + R * math.cos(math.radians(-90 + 60 * k)), C + R * math.sin(math.radians(-90 + 60 * k))) for k in range(6)]
-    fills = ['url(#hg-teal)', 'url(#hg-blue)', 'url(#hg-pink)'] * 2
-    out = []
+    tops = ['url(#hg-teal)', 'url(#hg-blue)', 'url(#hg-pink)'] * 2
+    sides = ['#037a5b', '#145a7c', '#a82d52'] * 2
+    groups = []
     for k in range(6):
         a, b = pts[k], pts[(k + 1) % 6]
         cx, cy = (C + a[0] + b[0]) / 3, (C + a[1] + b[1]) / 3
         dx, dy = cx - C, cy - C
-        d = math.hypot(dx, dy)
-        tx, ty = dx / d * 150, dy / d * 150
-        rot = 30 if k % 2 else -30
-        poly = f'{C},{C} {a[0]:.1f},{a[1]:.1f} {b[0]:.1f},{b[1]:.1f}'
-        out.append(f'<g class="tri" style="--tx:{tx:.0f}px;--ty:{ty:.0f}px;--rot:{rot}deg"><polygon points="{poly}" fill="{fills[k]}"/><text x="{cx:.1f}" y="{cy:.1f}">{k + 1}</text></g>')
+        dd = math.hypot(dx, dy)
+        tx, ty = dx / dd * 170, dy / dd * 170 - 60
+        rot = 28 if k % 2 else -28
+        tri = [(C, C), a, b]
+        top = ' '.join(f'{x:.1f},{y:.1f}' for x, y in tri)
+        side = ' '.join(f'{x:.1f},{y + D:.1f}' for x, y in tri)
+        bev = ' '.join(f'{cx + (x - cx) * .8:.1f},{cy + (y - cy) * .8:.1f}' for x, y in tri)
+        groups.append((cy, f'<g class="tri" data-i="{k}" style="--tx:{tx:.0f}px;--ty:{ty:.0f}px;--rot:{rot}deg"><polygon class="side" points="{side}" fill="{sides[k]}"/><polygon class="top" points="{top}" fill="{tops[k]}"/><polygon class="bevel" points="{bev}"/><text x="{cx:.1f}" y="{cy:.1f}">{k + 1}</text></g>'))
+    groups.sort(key=lambda g: g[0])   # draw back to front so the depth stacks correctly
     outline = ' '.join(f'{x:.1f},{y:.1f}' for x, y in pts)
-    ring = ' '.join(f'{C + (x - C) * 1.0:.1f},{C + (y - C) * 1.0:.1f}' for x, y in pts)
-    data = ' data-auto' if auto else ''
-    return f'''<svg class="hexbuild" viewBox="0 0 400 400" role="img" aria-label="{label}"{data}>
+    return f'''<svg class="hexbuild" viewBox="0 0 400 420" role="img" aria-label="{label}">
   <defs>
-    <linearGradient id="hg-teal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ff0c0"/><stop offset="1" stop-color="#06c493"/></linearGradient>
-    <linearGradient id="hg-blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4fb3df"/><stop offset="1" stop-color="#1d76a0"/></linearGradient>
-    <linearGradient id="hg-pink" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff98b4"/><stop offset="1" stop-color="#ef4f7c"/></linearGradient>
+    <linearGradient id="hg-teal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5ff6cd"/><stop offset="1" stop-color="#06c493"/></linearGradient>
+    <linearGradient id="hg-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6cc6ee"/><stop offset="1" stop-color="#1d76a0"/></linearGradient>
+    <linearGradient id="hg-pink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa9c1"/><stop offset="1" stop-color="#ec4a78"/></linearGradient>
   </defs>
-  <polygon class="ring" points="{ring}"/>
   <polygon class="ghost" points="{outline}"/>
-  {''.join(out)}
+  {''.join(g for _, g in groups)}
 </svg>'''
 
 
@@ -181,7 +182,7 @@ FAQ = [
     ('Do you host my website?', 'No. The new design is built on the platform you already use, so nothing moves, and nothing depends on Arcane Designer afterward.'),
     ('Which platforms do you work with?', 'Squarespace, Wix, WordPress, Shopify, Webflow and GoDaddy cover most sites. On something else? Send the link and you&rsquo;ll get a straight answer.'),
     ('Do I have to share my password?', 'No. Most platforms let you add a helper account with its own login. When the project ends, you delete it.'),
-    ('How long does it take?', 'About three weeks from questionnaire to launch. Quick feedback makes it faster.'),
+    ('How long does it take?', 'It depends on the size of the site and how quickly feedback comes back. You&rsquo;ll get a rough timeline with your quote.'),
     ('How does payment work?', 'Half at the start and half at launch, through Stripe invoices. Card or bank transfer both work.'),
     ('What if my site needs more than the starting price covers?', 'You&rsquo;ll get a written quote before anything starts, and it won&rsquo;t change without your OK.'),
     ('Do you write the words too?', 'Your existing text gets tidied and tightened, and short new sections get written where a page needs them. Rewriting every page from scratch can be added to the quote.'),
@@ -250,17 +251,24 @@ home += header('')
 home += f'''<section class="hero glow">
   <div class="wrap">
     <div class="hero-top">
-      <h1 data-anim="up">New websites for businesses with <span class="mark">old ones.</span></h1>
+      <h1 data-anim="up">New websites for businesses with old ones.</h1>
       <div class="hero-side" data-anim="up" style="--d:.15s">
-        <p class="big">Arcane Designer redesigns small business websites as one project. You pick from three designs, it gets built on the platform you already use, and then it&rsquo;s yours.</p>
+        <p class="big">We take a tired small business website and make it something you&rsquo;re proud to send people to. One project, built on the platform you already have, and then it&rsquo;s all yours.</p>
         <div class="row">{btn("contact.html", "Start a project")}<a class="tlink" href="work.html">See examples</a></div>
         <p class="muted small">Websites from $1,500. Logos from $500.</p>
       </div>
     </div>
-    <div class="hero-stage" data-anim="tilt" style="--d:.25s">
-      <div class="perch"><img src="assets/arc/relaxed.webp" alt="Arc, the Arcane Designer mascot, lounging on top of the browser window" width="640" height="312"></div>
-      <div class="bubble" aria-hidden="true"><span data-a="Scroll down. Watch this." data-b="Much better.">Scroll down. Watch this.</span></div>
-      {browser(s0['url'], compare(s0['slug'], s0['name'], 97, eager=True, wipe=True))}
+  </div>
+</section>
+
+<section class="pin-reveal" aria-label="Example redesign: scroll to see the new version">
+  <div class="pin-sticky">
+    <div class="wrap">
+      <div class="hero-stage">
+        <div class="perch"><img src="assets/arc/relaxed.webp" alt="Arc, the Arcane Designer mascot, lounging on top of the browser window" width="900" height="596"></div>
+        <div class="bubble" aria-hidden="true"><span data-a="Scroll down. Watch this." data-b="Much better.">Scroll down. Watch this.</span></div>
+        {browser(s0['url'], compare(s0['slug'], s0['name'], 100, eager=True, wipe=True))}
+      </div>
     </div>
   </div>
 </section>
@@ -278,11 +286,11 @@ home += f'''<section class="hero glow">
 thumbs = ''.join(f'<a class="thumb" href="work.html#{s["slug"]}"><div class="img"><img src="assets/samples/{s["slug"]}-after.webp" alt="" width="1440" height="900" loading="lazy"></div><span>{s["name"]} <em>{s["kind"]}</em></span></a>' for s in SAMPLES)
 home += thumbs + thumbs.replace('<a class="thumb"', '<a class="thumb" aria-hidden="true" tabindex="-1"')
 pins = [(85, 8.6), (85, 26), (8, 52), (14.6, 70), (34, 82.5)]
-notes = ['The phone number is tiny. Hard to tap on a phone, and for a plumber, the call is the whole point.',
-         'The coupons expired in 2013. People notice, and wonder what else is out of date.',
-         'Built for old screens. Empty space everywhere on a big monitor, and everything shrinks on a phone.',
-         'Written for search engines, not people. &ldquo;Spokane plumber, Spokane Valley plumber&rdquo; reassures nobody.',
-         '&ldquo;Best viewed in Internet Explorer 8.&rdquo; That browser has been gone for years.']
+notes = ['The phone number is in tiny print. On a phone, you&rsquo;d have to zoom in just to tap it.',
+         'Coupons that expired in 2013. Not a great look.',
+         'A narrow box built for 2009 screens. Huge empty edges on a monitor, squished on a phone.',
+         'A paragraph stuffed with &ldquo;Spokane plumber&rdquo; for Google. People skip right over it.',
+         '&ldquo;Best viewed in Internet Explorer 8.&rdquo; That browser retired years ago.']
 pin_html = ''.join(f'<span class="pin" style="left:{x}%;top:{y}%;--i:{i}">{i + 1}</span>' for i, (x, y) in enumerate(pins))
 note_html = ''.join(f'<li style="--i:{i}"><b>{i + 1}</b><span>{t}</span></li>' for i, t in enumerate(notes))
 home += f'''  </div></div>
@@ -291,23 +299,25 @@ home += f'''  </div></div>
 <section class="sec gray-sec">
   <div class="wrap">
     <div class="split-head">
-      <h2 data-anim="left">What usually needs fixing.</h2>
-      <p class="big" data-anim="right">This plumber is made up. The problems are real, and they show up on a lot of sites.</p>
+      <h2 data-anim="left">Sound familiar?</h2>
+      <p class="big" data-anim="right">A made-up plumber with very real problems. We run into these on old sites all the time.</p>
     </div>
     <div class="redpen">
-      {browser('northbankplumbing.com', f'<div class="shot"><img src="assets/samples/northbank-plumbing-before.webp" alt="An outdated plumbing company website from around 2013" width="1440" height="900" loading="lazy">{pin_html}</div>')}
+      {browser('northbankplumbing.com', f'<div class="shot"><img src="assets/samples/redpen-plumbing.webp" alt="An outdated plumbing company website from around 2013" width="1440" height="900" loading="lazy">{pin_html}</div>')}
       <ol class="redpen-notes">{note_html}</ol>
     </div>
   </div>
 </section>
 
-<section class="sec">
-  <div class="wrap mini-steps">
-    {hexsvg(auto=True)}
-    <div data-anim="right">
-      <h2>Six steps. About three weeks.</h2>
-      <ol>{''.join(f'<li>{t}</li>' for t, _ in STEPS)}</ol>
-      <a class="tlink" href="process.html">How each step works</a>
+<section class="pin-steps" aria-label="How it works">
+  <div class="pin-sticky">
+    <div class="wrap mini-steps">
+      {hexsvg(label='The six steps')}
+      <div>
+        <h2>Six steps, start to finish.</h2>
+        <ol>{''.join(f'<li data-step="{i}">{t}</li>' for i, (t, _) in enumerate(STEPS))}</ol>
+        <a class="tlink" href="process.html">How each step works</a>
+      </div>
     </div>
   </div>
 </section>
@@ -330,7 +340,7 @@ home += f'''  </div></div>
   <div class="wrap">
     <div class="split-head">
       <h2 data-anim="left">Prices, up front.</h2>
-      <p class="big" data-anim="right">Most small business sites land on the first one. Anything bigger gets a written quote before work starts.</p>
+      <p class="big" data-anim="right">Most small business sites fit the first one. If yours needs more, you&rsquo;ll get a quote before anything starts.</p>
     </div>
     <div class="prices">
 '''
@@ -356,7 +366,7 @@ work += '''<section class="intro glow">
       <h1>Before and after.</h1>
       <p class="big">Drag the slider on any of them. These are samples for businesses that don&rsquo;t exist, each in a different style. Client projects and their reviews will join them here.</p>
     </div>
-    <img src="assets/arc/presents.webp" alt="" width="400" height="628" data-anim="right">
+    <img src="assets/arc/presents.webp" alt="" width="606" height="900" data-anim="right">
   </div>
 </section>
 <section class="sec" style="padding-top:30px">
@@ -398,9 +408,9 @@ proc += '''<section class="intro glow">
   <div class="wrap proc-intro">
     <div data-anim="up">
       <h1>From old site to new one, in six steps.</h1>
-      <p class="big">Most projects take about three weeks. Here&rsquo;s what happens, and what you&rsquo;ll need to do.</p>
+      <p class="big">Here&rsquo;s what happens, and what you&rsquo;ll need to do along the way.</p>
     </div>
-    <img class="arc" src="assets/arc/stands.webp" alt="" width="273" height="640" data-anim="right">
+    <img class="arc" src="assets/arc/stands.webp" alt="" width="585" height="900" data-anim="right">
   </div>
 </section>
 <section class="sec" style="padding-top:10px">
@@ -417,11 +427,10 @@ proc += f'''    </div>
 </section>
 <section class="sec navy-sec">
   <div class="wrap ai-block">
-    <img src="assets/arc/presents-floor.webp" alt="" width="375" height="640" loading="lazy" data-anim="left">
+    <img src="assets/arc/presents-floor.webp" alt="" width="608" height="900" loading="lazy" data-anim="left">
     <div class="copy" data-anim="right">
-      <h2>Yes, AI is part of this.</h2>
-      <p>AI tools do a lot of the heavy lifting: researching your industry, sketching layout ideas, building the clickable designs and catching typos. That&rsquo;s a big part of why the price is what it is.</p>
-      <p>A person still makes the calls. Every design and every page gets checked by hand before you see it, and you&rsquo;re never talking to a bot.</p>
+      <h2>Yes, we use AI.</h2>
+      <p>It&rsquo;s how we keep projects quick and prices low without cutting corners on quality. We just didn&rsquo;t want it to be a surprise.</p>
     </div>
   </div>
 </section>
@@ -467,7 +476,7 @@ pr += '''<section class="intro glow">
 for i, p in enumerate(PRICES):
     items = ''.join(f'<li>{x}</li>' for x in p['items'])
     flag = '<span class="flag">Most common</span>' if p.get('main') else ''
-    pr += f'''      <div class="price{" main" if p.get("main") else ""}" data-anim="up" style="--d:{i * .12:.2f}s">{flag}<h3>{p["name"]}</h3><span class="from">Starting at</span><span class="amt">${p["amt"]}</span><p>{p["blurb"]}</p><ul>{items}</ul>{btn("contact.html", "Get started", "alt" if p.get("main") else "")}</div>
+    pr += f'''      <div class="price{" main" if p.get("main") else ""}" data-anim="up" style="--d:{i * .12:.2f}s">{flag}<h3>{p["name"]}</h3><span class="from">Starting at</span><span class="amt">${p["amt"]}</span><p>{p["blurb"]}</p><ul>{items}</ul>{btn("contact.html", "Get started", "" if p.get("main") else "dark")}</div>
 '''
 pr += '''    </div>
     <p class="muted small" style="margin-top:30px;max-width:68ch">These are early prices and will go up as the portfolio grows. Doing a website and a logo together lowers the total.</p>
@@ -535,13 +544,13 @@ ct += f'''<section class="intro glow">
       </fieldset>
       <div class="field"><label for="c-msg">Anything else? <span class="opt">(optional)</span></label><span class="hint">Something else you need, a deadline, a budget. Whatever&rsquo;s useful.</span><textarea id="c-msg" name="message"></textarea></div>
       <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <div>{'<button class="btn alt" type="submit"><span>Send</span></button>'}</div>
+      <div>{'<button class="btn" type="submit"><span>Send</span></button>'}</div>
       <div class="form-status" role="status" tabindex="-1" hidden></div>
     </form>
     <aside class="contact-side" data-anim="right">
       <div class="card"><h3>Prefer email?</h3><a class="mail" href="mailto:{EMAIL}">{EMAIL}</a></div>
       <div class="card"><h3>What happens next</h3><p>You&rsquo;ll get a short list of what&rsquo;s worth changing and a price. If you want to go ahead, a questionnaire and a deposit invoice come next.</p><a class="tlink small" href="process.html" style="justify-self:start">The full process</a></div>
-      <img src="assets/arc/relaxed.webp" alt="" width="640" height="312" loading="lazy">
+      <img src="assets/arc/relaxed.webp" alt="" width="900" height="596" loading="lazy">
     </aside>
   </div>
 </section>
@@ -616,7 +625,7 @@ qn += '''<section class="intro glow">
 for i, (title, fields) in enumerate(QS, 1):
     qn += f'      <div class="q-section"><h2><span class="n">{i}</span>{title}</h2>{"".join(fields)}</div>\n'
 qn += '''      <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <div><button class="btn alt" type="submit"><span>Send my answers</span></button></div>
+      <div><button class="btn" type="submit"><span>Send my answers</span></button></div>
       <div class="form-status" role="status" tabindex="-1" hidden></div>
     </form>
   </div>
@@ -630,7 +639,7 @@ nf = head('Page Not Found | Arcane Designer', 'This page does not exist.', '404.
 nf += header('')
 nf += f'''<section class="sec glow">
   <div class="wrap" style="display:grid;grid-template-columns:auto 1fr;gap:clamp(24px,5vw,60px);align-items:center;max-width:960px">
-    <img src="assets/arc/flabbergasted.webp" alt="" width="302" height="640" style="width:clamp(110px,14vw,170px)">
+    <img src="assets/arc/flabbergasted.webp" alt="" width="610" height="900" style="width:clamp(110px,14vw,170px)">
     <div style="display:grid;gap:22px;justify-items:start">
       <h1 style="font-size:clamp(2.4rem,1.6rem + 3vw,4rem)">That page isn&rsquo;t here.</h1>
       <p class="big">It probably moved when the site was redesigned. A little ironic.</p>
