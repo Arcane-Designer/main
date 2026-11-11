@@ -534,7 +534,7 @@ for i, p in enumerate(PRICES):
     pr += f'''      <div class="price{" main" if p.get("main") else ""}" id="plan-{p["key"]}" data-anim="up" style="--d:{i * .12:.2f}s">{flag}<h3>{p["name"]}</h3><span class="from">Starting at</span><span class="amt">${p["amt"]}</span><p>{p["blurb"]}</p><ul>{items}</ul>{btn("contact.html?plan=" + p["key"], "Get started", "" if p.get("main") else "dark")}</div>
 '''
 pr += '''    </div>
-    <p class="muted small" style="margin-top:30px">These are early prices and will go up as the portfolio grows. Doing a website and a logo together lowers the total.</p>
+    <p class="muted small" style="margin-top:30px">These are early prices and will go up as the portfolio grows.</p>
   </div>
 </section>
 <section class="sec gray-sec" style="padding-block:clamp(56px,6vw,84px)">
