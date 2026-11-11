@@ -4,7 +4,7 @@ Run from the repo root:  python3 tools/pages.py
 Edit copy here, then re-run. The generated .html files are what GitHub Pages serves."""
 import json, math, os
 
-V = '23'                      # bump after CSS/JS changes so browsers refetch
+V = '24'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -119,12 +119,14 @@ def footer():
 def compare(slug, label, pos=16, eager=False, wipe=False):
     ld = '' if eager else ' loading="lazy"'
     w = ' data-scroll-wipe' if wipe else ''
-    return f'''<div class="compare" style="--pos:{pos}%"{w}>
+    auto = ' auto' if wipe else ''
+    ctrl = '' if wipe else f'<input type="range" min="0" max="100" step="0.1" value="{pos}" aria-label="Drag to compare the old and new {label} website">'
+    return f'''<div class="compare{auto}" style="--pos:{pos}%"{w}>
   <img src="assets/samples/{slug}-before.webp" alt="{label} website before the redesign" width="1440" height="900"{ld}>
   <img class="after" src="assets/samples/{slug}-after.webp" alt="{label} website after the redesign" width="1440" height="900"{ld}>
-  <span class="tag l">Before</span><span class="tag r">After</span>
+  <span class="tag l"><i></i>Before</span><span class="tag r"><i></i>After</span>
   <span class="handle" aria-hidden="true"></span>
-  <input type="range" min="0" max="100" step="0.1" value="{pos}" aria-label="Drag to compare the old and new {label} website">
+  {ctrl}
 </div>'''
 
 

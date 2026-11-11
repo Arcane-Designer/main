@@ -92,9 +92,8 @@ addEventListener('resize', onScroll);
     bubble.classList.add('swap');
     setTimeout(() => { bubble.textContent = lines[i]; bubble.classList.remove('swap'); }, 200);
   };
-  const set = (v) => { box.style.setProperty('--pos', v + '%'); input.value = v; box.classList.toggle('revealed', v < 4); box.classList.toggle('fresh', v > 96); };
+  const set = (v) => { box.style.setProperty('--pos', v + '%'); if (input) input.value = v; box.classList.toggle('revealed', v < 4); box.classList.toggle('fresh', v > 96); };
   if (STATIC || REDUCE) { document.documentElement.classList.add('no-pin'); set(6); if (bubble) bubble.textContent = lines[1]; return; }
-  box.addEventListener('pointerdown', () => { box.dataset.touched = '1'; });
   scenes.push(() => {
     const p = pinProgress(sec);
     if (p <= 0 || p >= 1) delete box.dataset.touched;   // hand control back to scrolling outside the pinned part
