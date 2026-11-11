@@ -5,80 +5,51 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ferrous Coffee Roasters</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..500;1,6..72,200..500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..500;1,6..72,200..500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#13100d;--ink:#ebe3d7;--mute:#8b8174;--line:#2e2822;--rust:#c06a3e}
+:root{--ink:#efe7db;--mute:#9d9184;--rust:#d08454;--bg:#0e0b09}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.02em;-webkit-font-smoothing:antialiased;overflow:hidden}
+body{width:1440px;height:900px;overflow:hidden;position:relative;background:var(--bg);color:var(--ink);font-family:Inter,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
-.page{position:relative;width:1440px;height:900px}
-.photo{position:absolute;left:0;top:0;width:604px;height:900px;background:url(img/ferrous-pour.jpg) 46% 40%/cover}
-.photo:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,8,6,.55) 0,rgba(10,8,6,0) 18%,rgba(10,8,6,0) 78%,rgba(10,8,6,.7) 100%)}
-.mark{position:absolute;left:44px;top:36px;z-index:2;font-family:Newsreader;font-style:italic;font-weight:300;font-size:30px;letter-spacing:-.01em;line-height:1}
-.mark small{display:block;font-family:"IBM Plex Mono";font-style:normal;font-size:10px;letter-spacing:.06em;color:#c9bfb1;margin-top:8px}
-.fig{position:absolute;left:44px;bottom:36px;z-index:2;color:#cfc5b7;line-height:1.7;max-width:300px}
-.fig b{font-weight:500;color:var(--ink)}
-nav{position:absolute;left:680px;right:56px;top:40px;display:flex;justify-content:space-between;color:var(--mute)}
-nav .l{display:flex;gap:34px}
+.photo{position:absolute;inset:0;background:url(img/ferrous-still.jpg) 60% 62%/cover}
+.photo:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,11,9,.9) 0,rgba(14,11,9,.55) 34%,rgba(14,11,9,0) 56%),linear-gradient(180deg,rgba(14,11,9,.6) 0,rgba(14,11,9,0) 18%,rgba(14,11,9,0) 70%,rgba(14,11,9,.8) 100%)}
+header{position:absolute;left:64px;right:64px;top:38px;display:flex;align-items:baseline;z-index:2}
+.mark{font-family:Newsreader;font-style:italic;font-weight:300;font-size:32px;letter-spacing:-.015em;line-height:1}
+nav{display:flex;gap:36px;margin-left:80px;font-size:14px;color:var(--mute)}
 nav a.on{color:var(--ink)}
-nav .bag{color:var(--ink)}
-.meta{position:absolute;left:680px;top:176px;display:grid;grid-template-columns:170px 190px 170px;color:var(--mute);line-height:1.75}
-.meta b{display:block;font-weight:400;color:var(--ink)}
-h1{position:absolute;left:672px;top:268px;font-family:Newsreader;font-weight:200;font-size:140px;line-height:.88;letter-spacing:-.045em;font-variation-settings:"opsz" 72}
-h1 i{font-weight:200;display:block;padding-left:84px;letter-spacing:-.04em}
-.desc{position:absolute;left:680px;top:560px;width:330px;font-family:Newsreader;font-size:17px;line-height:1.5;font-weight:300;color:#cbc1b4;letter-spacing:0}
-.specs{position:absolute;left:680px;top:684px;width:410px;border-top:1px solid var(--line);display:grid;grid-template-columns:1.5fr 1fr;row-gap:4px}
-.specs div{padding:14px 18px 0 0;line-height:1.75;color:var(--mute)}
-.specs div b{display:block;font-weight:400;color:var(--ink)}
-.specs .price b{font-family:Newsreader;font-size:30px;font-weight:300;letter-spacing:-.02em;line-height:1.1;margin-top:-2px}
-.buy{position:absolute;left:680px;top:846px;display:flex;gap:30px;align-items:baseline}
-.buy a{color:var(--ink);border-bottom:1px solid var(--rust);padding-bottom:4px}
-.buy span{color:var(--mute)}
-.inset{position:absolute;right:56px;top:560px;width:262px}
-.inset .img{height:176px;background:url(img/ferrous-roaster.jpg) 58% 50%/cover;filter:saturate(.85)}
-.inset p{margin-top:12px;color:var(--mute);line-height:1.7}
-.inset p b{color:var(--ink);font-weight:400}
-.num{position:absolute;right:56px;top:160px;font-family:Newsreader;font-style:italic;font-weight:200;font-size:54px;color:var(--rust);line-height:1;letter-spacing:-.03em}
-.num small{font-family:"IBM Plex Mono";font-style:normal;font-size:10px;color:var(--mute);letter-spacing:.04em;display:block;text-align:right;margin-top:6px}
+.bag{margin-left:auto;font-size:14px}
+.bag span{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:12px;font-weight:500;margin-left:8px}
+.lead{position:absolute;left:64px;top:186px;z-index:2;font-family:Newsreader;font-style:italic;font-weight:300;font-size:22px;color:var(--rust);letter-spacing:-.01em}
+h1{position:absolute;left:56px;top:196px;z-index:2;font-family:Newsreader;font-weight:200;font-size:150px;line-height:.86;letter-spacing:-.05em;font-variation-settings:"opsz" 72}
+h1 i{display:block;padding-left:96px;font-weight:200}
+.desc{position:absolute;left:64px;top:500px;width:400px;z-index:2;font-family:Newsreader;font-weight:300;font-size:21px;line-height:1.45;color:#cdc2b4}
+.notes{position:absolute;left:64px;top:618px;z-index:2;display:flex;gap:10px}
+.notes span{border:1px solid rgba(239,231,219,.22);border-radius:999px;padding:9px 16px;font-size:14px;color:#ddd3c6;backdrop-filter:blur(6px)}
+.buy{position:absolute;left:64px;top:700px;z-index:2;display:flex;align-items:center;gap:28px}
+.btn{display:flex;align-items:center;gap:22px;background:var(--ink);color:var(--bg);border-radius:999px;padding:8px 8px 8px 28px;font-size:16px;font-weight:500}
+.btn em{font-style:normal;font-family:Newsreader;font-size:22px;background:var(--bg);color:var(--ink);border-radius:999px;padding:9px 18px}
+.sub{font-size:15px;color:var(--mute)}
+.sub b{color:var(--ink);font-weight:500;border-bottom:1px solid var(--rust);padding-bottom:3px}
+.foot{position:absolute;left:64px;right:64px;bottom:34px;z-index:2;display:flex;justify-content:space-between;font-size:13px;color:var(--mute)}
+.foot b{color:var(--ink);font-weight:500}
 </style>
 </head>
 <body>
-<div class="page">
-  <div class="photo"></div>
-  <a class="mark" href="#">Ferrous<small>Coffee roasters, Portland</small></a>
-  <p class="fig"><b>Fig. 1</b>&nbsp; Hambela Wamena on a V60. 15 g to 250 g of water at 94&deg;C, finished at 3:10.</p>
+<div class="photo"></div>
+<header>
+  <a class="mark" href="#">Ferrous</a>
+  <nav><a class="on" href="#">Coffees</a><a href="#">Subscriptions</a><a href="#">Wholesale</a><a href="#">The bar on Division</a></nav>
+  <a class="bag" href="#">Bag<span>0</span></a>
+</header>
 
-  <nav>
-    <div class="l"><a class="on" href="#">Current coffees</a><a href="#">Subscriptions</a><a href="#">Wholesale</a><a href="#">The bar on Division</a><a href="#">Journal</a></div>
-    <a class="bag" href="#">Bag (0)</a>
-  </nav>
-
-  <div class="meta">
-    <div>Origin<b>Guji, Ethiopia</b></div>
-    <div>Producer<b>Wamena washing station</b></div>
-    <div>Altitude<b>2,150 to 2,300 m</b></div>
-  </div>
-
-  <h1>Hambela<i>Wamena</i></h1>
-
-  <p class="desc">A natural-process Ethiopian picked in January and rested six weeks before we touched it. Sweet the whole way down, with a finish that keeps getting longer as the cup cools.</p>
-
-  <aside class="inset">
-    <div class="img"></div>
-    <p><b>Roast day.</b> Tuesdays from 6 a.m. on a 1958 Probat we rebuilt by hand. Orders by Monday night ship the same afternoon.</p>
-  </aside>
-
-  <div class="num">No. 41<small>214 bags left from 60 kg</small></div>
-
-  <div class="specs">
-    <div>Tasting<b>White peach, bergamot, cacao nib</b></div>
-    <div>Process<b>Natural, raised beds</b></div>
-    <div>Roast<b>Light, for filter</b></div>
-    <div class="price">250 g<b>$26</b></div>
-  </div>
-
-  <div class="buy"><a href="#">Add to bag</a><a href="#">Read the brew notes</a></div>
+<h1>Hambela<i>Wamena</i></h1>
+<p class="desc">A natural Ethiopian from Guji, rested six weeks before roasting. Sweet the whole way down, with a finish that lengthens as it cools.</p>
+<div class="notes"><span>White peach</span><span>Bergamot</span><span>Cacao nib</span></div>
+<div class="buy">
+  <a class="btn" href="#">Add 250 g to bag <em>$26</em></a>
+  <span class="sub"><b>Subscribe</b> &nbsp;and it arrives every other Tuesday</span>
 </div>
+
+<div class="foot"><span><b>No. 41</b> &nbsp;214 bags left from a 60 kg lot</span><span>Roasted Tuesday mornings on a 1958 Probat &nbsp;&middot;&nbsp; 1824 SE Division, Portland</span></div>
 </body>
 </html>

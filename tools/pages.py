@@ -4,7 +4,7 @@ Run from the repo root:  python3 tools/pages.py
 Edit copy here, then re-run. The generated .html files are what GitHub Pages serves."""
 import json, math, os
 
-V = '6'                      # bump after CSS/JS changes so browsers refetch
+V = '7'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'hello@arcanedesigner.com'
 LINKEDIN_BIZ = ''            # Arcane Designer company page URL (footer). Empty = hidden.
@@ -216,7 +216,7 @@ SAMPLES_ALL = [
                 ('The coffee does the talking', 'Big photography and tasting notes instead of a slideshow of stock beans.')]),
     dict(slug='northbank-plumbing', name='Northbank Plumbing &amp; Heat', kind='Plumbing and furnace repair', url='northbankplumbing.com',
          notes=[('Call in one tap', 'When the basement is flooding, the phone number should be the biggest thing on the page.'),
-                ('Plain and trustworthy', 'A strict grid, straight talk, license and warranty right up front.'),
+                ('Less to read', 'The old site said everything at once. The new one says the important part, big.'),
                 ('Built for phones', 'Most emergency calls start on a phone, so the layout started there too.')]),
     dict(slug='hillyard-hounds', name='Hillyard Hounds', kind='Dog grooming and daycare', url='hillyardhounds.com',
          notes=[('Warm and human', 'Real dogs, real people, soft shapes. It feels like a place you&rsquo;d leave your dog.'),
