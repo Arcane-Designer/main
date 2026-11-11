@@ -225,11 +225,11 @@ SAMPLES_ALL = [
                 ('Menu in reach', 'Today&rsquo;s menu and hours, without downloading a PDF.')]),
 ]
 SAMPLES = [s for s in SAMPLES_ALL if os.path.exists(f'assets/samples/{s["slug"]}-after.webp') and os.path.exists(f'assets/samples/{s["slug"]}-before.webp')]
-LOGOS = []
-for s in SAMPLES_ALL:
+def _logo(slug, which):
     for ext in ('svg', 'png'):
-        if os.path.exists(f'assets/logos/{s["slug"]}-old.{ext}') and os.path.exists(f'assets/logos/{s["slug"]}-new.{ext}'):
-            LOGOS.append((s, ext)); break
+        if os.path.exists(f'assets/logos/{slug}-{which}.{ext}'):
+            return f'assets/logos/{slug}-{which}.{ext}'
+LOGOS = [(s, _logo(s['slug'], 'old'), _logo(s['slug'], 'new')) for s in SAMPLES_ALL if _logo(s['slug'], 'old') and _logo(s['slug'], 'new')]
 
 STEPS = [
     ('Send your site', 'Use the contact form or email a link. You&rsquo;ll get back what&rsquo;s worth changing, and a price.'),
@@ -379,8 +379,8 @@ if LOGOS:
     <div class="split-head"><h2 data-anim="left">Logo redesigns.</h2><p class="big" data-anim="right">The same made-up businesses, old logo and new.</p></div>
     <div class="logos">
 '''
-    for i, (s, ext) in enumerate(LOGOS):
-        work += f'''      <figure class="logo-card" data-anim="up" style="--d:{(i % 3) * .1:.1f}s"><div><small>Old</small><img src="assets/logos/{s["slug"]}-old.{ext}" alt="Old {s["name"]} logo" loading="lazy"></div><div><small>New</small><img src="assets/logos/{s["slug"]}-new.{ext}" alt="New {s["name"]} logo" loading="lazy"></div><figcaption>{s["name"]}</figcaption></figure>
+    for i, (s, lo, ln) in enumerate(LOGOS):
+        work += f'''      <figure class="logo-card" data-anim="up" style="--d:{(i % 3) * .1:.1f}s"><div><small>Old</small><img src="{lo}" alt="Old {s["name"]} logo" loading="lazy"></div><div><small>New</small><img src="{ln}" alt="New {s["name"]} logo" loading="lazy"></div><figcaption>{s["name"]}</figcaption></figure>
 '''
     work += '''    </div>
   </div>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9be15d"/><stop offset="1" stop-color="#3f9b1e"/></linearGradient>
+    <filter id="s"><feDropShadow dx="2" dy="2" stdDeviation="1.2" flood-color="#2b4a12" flood-opacity=".6"/></filter>
+  </defs>
+  <g transform="translate(140 10)">
+    <ellipse cx="60" cy="118" rx="58" ry="8" fill="#000" opacity=".12"/>
+    <path d="M22 30c-14 4-20 34-10 52 6 10 16 4 18-6z" fill="#8a5a2b" stroke="#5a3a1a" stroke-width="2.5"/>
+    <path d="M98 30c14 4 20 34 10 52-6 10-16 4-18-6z" fill="#8a5a2b" stroke="#5a3a1a" stroke-width="2.5"/>
+    <ellipse cx="60" cy="58" rx="38" ry="40" fill="#e0a86a" stroke="#5a3a1a" stroke-width="2.5"/>
+    <ellipse cx="60" cy="76" rx="22" ry="17" fill="#fbe7c9"/>
+    <circle cx="46" cy="52" r="6" fill="#222"/><circle cx="74" cy="52" r="6" fill="#222"/>
+    <circle cx="48" cy="50" r="2" fill="#fff"/><circle cx="76" cy="50" r="2" fill="#fff"/>
+    <ellipse cx="60" cy="68" rx="8" ry="6" fill="#222"/>
+    <path d="M52 80q8 8 16 0" stroke="#222" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M57 83q3 10 6 0" fill="#ff6b8a" stroke="#c03"/>
+    <rect x="34" y="94" width="52" height="9" rx="4" fill="#e02020" stroke="#900" stroke-width="1.5"/>
+    <circle cx="60" cy="108" r="6" fill="#ffd700" stroke="#b8860b" stroke-width="1.5"/>
+  </g>
+  <text x="200" y="196" text-anchor="middle" font-family="'Comic Sans MS','Chalkboard SE',cursive" font-weight="bold" font-size="43" fill="url(#g)" stroke="#fff" stroke-width="5" paint-order="stroke" filter="url(#s)">Hillyard Hounds</text>
+  <text x="200" y="232" text-anchor="middle" font-family="'Trebuchet MS',Verdana,sans-serif" font-size="17" font-weight="bold" fill="#8a5a2b">Grooming * Daycare * Bathing</text>
+  <g fill="#c79a5d" opacity=".7">
+    <g transform="translate(70 262)"><ellipse cx="0" cy="6" rx="7" ry="6"/><circle cx="-7" cy="-4" r="3"/><circle cx="0" cy="-7" r="3"/><circle cx="7" cy="-4" r="3"/></g>
+    <g transform="translate(200 266)"><ellipse cx="0" cy="6" rx="7" ry="6"/><circle cx="-7" cy="-4" r="3"/><circle cx="0" cy="-7" r="3"/><circle cx="7" cy="-4" r="3"/></g>
+    <g transform="translate(330 262)"><ellipse cx="0" cy="6" rx="7" ry="6"/><circle cx="-7" cy="-4" r="3"/><circle cx="0" cy="-7" r="3"/><circle cx="7" cy="-4" r="3"/></g>
+  </g>
+</svg>

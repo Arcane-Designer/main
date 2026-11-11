@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <linearGradient id="wa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffee00"/><stop offset=".5" stop-color="#ff9900"/><stop offset="1" stop-color="#ff2200"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-color="#993300"/></filter>
+  </defs>
+  <g transform="translate(140 6)">
+    <g stroke="#ff6600" stroke-width="7" stroke-linecap="round"><path d="M60 4v20M60 96v20M4 60h20M96 60h20M20 20l14 14M86 86l14 14M20 100l14-14M86 34l14-14"/></g>
+    <circle cx="60" cy="60" r="31" fill="#ffff00" stroke="#ff6600" stroke-width="4"/>
+    <rect x="36" y="46" width="20" height="12" rx="4" fill="#111"/><rect x="64" y="46" width="20" height="12" rx="4" fill="#111"/><path d="M56 50h8" stroke="#111" stroke-width="3"/>
+    <path d="M44 70q16 14 32 0" stroke="#663300" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(200 196) skewX(-8)">
+    <text x="0" y="0" text-anchor="middle" font-family="'Comic Sans MS','Chalkboard SE',cursive" font-weight="bold" font-size="60" fill="url(#wa)" stroke="#cc3300" stroke-width="2" filter="url(#sh)">Sunny Side</text>
+  </g>
+  <text x="200" y="244" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="34" fill="#ff3300" stroke="#ffff66" stroke-width="1.5" letter-spacing="10">CAFE</text>
+  <text x="200" y="280" text-anchor="middle" font-family="'Times New Roman',serif" font-style="italic" font-weight="bold" font-size="16" fill="#663300">"Where Every Morning is a Sunny One!!"</text>
+</svg>

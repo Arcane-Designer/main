@@ -303,10 +303,11 @@ section { position: relative; }
 .work-item .meta .kind i { font-style: normal; color: var(--pink-ink); }
 .work-notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px 44px; color: var(--ink-2); }
 .work-notes b { display: block; color: var(--ink); font-family: var(--font-head); font-weight: 560; font-size: 1.18rem; margin-bottom: 4px; }
-.logos { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
-.logo-card { margin: 0; background: var(--card); border: 2px solid var(--edge); display: grid; grid-template-columns: 1fr 1fr; transition: transform .25s, box-shadow .25s; }
+.logos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 30px; }
+.logo-card { margin: 0; overflow: hidden; background: var(--card); border: 2px solid var(--edge); display: grid; grid-template-columns: 1fr 1fr; transition: transform .25s, box-shadow .25s; }
 .logo-card:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0 var(--edge); }
-.logo-card > div { aspect-ratio: 4 / 3; display: grid; place-items: center; padding: 18px; position: relative; }
+.logo-card > div { aspect-ratio: 4 / 3; display: grid; place-items: center; padding: 34px 22px 22px; position: relative; min-width: 0; }
+.logo-card > div:last-child { background: #fff; }
 .logo-card > div:first-child { background: var(--bg-2); border-right: 2px dashed var(--line-2); }
 .logo-card > div img { max-height: 100%; width: 100%; object-fit: contain; }
 .logo-card small { position: absolute; left: 10px; top: 8px; font: 400 .95rem/1 var(--font-mark); letter-spacing: .08em; color: var(--ink-3); }
