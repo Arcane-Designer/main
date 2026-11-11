@@ -228,7 +228,7 @@ FAQ = [
     ('How long does it take?', 'It depends on the size of the site and how quickly feedback comes back. You&rsquo;ll get a rough timeline with your quote.'),
     ('How does payment work?', 'Half at the start and half at launch, through Stripe invoices. Card or bank transfer both work.'),
     ('What if my site needs more than the starting price covers?', 'You&rsquo;ll get a written quote before anything starts, and it won&rsquo;t change without your OK.'),
-    ('Do you write the words too?', 'Your existing text gets tidied and tightened, and short new sections get written where a page needs them. Rewriting every page from scratch can be added to the quote.'),
+    ('Do you change the words on my site?', 'Only if you want us to. We can keep your current wording exactly as it is, lightly tidy it, or write new sections where a page needs them. Rewriting every page from scratch can be added to the quote.'),
     ('Do you use AI?', 'Yes, for research, sketching ideas, building faster and catching mistakes. Every design and page is still reviewed by a person before you see it.'),
     ('Where are you based?', 'Spokane, Washington. The work is done remotely, so it doesn&rsquo;t matter where your business is.'),
 ]
