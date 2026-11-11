@@ -4,10 +4,10 @@ Run from the repo root:  python3 tools/pages.py
 Edit copy here, then re-run. The generated .html files are what GitHub Pages serves."""
 import json, math, os
 
-V = '21'                      # bump after CSS/JS changes so browsers refetch
+V = '22'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
-LINKEDIN_BIZ = ''            # Arcane Designer company page URL (footer). Empty = hidden.
+LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
 LINKEDIN_PERSON = 'https://www.linkedin.com/in/nathan-gellatly/'         # Nathan's profile URL (About block on Process). Empty = hidden.
 FONTS = ('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@600'
          '&family=Figtree:wght@400;500;600;700&family=Archivo:wdth,wght@62..125,400..900&display=swap')
@@ -93,7 +93,7 @@ def closer(title='Got an old website?', body='Send the link. You&rsquo;ll get ba
 def footer():
     links = ''.join(f'<a href="{h}">{t}</a>' for h, t in NAV + [('contact.html', 'Contact')])
     if LINKEDIN_BIZ:
-        links += f'<a href="{LINKEDIN_BIZ}" rel="noopener">LinkedIn</a>'
+        links += f'<a href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">LinkedIn</a>'
     return f'''</main>
 <footer class="site-foot">
   <div class="wrap">
@@ -189,13 +189,13 @@ def write(name, html):
 
 # ---------------------------------------------------------------- shared content
 PRICES = [
-    dict(name='Website redesign', amt='1,500', blurb='For most small business websites.',
+    dict(key='website', name='Website redesign', amt='1,500', blurb='For most small business websites.',
          items=['Up to 10 pages', 'Three design options to click through', 'One round of changes', 'Built on the platform you already use',
                 'Works on phones, tablets and computers', 'Search basics on every page', 'A week of fine-tuning after launch'], main=True),
-    dict(name='Larger website', amt='3,500', blurb='For sites with more than 10 pages, or extras like online booking, ordering or a small store.',
+    dict(key='larger', name='Larger website', amt='3,500', blurb='For sites with more than 10 pages, or extras like online booking, ordering or a small store.',
          items=['11 to 25 pages', 'Everything in the website redesign', 'Booking, ordering or store features set up on your platform',
                 'Existing content moved over and tidied', 'A written quote before work starts']),
-    dict(name='Logo redesign', amt='500', blurb='A cleaner version of your logo, or a new one.',
+    dict(key='logo', name='Logo redesign', amt='500', blurb='A cleaner version of your logo, or a new one.',
          items=['Three directions to choose from', 'One round of changes', 'Files for web, print and social media', 'Color and font notes for consistency']),
 ]
 
@@ -363,7 +363,7 @@ home += f'''  </div></div>
     <div class="prices">
 '''
 for i, p in enumerate(PRICES):
-    home += f'''      <div class="price{" main" if p.get("main") else ""}" data-anim="up" style="--d:{i * .12:.2f}s"><h3>{p["name"]}</h3><span class="from">Starting at</span><span class="amt">${p["amt"]}</span><p>{p["blurb"]}</p></div>
+    home += f'''      <a class="price link-card{" main" if p.get("main") else ""}" href="pricing.html#plan-{p["key"]}" data-anim="up" style="--d:{i * .12:.2f}s"><h3>{p["name"]}</h3><span class="from">Starting at</span><span class="amt">${p["amt"]}</span><p>{p["blurb"]}</p><span class="see">See what&rsquo;s included</span></a>
 '''
 home += '''    </div>
     <p style="margin-top:40px"><a class="tlink" href="pricing.html">What&rsquo;s included</a></p>
@@ -456,7 +456,7 @@ proc += '''<section class="intro glow">
 for i, (t, d) in enumerate(STEPS):
     proc += f'''      <div class="proc-step" style="--c:{STEP_COLORS[i]}"><span class="n">{i + 1:02d}</span><h3>{t}</h3><p>{d}</p></div>
 '''
-who = f'<a class="tlink" href="{LINKEDIN_PERSON}" rel="noopener">Nathan Gellatly</a>' if LINKEDIN_PERSON else '<span class="tlink">Nathan Gellatly</span>'
+who = f'<a class="tlink" href="{LINKEDIN_PERSON}" target="_blank" rel="noopener">Nathan Gellatly</a>' if LINKEDIN_PERSON else '<span class="tlink">Nathan Gellatly</span>'
 proc += f'''    </div>
   </div>
 </section>
@@ -511,10 +511,10 @@ pr += '''<section class="intro glow">
 for i, p in enumerate(PRICES):
     items = ''.join(f'<li>{x}</li>' for x in p['items'])
     flag = '<span class="flag">Most common</span>' if p.get('main') else ''
-    pr += f'''      <div class="price{" main" if p.get("main") else ""}" data-anim="up" style="--d:{i * .12:.2f}s">{flag}<h3>{p["name"]}</h3><span class="from">Starting at</span><span class="amt">${p["amt"]}</span><p>{p["blurb"]}</p><ul>{items}</ul>{btn("contact.html", "Get started", "" if p.get("main") else "blue")}</div>
+    pr += f'''      <div class="price{" main" if p.get("main") else ""}" id="plan-{p["key"]}" data-anim="up" style="--d:{i * .12:.2f}s">{flag}<h3>{p["name"]}</h3><span class="from">Starting at</span><span class="amt">${p["amt"]}</span><p>{p["blurb"]}</p><ul>{items}</ul>{btn("contact.html?plan=" + p["key"], "Get started", "" if p.get("main") else "dark")}</div>
 '''
 pr += '''    </div>
-    <p class="muted small" style="margin-top:30px;max-width:68ch">These are early prices and will go up as the portfolio grows. Doing a website and a logo together lowers the total.</p>
+    <p class="muted small" style="margin-top:30px">These are early prices and will go up as the portfolio grows. Doing a website and a logo together lowers the total.</p>
   </div>
 </section>
 <section class="sec gray-sec" style="padding-block:clamp(56px,6vw,84px)">
@@ -553,11 +553,11 @@ ct = head('Start a Project | Arcane Designer',
 ct += header('contact.html')
 ct += f'''<section class="intro glow contact-intro">
   <div class="wrap">
+    <img src="assets/arc/presents-floor.webp" alt="" width="499" height="900" data-anim="left">
     <div data-anim="up">
       <h1>Start a project.</h1>
       <p class="big">Send a link to your current site and a little about what you want. You&rsquo;ll get a reply by email with ideas and a price.</p>
     </div>
-    <img src="assets/arc/presents-floor.webp" alt="" width="499" height="900" data-anim="right">
   </div>
 </section>
 <section class="sec" style="padding-top:0">
@@ -572,13 +572,15 @@ ct += f'''<section class="intro glow contact-intro">
         <div class="field"><label for="c-site">Current website</label><input id="c-site" name="website" type="text" inputmode="url" placeholder="yourbusiness.com" required></div>
       </div>
       <fieldset class="field">
-        <legend>What are you interested in? <span class="opt">(optional)</span></legend>
+        <legend>Which package fits? <span class="opt">(optional, pick any)</span></legend>
         <div class="choices">
-          <label><input type="checkbox" name="interest" value="Website redesign"> Website redesign</label>
-          <label><input type="checkbox" name="interest" value="Logo redesign"> Logo redesign</label>
-          <label><input type="checkbox" name="interest" value="Something else"> Something else</label>
-          <label><input type="checkbox" name="interest" value="Not sure yet"> Not sure yet</label>
+          <label><input type="checkbox" name="package" value="Website redesign (from $1,500)" data-plan="website"> Website redesign <small>$1,500+</small></label>
+          <label><input type="checkbox" name="package" value="Larger website (from $3,500)" data-plan="larger"> Larger website <small>$3,500+</small></label>
+          <label><input type="checkbox" name="package" value="Logo redesign (from $500)" data-plan="logo"> Logo redesign <small>$500+</small></label>
+          <label><input type="checkbox" name="package" value="Something else"> Something else</label>
+          <label><input type="checkbox" name="package" value="Not sure yet"> Not sure yet</label>
         </div>
+        <a class="hint tlink" href="pricing.html" style="justify-self:start">Compare packages</a>
       </fieldset>
       <div class="field"><label for="c-msg">Anything else? <span class="opt">(optional)</span></label><span class="hint">Something else you need, a deadline, a budget. Whatever&rsquo;s useful.</span><textarea id="c-msg" name="message"></textarea></div>
       <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -587,6 +589,7 @@ ct += f'''<section class="intro glow contact-intro">
     </form>
     <aside class="contact-side" data-anim="right">
       <div class="card"><h3>Prefer email?</h3><a class="mail" href="mailto:{EMAIL}">{EMAIL}</a></div>
+      <div class="card"><h3>Or find us on LinkedIn</h3><a class="tlink" href="{LINKEDIN_BIZ}" target="_blank" rel="noopener" style="justify-self:start">Arcane Designer on LinkedIn</a></div>
       <div class="card"><h3>What happens next</h3>
         <ol class="next-steps">
           <li><b>1</b><span>You get a short list of what&rsquo;s worth changing, and a price.</span></li>

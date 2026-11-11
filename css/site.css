@@ -617,3 +617,23 @@ p { text-wrap: pretty; }
   .compare .handle::after { width: 32px; height: 36px; background-size: 16px; }
 }
 @media (max-width: 900px) { .contact-grid { grid-template-columns: 1fr; } .contact-side { position: static; } }
+
+/* round 6 */
+.perch { right: 2%; width: clamp(130px, 15vw, 210px); }
+.perch img { animation: none; }
+.hero-stage .bubble { right: calc(2% + clamp(130px, 15vw, 210px) * .9); }
+.hero-x { padding-bottom: clamp(36px, 6vh, 70px); }
+.pin-reveal .hero-stage { margin-top: clamp(80px, 11vh, 110px); }
+.price { overflow: visible; }
+.price::before { border-radius: inherit; }
+.link-card { text-decoration: none; color: inherit; cursor: pointer; }
+.link-card .see { font-weight: 700; font-size: .95rem; color: var(--teal-ink); margin-top: 4px; }
+.link-card:hover .see { text-decoration: underline; text-underline-offset: 4px; }
+.price[id] { scroll-margin-top: calc(var(--head-h) + 40px); }
+.price:target { animation: picked 1.6s ease 1; box-shadow: 0 0 0 3px var(--teal), 9px 9px 0 var(--teal); }
+@keyframes picked { 0%, 60% { transform: translateY(-6px); } 100% { transform: none; } }
+.form-card .choices label small { color: var(--ink-3); font-weight: 500; font-size: .8em; }
+.form-card .choices label:has(input:checked) small { color: rgba(12,26,21,.7); }
+.contact-intro .wrap { grid-template-columns: auto minmax(0, 1fr); }
+.contact-intro img { width: clamp(100px, 10vw, 140px); }
+.fl { transition: none; }

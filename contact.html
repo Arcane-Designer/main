@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@600&family=Figtree:wght@400;500;600;700&family=Archivo:wdth,wght@62..125,400..900&display=swap">
-<link rel="stylesheet" href="css/site.css?v=21">
+<link rel="stylesheet" href="css/site.css?v=22">
 <script>document.documentElement.className='js'</script>
 </head>
 <body>
@@ -35,11 +35,11 @@
 <main id="main">
 <section class="intro glow contact-intro">
   <div class="wrap">
+    <img src="assets/arc/presents-floor.webp" alt="" width="499" height="900" data-anim="left">
     <div data-anim="up">
       <h1>Start a project.</h1>
       <p class="big">Send a link to your current site and a little about what you want. You&rsquo;ll get a reply by email with ideas and a price.</p>
     </div>
-    <img src="assets/arc/presents-floor.webp" alt="" width="499" height="900" data-anim="right">
   </div>
 </section>
 <section class="sec" style="padding-top:0">
@@ -54,13 +54,15 @@
         <div class="field"><label for="c-site">Current website</label><input id="c-site" name="website" type="text" inputmode="url" placeholder="yourbusiness.com" required></div>
       </div>
       <fieldset class="field">
-        <legend>What are you interested in? <span class="opt">(optional)</span></legend>
+        <legend>Which package fits? <span class="opt">(optional, pick any)</span></legend>
         <div class="choices">
-          <label><input type="checkbox" name="interest" value="Website redesign"> Website redesign</label>
-          <label><input type="checkbox" name="interest" value="Logo redesign"> Logo redesign</label>
-          <label><input type="checkbox" name="interest" value="Something else"> Something else</label>
-          <label><input type="checkbox" name="interest" value="Not sure yet"> Not sure yet</label>
+          <label><input type="checkbox" name="package" value="Website redesign (from $1,500)" data-plan="website"> Website redesign <small>$1,500+</small></label>
+          <label><input type="checkbox" name="package" value="Larger website (from $3,500)" data-plan="larger"> Larger website <small>$3,500+</small></label>
+          <label><input type="checkbox" name="package" value="Logo redesign (from $500)" data-plan="logo"> Logo redesign <small>$500+</small></label>
+          <label><input type="checkbox" name="package" value="Something else"> Something else</label>
+          <label><input type="checkbox" name="package" value="Not sure yet"> Not sure yet</label>
         </div>
+        <a class="hint tlink" href="pricing.html" style="justify-self:start">Compare packages</a>
       </fieldset>
       <div class="field"><label for="c-msg">Anything else? <span class="opt">(optional)</span></label><span class="hint">Something else you need, a deadline, a budget. Whatever&rsquo;s useful.</span><textarea id="c-msg" name="message"></textarea></div>
       <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -69,6 +71,7 @@
     </form>
     <aside class="contact-side" data-anim="right">
       <div class="card"><h3>Prefer email?</h3><a class="mail" href="mailto:nathan@arcanedesigner.com">nathan@arcanedesigner.com</a></div>
+      <div class="card"><h3>Or find us on LinkedIn</h3><a class="tlink" href="https://www.linkedin.com/company/arcane-designer/" target="_blank" rel="noopener" style="justify-self:start">Arcane Designer on LinkedIn</a></div>
       <div class="card"><h3>What happens next</h3>
         <ol class="next-steps">
           <li><b>1</b><span>You get a short list of what&rsquo;s worth changing, and a price.</span></li>
@@ -88,13 +91,13 @@
         <span>Website and logo redesigns.<br>Arcane Designer LLC, Spokane, Washington.</span>
       </div>
       <div style="display:grid;gap:12px;align-content:start">
-        <nav aria-label="Footer"><a href="work.html">Work</a><a href="process.html">Process</a><a href="pricing.html">Pricing</a><a href="contact.html">Contact</a></nav>
+        <nav aria-label="Footer"><a href="work.html">Work</a><a href="process.html">Process</a><a href="pricing.html">Pricing</a><a href="contact.html">Contact</a><a href="https://www.linkedin.com/company/arcane-designer/" target="_blank" rel="noopener">LinkedIn</a></nav>
         <a href="mailto:nathan@arcanedesigner.com">nathan@arcanedesigner.com</a>
         <span>&copy; <span id="year">2026</span> Arcane Designer LLC</span>
       </div>
     </div>
   </div>
 </footer>
-<script src="js/site.js?v=21" defer></script>
+<script src="js/site.js?v=22" defer></script>
 </body>
 </html>

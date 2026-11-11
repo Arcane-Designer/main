@@ -224,17 +224,36 @@ onScroll();
   els.forEach((e) => io.observe(e));
 })();
 
-/* ---- hero: floating hexagons lean away from the mouse ---- */
+/* ---- hero: floating hexagons lean away from the mouse, eased every frame so it never stutters ---- */
 (() => {
   const hero = document.querySelector('.hero-x');
   if (!hero || REDUCE || matchMedia('(hover: none)').matches) return;
-  const fls = [...hero.querySelectorAll('.fl')];
+  const fls = [...hero.querySelectorAll('.fl')].map((el) => ({ el, k: parseFloat(el.style.getPropertyValue('--k')) || .5, x: 0, y: 0 }));
+  let tx = 0, ty = 0, running = false;
+  const step = () => {
+    let moving = false;
+    fls.forEach((f) => {
+      const gx = -tx * 46 * f.k, gy = -ty * 36 * f.k;
+      f.x += (gx - f.x) * .12; f.y += (gy - f.y) * .12;
+      if (Math.abs(gx - f.x) > .05 || Math.abs(gy - f.y) > .05) moving = true;
+      f.el.style.setProperty('--mx', f.x.toFixed(2) + 'px'); f.el.style.setProperty('--my', f.y.toFixed(2) + 'px');
+    });
+    running = moving; if (moving) requestAnimationFrame(step);
+  };
+  const kick = () => { if (!running) { running = true; requestAnimationFrame(step); } };
   hero.addEventListener('pointermove', (e) => {
     const r = hero.getBoundingClientRect();
-    const dx = (e.clientX - r.left) / r.width - .5, dy = (e.clientY - r.top) / r.height - .5;
-    fls.forEach((f) => { const k = +getComputedStyle(f).getPropertyValue('--k') || .5; f.style.setProperty('--mx', (-dx * 46 * k).toFixed(1) + 'px'); f.style.setProperty('--my', (-dy * 36 * k).toFixed(1) + 'px'); });
-  });
-  hero.addEventListener('pointerleave', () => fls.forEach((f) => { f.style.setProperty('--mx', '0px'); f.style.setProperty('--my', '0px'); }));
+    tx = (e.clientX - r.left) / r.width - .5; ty = (e.clientY - r.top) / r.height - .5; kick();
+  }, { passive: true });
+  hero.addEventListener('pointerleave', () => { tx = 0; ty = 0; kick(); });
+})();
+
+/* ---- Start a project: "Get started" on a pricing card pre-picks that package ---- */
+(() => {
+  const plan = new URLSearchParams(location.search).get('plan');
+  if (!plan) return;
+  const box = document.querySelector(`input[data-plan="${CSS.escape(plan)}"]`);
+  if (box) box.checked = true;
 })();
 
 /* ---- logo: hover makes the three hexagons charge outward, snap together past each other, bounce,
