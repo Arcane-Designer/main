@@ -4,7 +4,7 @@ Run from the repo root:  python3 tools/pages.py
 Edit copy here, then re-run. The generated .html files are what GitHub Pages serves."""
 import json, math, os
 
-V = '24'                      # bump after CSS/JS changes so browsers refetch
+V = '25'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -368,7 +368,6 @@ for i, p in enumerate(PRICES):
     home += f'''      <a class="price link-card{" main" if p.get("main") else ""}" href="pricing.html#plan-{p["key"]}" data-anim="up" style="--d:{i * .12:.2f}s"><h3>{p["name"]}</h3><span class="from">Starting at</span><span class="amt">${p["amt"]}</span><p>{p["blurb"]}</p><span class="see">See what&rsquo;s included</span></a>
 '''
 home += '''    </div>
-    <p style="margin-top:40px"><a class="tlink" href="pricing.html">What&rsquo;s included</a></p>
   </div>
 </section>
 '''
