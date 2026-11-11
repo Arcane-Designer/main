@@ -38,4 +38,4 @@ The three examples on the Work page are made-up businesses, labeled as samples. 
 
 ## Brand
 
-Colors: navy `#1A113D`, blue `#238DBB`, teal `#08D8A0`, pink `#FF6B93`, gray `#EEEEEE`. The hexagon tiles come from the logo. Arc (the mascot) appears on every page; art is in `assets/arc/`. Fonts: Fraunces (headings), Figtree (body), Bebas Neue (wordmark), Caveat (handwritten notes, sparingly). Copy follows the voice guide one folder up (`AI-Tone-Guide.md`): plain, first person, no em dashes, no hype words.
+Colors: navy `#1A113D`, blue `#238DBB`, teal `#08D8A0`, pink `#FF6B93`, gray `#EEEEEE`. The hexagon tiles come from the logo. Arc (the mascot) appears on every page; art is in `assets/arc/`. Fonts: Fraunces (headings), Figtree (body), Bebas Neue (wordmark), Caveat (handwritten notes, sparingly). Copy follows the voice guide in the project folder (`Brand/AI-Tone-Guide.md`): plain, first person, no em dashes, no hype words.
