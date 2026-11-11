@@ -2,9 +2,9 @@
 """Writes the site's HTML pages. Shared head, header and footer live here so every page matches.
 Run from the repo root:  python3 tools/pages.py
 Edit copy here, then re-run. The generated .html files are what GitHub Pages serves."""
-import json, math, os
+import json, math, os, re
 
-V = '25'                      # bump after CSS/JS changes so browsers refetch
+V = '26'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -30,7 +30,7 @@ def btn(href, text, cls=''):
 
 
 def head(title, desc, path, extra='', noindex=False, schema=None):
-    canon = BASE + '/' + ('' if path == 'index.html' else path)
+    canon = BASE + '/' + ('' if path == 'index.html' else path.replace('.html', ''))
     s = f'''<!doctype html>
 <html lang="en" class="no-js">
 <head>
@@ -184,6 +184,9 @@ def hexsvg(label='Six steps'):
 
 
 def write(name, html):
+    # clean addresses: link to /pricing instead of /pricing.html (GitHub Pages serves both)
+    html = re.sub(r'href="(work|process|pricing|contact|questionnaire)\.html', r'href="\1', html)
+    html = html.replace('href="./"', 'href="/"').replace('href="/"', 'href="/"')
     with open(name, 'w') as f:
         f.write(html)
     print('wrote', name)
