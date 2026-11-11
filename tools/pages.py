@@ -4,7 +4,7 @@ Run from the repo root:  python3 tools/pages.py
 Edit copy here, then re-run. The generated .html files are what GitHub Pages serves."""
 import json, math, os, re
 
-V = '29'                      # bump after CSS/JS changes so browsers refetch
+V = '30'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
