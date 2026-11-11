@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
-Disallow: /thank-you.html
+Disallow: /questionnaire.html
+Disallow: /tools/
 
 Sitemap: https://arcanedesigner.com/sitemap.xml

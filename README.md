@@ -1,105 +1,41 @@
-# Arcane Designer: Website
+# Arcane Designer website
 
-**Arcane Designer LLC**, *"Where Strategy Meets Sorcery"*
+arcanedesigner.com. One-time website and logo redesigns for small businesses in Spokane, run by Nathan Gellatly (Arcane Designer LLC). Static HTML/CSS/JS on GitHub Pages, no framework.
 
-A **product-first** static storefront for instant-download AI marketing products: prompt packs,
-templates, playbooks, toolkits, and mini-courses. Pure HTML/CSS/JS, no build step, no framework.
-Sells through **Gumroad** (embeddable buy buttons) and grows an email list with a free lead magnet.
-Designed for GitHub Pages.
+## Pages
 
----
+| File | What it is |
+|---|---|
+| `index.html` | Home: offer, before/after slider, annotated "what I look for" example, steps, about Nathan, reviews carousel, prices |
+| `work.html` | Work and reviews: before/after examples, each with its client's review under it once there is one |
+| `process.html` | The full process, the AI note, short FAQ |
+| `pricing.html` | Prices, what's included, full FAQ (with FAQ structured data for search and AI answers) |
+| `contact.html` | Start-a-project form |
+| `questionnaire.html` | Private client questionnaire (noindex). Send the link to clients after they say yes |
+| `404.html` | Not-found page |
 
-## Project structure
+`math/`, `neosai/` and `blastforge/` are Nathan's separate personal apps. Leave them alone when working on the business site.
+
+## Editing
+
+The HTML is generated. Edit copy in `tools/pages.py`, then run:
 
 ```
-/
-├── index.html              # Home (product-first): hero, bestsellers, collections, lead magnet, bundle, testimonials
-├── shop.html               # The Arcane Vault: faceted filter (category/level/price) + sort, renders from the catalog
-├── product.html            # Product-detail TEMPLATE: reads ?p=<slug> and renders from the catalog
-├── free.html               # Free "Marketer's Spellbook" lead magnet + email capture
-├── thank-you.html          # Post-signup delivery + tripwire offer (noindexed)
-├── about.html              # Founder story + trust markers (products only, no services)
-├── contact.html            # Support form + FAQ (delivery/refunds/license)
-├── 404.html                # On-brand not-found page
-├── blog.html               # Blog index: real posts, topic filter, sidebar capture
-├── blog/
-│   ├── ai-marketing-is-not-cheating.html
-│   ├── 5-prompts-replace-content-team.html
-│   └── one-ai-tool-vs-a-stack.html
-├── assets/
-│   ├── data/products.js    # ★ THE SINGLE SOURCE OF TRUTH: the whole catalog
-│   └── images/             # Logo + 8 "Arc" mascot poses
-├── css/styles.css          # Design system (BlastForge palette, glass cards, components)
-├── js/main.js              # Nav, product covers, shop filtering, product rendering, forms, JSON-LD
-├── favicon.svg             # Hex-cluster favicon
-├── sitemap.xml · robots.txt
-└── README.md
+python3 tools/pages.py
 ```
 
-**How the store renders:** `assets/data/products.js` defines every product once. `js/main.js` reads it to
-build the shop grid, the home bestsellers/collections, and each product-detail page (it generates the
-product "cover" art as inline SVG, so there are no image files to make). Edit the data, and every page updates.
+Styles: `css/site.css`. Behavior: `js/site.js`. Bump `V` in `tools/pages.py` after changing CSS or JS so browsers fetch the new files.
 
----
+## Things to fill in (top of `js/site.js`)
 
-## ✅ Go-live checklist (do these before launch)
+- `SITE.email`: the business email address (Google Workspace).
+- `SITE.forms.contact` and `SITE.forms.questionnaire`: form endpoints (Formspree). Until these are set, the forms tell visitors to email instead.
+- `REVIEWS`: add real reviews here. The home page reviews section stays hidden until there is at least one. Preview the layout with `?demo-reviews` on the home page.
 
-Everything works in "demo mode" today. To take real money and send real email:
+## Work samples
 
-1. **Wire up Gumroad.** In `assets/data/products.js`:
-   - Set `GUMROAD_USER` (top of the file) to your Gumroad username.
-   - For each product, set `permalink` to its Gumroad permalink (the part after `/l/` in the product URL).
-     While a `permalink` is blank, that product's Buy button shows **"Coming soon"** (never a dead link).
-   - The Buy button opens the Gumroad overlay automatically (`gumroad.js` is loaded on product pages).
+The three examples on the Work page are made-up businesses, labeled as samples. Their source pages are in `tools/samples-src/`. To add a real client project, add an entry to `SAMPLES` in `tools/pages.py` (drop the sample pill), put `<slug>-before.webp` and `<slug>-after.webp` (1440x900, top of the homepage) in `assets/samples/`, and attach the client's review.
 
-2. **Connect email capture.** Pick one and set it on every `<form data-arcane-form>`:
-   - **Formspree:** set `action="https://formspree.io/f/XXXX"` (keep `method="POST"`). Add a hidden
-     `<input type="hidden" name="_next" value="https://YOURDOMAIN/thank-you.html">` to redirect after submit.
-   - **Netlify Forms:** add `data-netlify="true"` to the form tag (host on Netlify).
-   - **Kit/ConvertKit/Mailchimp/Beehiiv:** paste their embed and point the free magnet at it.
-   - Until you set a real `action`, forms show a success message and redirect locally (demo mode).
-   - Set the actual download link on `thank-you.html` → `#download-btn`.
+## Brand
 
-3. **Set your real domain.** Find/replace `https://arcanedesigner.com` across all `.html`,
-   `sitemap.xml`, and `robots.txt` with your real URL (used by canonical tags, Open Graph, and JSON-LD).
-
-4. **Replace the placeholder social proof.** The reviews, star ratings, and the trust-band numbers
-   (`SITE.stats` in `products.js`, plus the About/Home stat blocks) are **sample content**. Swap in real
-   figures, or remove them, before launch. Don't present sample reviews as real.
-
-5. **Deploy.** Push to GitHub and enable Pages (Settings → Pages → Deploy from branch → `main` → `/root`).
-   For a custom domain, add a `CNAME` file and point your DNS at GitHub Pages.
-
----
-
-## Editing content
-
-- **Add / edit a product:** copy a product object in `assets/data/products.js`, give it a unique
-  `slug` and `id`, fill in `name`, `tagline`, `priceCents`, `category`, `whatsInside`, etc. It appears
-  in the shop, gets a detail page at `product.html?p=<slug>`, and generates its own cover art. No image needed.
-- **Add a collection tile / category:** edit `CATEGORIES` and `collections` in `products.js`.
-- **Add a blog post:** copy a file in `blog/`, update the content and the `<head>`/JSON-LD, then add a
-  card to `blog.html`.
-- **Swap the mascot in a spot:** the 8 Arc poses are in `assets/images/`.
-
-## Brand tokens (CSS variables in `css/styles.css`)
-
-| Variable | Hex | Use |
-|---|---|---|
-| `--navy` | `#1A113D` | Primary dark canvas |
-| `--blue` | `#238DBB` | Secondary accent / gradients |
-| `--teal` | `#08D8A0` | Primary accent, CTAs, hover glow |
-| `--pink` | `#FF6B93` | Warm accent, **Buy** buttons |
-| `--gray` | `#EEEEEE` | Light sections |
-
-**Fonts:** Oswald (headings) + DM Sans (body), via Google Fonts.
-**Accessibility:** skip links, focus-visible outlines, labelled inputs, `prefers-reduced-motion` support.
-
-## Local preview
-
-No build needed. From this folder: `python3 -m http.server 8000` then open `http://localhost:8000`.
-The shop and product pages use query-param routing, so preview over `http://` (not `file://`).
-
-## License
-
-© 2026 Arcane Designer LLC. All rights reserved.
+Colors: navy `#1A113D`, blue `#238DBB`, teal `#08D8A0`, pink `#FF6B93`, gray `#EEEEEE`. The hexagon tiles come from the logo. Arc (the mascot) appears on every page; art is in `assets/arc/`. Fonts: Fraunces (headings), Figtree (body), Bebas Neue (wordmark), Caveat (handwritten notes, sparingly). Copy follows the voice guide one folder up (`AI-Tone-Guide.md`): plain, first person, no em dashes, no hype words.

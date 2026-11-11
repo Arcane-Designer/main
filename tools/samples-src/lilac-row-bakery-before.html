@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Lilac Row Bakery :: Home</title>
+<style>
+body{margin:0;padding:0;font-family:Georgia,"Times New Roman",serif;font-size:12px;color:#6b5a6e;
+  background-color:#d9c7e3;
+  background-image:
+    radial-gradient(circle at 10px 10px,#e8dcef 3px,transparent 4px),
+    radial-gradient(circle at 30px 30px,#cdb6da 3px,transparent 4px);
+  background-size:40px 40px;}
+#wrap{width:960px;margin:14px auto 0;background:#fffafc;border:1px solid #b79ac6;box-shadow:0 0 8px #9b7fab;}
+#banner{height:150px;position:relative;overflow:hidden;
+  background:linear-gradient(#f7e3f0,#e9c8de 60%,#d7aecb);border-bottom:4px double #b07fa8;}
+#banner .title{position:absolute;left:150px;top:28px;font-family:"Brush Script MT","Lucida Handwriting",cursive;font-size:58px;color:#8a3f7f;text-shadow:2px 2px 0 #fff,3px 3px 3px #a77;}
+#banner .tag{position:absolute;left:172px;top:100px;font-family:"Comic Sans MS",Verdana,sans-serif;font-size:14px;color:#7a5a80;font-style:italic;}
+#banner .ribbon{position:absolute;right:30px;top:22px;width:160px;height:104px;}
+/* clip-art cupcake */
+.cake{position:absolute;left:34px;top:22px;width:100px;height:110px;}
+.cake .top{position:absolute;left:8px;top:8px;width:84px;height:58px;border-radius:44px 44px 18px 18px;background:radial-gradient(circle at 35% 30%,#fff 0 6px,#ffb3d9 7px,#f27ab8 70%);box-shadow:inset -6px -6px 0 rgba(0,0,0,.08);}
+.cake .cherry{position:absolute;left:42px;top:-2px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0 2px,#e2183a 4px,#a00 100%);}
+.cake .cup{position:absolute;left:14px;top:60px;width:72px;height:46px;background:repeating-linear-gradient(90deg,#f9d77a 0 8px,#e5b443 8px 12px);clip-path:polygon(0 0,100% 0,88% 100%,12% 100%);}
+#nav{background:linear-gradient(#a35d97,#7d3b73);height:30px;border-top:1px solid #d9a5cf;border-bottom:1px solid #5a2552;padding-left:6px;}
+#nav a{float:left;display:block;margin:4px 3px 0;padding:4px 14px;font-family:Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:#fff;text-decoration:none;
+  background:linear-gradient(#c58ab9,#94508a);border:1px solid #5d2a55;border-radius:4px 4px 0 0;box-shadow:inset 1px 1px 0 #e9c3e1;}
+#nav a.on{background:linear-gradient(#fff,#f1dcec);color:#7d3b73;}
+#marquee{background:#fff2b3;border-bottom:1px dashed #d8b84c;padding:4px 10px;font-family:Verdana,sans-serif;font-size:11px;color:#9b6a00;}
+#cols{overflow:hidden;padding:12px;}
+#side{float:left;width:200px;}
+.box{border:1px solid #d4b5d8;background:#fbf1f8;margin-bottom:10px;}
+.box h3{margin:0;padding:4px 8px;font-family:Verdana,sans-serif;font-size:11px;color:#fff;background:linear-gradient(#c890bf,#a2649a);}
+.box div{padding:6px 8px;line-height:1.5;font-size:11px;}
+.box ul{margin:0;padding:0 0 0 16px;}
+.fb{display:block;margin-top:4px;background:#3b5998;color:#fff;font-family:Arial;font-size:11px;font-weight:bold;padding:3px 6px;border-radius:3px;text-align:center;}
+#main{float:left;width:500px;margin-left:12px;}
+#main h1{font-family:Georgia;font-size:20px;color:#9a4c8f;margin:0 0 6px;border-bottom:1px dotted #c9a0c3;padding-bottom:4px;}
+#main p{line-height:1.55;margin:0 0 9px;}
+.photo{float:right;margin:0 0 8px 10px;width:170px;height:128px;border:4px solid #fff;outline:1px solid #ccb;box-shadow:2px 2px 4px #aaa;
+  }
+.caption{clear:right;float:right;width:178px;font-size:10px;text-align:center;color:#998;margin:-4px 0 6px;}
+.btn{display:inline-block;padding:5px 14px;font-family:Verdana;font-size:11px;font-weight:bold;color:#fff;text-decoration:none;
+  background:linear-gradient(#e78ccd,#b4458f);border:1px solid #7b2b62;border-radius:6px;box-shadow:inset 0 1px 0 #f7c4e7,1px 1px 2px #888;text-shadow:-1px -1px 0 #7b2b62;}
+.special{border:2px dashed #e3a1cb;background:#fff6fb;padding:8px;margin:10px 0;}
+.special b{color:#c0307f;}
+#right{float:left;width:200px;margin-left:12px;}
+.counter{display:inline-block;background:#000;color:#3f3;font-family:"Courier New",monospace;font-size:13px;padding:2px 4px;letter-spacing:2px;border:2px inset #777;}
+.guest{font-size:10px;font-style:italic;border-bottom:1px dotted #dcc;padding:3px 0;}
+#foot{clear:both;border-top:1px solid #d4b5d8;background:#f4e4f0;padding:8px;text-align:center;font-size:10px;color:#a08aa4;}
+#foot a{color:#8a3f7f;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="banner">
+    <div class="cake"><div class="top"></div><div class="cherry"></div><div class="cup"></div></div>
+    <div class="title">Lilac Row Bakery</div>
+    <div class="tag">~ Baked Fresh With Love Every Morning! ~</div>
+    <svg class="ribbon" viewBox="0 0 160 104"><g fill="#fff" stroke="#c78dbb" stroke-width="2"><circle cx="80" cy="52" r="44"/></g><g fill="#a35d97" font-family="Georgia" text-anchor="middle"><text x="80" y="42" font-size="12">Serving</text><text x="80" y="60" font-size="16" font-weight="bold">Spokane</text><text x="80" y="76" font-size="12">since 2004</text></g></svg>
+  </div>
+  <div id="nav"><a class="on" href="#">Home</a><a href="#">About Us</a><a href="#">Our Breads</a><a href="#">Cakes</a><a href="#">Wedding Gallery</a><a href="#">Guestbook</a><a href="#">Links</a><a href="#">Contact</a></div>
+  <div id="marquee">&#9733; NEW!! Cardamom Buns now available on Saturdays!! &#9733; Call ahead for Holiday Orders &#9733; We are now on Facebook &#9733;</div>
+  <div id="cols">
+    <div id="side">
+      <div class="box"><h3>Store Hours</h3><div>Tuesday - Sunday<br>7:00am - 2:00pm<br>Closed Mondays<br><i>(Hours may change on holidays)</i></div></div>
+      <div class="box"><h3>Quick Links</h3><div><ul><li>Sourdough</li><li>Cardamom Buns</li><li>Wedding Cakes</li><li>Cookies &amp; Bars</li><li>Gift Certificates</li><li>Order Form (PDF)</li><li>Directions</li></ul></div></div>
+      <div class="box"><h3>Join Our Mailing List!</h3><div>Name:<br><input size="18"><br>Email:<br><input size="18"><br><input type="button" value="Submit"></div></div>
+      <div class="box"><h3>Find Us</h3><div>Like us on Facebook!<span class="fb">f &nbsp;Facebook</span></div></div>
+    </div>
+    <div id="main">
+      <h1>Welcome to our website!</h1>
+      <div class="photo"><svg width="170" height="128" viewBox="0 0 170 128" style="display:block;filter:blur(.6px) saturate(.85)"><defs><radialGradient id="lf" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#e2a95e"/><stop offset=".6" stop-color="#b9732f"/><stop offset="1" stop-color="#7c4419"/></radialGradient></defs><rect width="170" height="128" fill="#d9c6a4"/><rect y="88" width="170" height="40" fill="#8b6b4a"/><ellipse cx="86" cy="96" rx="66" ry="12" fill="#5c4127" opacity=".5"/><ellipse cx="86" cy="70" rx="62" ry="34" fill="url(#lf)"/><g stroke="#f3d9a8" stroke-width="4" stroke-linecap="round" opacity=".9"><path d="M52 58q10-14 22-16"/><path d="M74 66q12-16 26-18"/><path d="M98 72q10-12 22-14"/></g><circle cx="150" cy="20" r="30" fill="#fff" opacity=".35"/></svg></div><div class="caption">Our famous Sourdough Loaf</div>
+      <p>Thank you for visiting the <b>Lilac Row Bakery</b> website! We are a small family owned bakery located in Spokane, Washington. We have been baking breads, pastries and cakes for our neighbors for many years and we are so happy you stopped by.</p>
+      <p>All of our breads are made from scratch every morning using only the finest ingredients. Our sourdough starter is over 10 years old! Please take a look around our site to learn more about what we offer. Don't forget to sign our Guestbook!!</p>
+      <div class="special"><b>THIS MONTH'S SPECIAL:</b> Buy 6 Cardamom Buns get 1 FREE! Must mention website. Not valid with other offers. Expires 12/31/2013.</div>
+      <p><b>Wedding Cakes:</b> We make beautiful custom wedding cakes for any size celebration. Please call us to set up a tasting appointment. Click below to see pictures of our cakes in the gallery.</p>
+      <p><a class="btn" href="#">View Gallery &raquo;</a> &nbsp; <a class="btn" href="#">Download Menu</a></p>
+      <p style="font-size:10px;color:#a9a">* Prices subject to change without notice.</p>
+    </div>
+    <div id="right">
+      <div class="box"><h3>Visitors</h3><div style="text-align:center">You are visitor #<br><span class="counter">004817</span></div></div>
+      <div class="box"><h3>Guestbook</h3><div>
+        <div class="guest">"Best cinnamon rolls in town!!" - Karen</div>
+        <div class="guest">"Our wedding cake was perfect thank you" - J&amp;M</div>
+        <div class="guest">"yum!!!" - anonymous</div>
+        <a href="#" style="color:#8a3f7f">Sign the Guestbook</a></div></div>
+      <div class="box"><h3>Contact Us</h3><div>Lilac Row Bakery<br>Spokane, WA<br>Ph: (509) 555-0187<br>lilacrowbakery@aol.com</div></div>
+      <div class="box"><h3>We Accept</h3><div>Cash, Check, Visa, MasterCard</div></div>
+    </div>
+  </div>
+  <div id="foot">Home | About Us | Our Breads | Cakes | Wedding Gallery | Guestbook | Links | Contact<br>&copy; 2009-2013 Lilac Row Bakery. All Rights Reserved. Site last updated: March 2013. &nbsp; Best viewed at 1024x768.</div>
+</div>
+</body>
+</html>
