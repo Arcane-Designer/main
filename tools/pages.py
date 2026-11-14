@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '46'                      # bump after CSS/JS changes so browsers refetch
+V = '48'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -704,7 +704,7 @@ ab += f'''<section class="intro glow">
   <div class="wrap about-cards">
     <div class="inside-card" data-anim="up"><h3>Jordan</h3><p>Jordan leads the videos. When a kit says &ldquo;watch me do it,&rdquo; that&rsquo;s Jordan, solving a real task with AI on screen. <a class="tlink" href="{LINKEDIN_JORDAN}" target="_blank" rel="noopener">Jordan on LinkedIn</a></p></div>
     <div class="inside-card" data-anim="up" style="--d:.08s"><h3>Nathan</h3><p>Nathan designs and builds websites, apps and brands, most of it with AI. He builds the kits and this site. <a class="tlink" href="{LINKEDIN_NATHAN}" target="_blank" rel="noopener">Nathan on LinkedIn</a></p></div>
-    <div class="inside-card arc-card" data-anim="up" style="--d:.16s"><img src="/assets/arc/crouch-point.webp" alt="" width="513" height="900" loading="lazy"><h3>And Arc</h3><p>The bird in the mask. Arc shows up with tips throughout the kits, and he&rsquo;s much better at lounging than we are.</p></div>
+    <div class="inside-card" data-anim="up" style="--d:.16s"><h3>Arc</h3><p>The bird in the mask. Arc shows up with tips throughout the kits, and he&rsquo;s much better at lounging than we are.</p></div>
   </div>
 </section>
 <section class="sec gray-sec">
