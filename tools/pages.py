@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '52'                      # bump after CSS/JS changes so browsers refetch
+V = '54'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -81,7 +81,7 @@ def header(cur):
 
 
 def footer():
-    links = ''.join(f'<a href="{h}">{t}</a>' for h, t in [('/kits/', 'Kits'), ('/free-guide/', 'Free guide'), ('/podcast/', 'Podcast'), ('/questions/', 'Questions'), ('/about/', 'About'), ('/contact', 'Contact')])
+    links = ''.join(f'<a href="{h}">{t}</a>' for h, t in [('/kits/', 'Kits'), ('/free-guide/', 'Free guide'), ('/podcast/', 'Podcast'), ('/questions/', 'Questions'), ('/about/', 'About')])
     pod = ''.join(f'<a href="{u}" target="_blank" rel="noopener">{l}</a>' for l, u in PODCAST_LINKS)
     return f'''</main>
 <footer class="site-foot">
@@ -94,7 +94,7 @@ def footer():
       <div class="foot-cols">
         <div class="foot-col"><b>Explore</b><nav aria-label="Footer">{links}</nav></div>
         <div class="foot-col"><b>AI Monday podcast</b><nav aria-label="Podcast">{pod}</nav></div>
-        <div class="foot-col"><b>Get in touch</b><a href="mailto:{EMAIL}">{EMAIL}</a><a href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">LinkedIn</a><span>&copy; <span id="year">2026</span> Arcane Designer LLC</span></div>
+        <div class="foot-col"><b>Get in touch</b><a href="/contact">Contact</a><a href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">LinkedIn</a><span>&copy; <span id="year">2026</span> Arcane Designer LLC</span></div>
       </div>
     </div>
   </div>
@@ -299,7 +299,7 @@ ALL_Q = [qa for _, qs in QUESTIONS for qa in qs]
 ORG = {
     '@context': 'https://schema.org', '@type': 'Organization', '@id': BASE + '/#org',
     'name': 'Arcane Designer', 'legalName': 'Arcane Designer LLC', 'url': BASE + '/',
-    'logo': BASE + '/android-chrome-512x512.png', 'image': BASE + '/assets/og.png', 'email': EMAIL,
+    'logo': BASE + '/android-chrome-512x512.png', 'image': BASE + '/assets/og.png',
     'slogan': 'Don’t go to school for AI. Download this and get started.',
     'description': 'Downloadable AI starter kits with real prompts and short videos that help everyday people, business owners and marketers start using AI.',
     'founder': [{'@type': 'Person', 'name': 'Nathan Gellatly', 'sameAs': LINKEDIN_NATHAN}, {'@type': 'Person', 'name': 'Jordan Gellatly', 'sameAs': LINKEDIN_JORDAN}],
@@ -669,7 +669,7 @@ qa += f'''<section class="intro glow">
   <div class="wrap work-intro">
     <div data-anim="up">
       <h1>Questions about AI, answered plainly.</h1>
-      <p class="big">The things people ask us most. If yours isn&rsquo;t here, email us and we&rsquo;ll add it.</p>
+      <p class="big">The things people ask us most. If yours isn&rsquo;t here, send it to us on LinkedIn and we&rsquo;ll add it.</p>
     </div>
     <img src="/assets/arc/flabbergasted.webp" alt="" width="395" height="900" data-anim="right">
   </div>
@@ -734,8 +734,8 @@ ct += f'''<section class="intro glow contact-intro">
 </section>
 <section class="sec" style="padding-top:0">
   <div class="wrap about-cards">
-    <div class="inside-card" data-anim="up"><h3>Email</h3><p><a class="mail tlink" href="mailto:{EMAIL}">{EMAIL}</a></p></div>
-    <div class="inside-card" data-anim="up" style="--d:.08s"><h3>LinkedIn</h3><p><a class="tlink" href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">Arcane Designer on LinkedIn</a></p></div>
+    <div class="inside-card" data-anim="up"><h3>LinkedIn</h3><p>Message us on LinkedIn. <a class="tlink" href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">Arcane Designer on LinkedIn</a></p></div>
+    <div class="inside-card" data-anim="up" style="--d:.08s"><h3>AI Monday</h3><p>Ideas for the podcast? Find us on Instagram. <a class="tlink" href="{PODCAST_LINKS[-1][1]}" target="_blank" rel="noopener">@aimondaypod</a></p></div>
     <div class="inside-card" data-anim="up" style="--d:.16s"><h3>New to AI?</h3><p>The free guide is the quickest way in. <a class="tlink" href="/free-guide/">Get the free guide</a></p></div>
   </div>
 </section>

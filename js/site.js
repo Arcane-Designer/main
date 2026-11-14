@@ -2,7 +2,6 @@
 
 /* ---- Settings Nathan fills in once accounts exist ---- */
 const SITE = {
-  email: 'nathan@arcanedesigner.com',        // set in tools/pages.py too (EMAIL); Google Workspace address
   forms: {
     contact: '',        // Formspree endpoint, e.g. https://formspree.io/f/xxxxxxx
     guide: '',          // free-guide signup endpoint (Kit form action or Formspree)
@@ -393,7 +392,7 @@ document.querySelectorAll('form[data-form]').forEach((form) => {
     if (!form.reportValidity()) return;
     const show = (cls, msg) => { status.hidden = false; status.className = 'form-status ' + cls; status.textContent = msg; status.focus?.(); };
     const endpoint = SITE.forms[kind];
-    if (!endpoint) { show('err', `This form isn't connected yet. Please email ${SITE.email} instead.`); return; }
+    if (!endpoint) { show('err', 'Signups open soon. Check back in a few days.'); return; }
     const btn = form.querySelector('[type="submit"]'); btn.disabled = true;
     try {
       const res = await fetch(endpoint, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
@@ -401,7 +400,7 @@ document.querySelectorAll('form[data-form]').forEach((form) => {
       form.reset(); try { localStorage.removeItem(draftKey); } catch {}
       show('ok', form.dataset.thanks || 'Thanks, it came through. You\'ll hear back by email.');
     } catch {
-      show('err', `Something went wrong sending that. Please try again, or email ${SITE.email}.`);
+      show('err', 'Something went wrong sending that. Please try again in a minute.');
     } finally { btn.disabled = false; }
   });
 });
