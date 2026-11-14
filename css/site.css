@@ -808,3 +808,7 @@ p { text-wrap: pretty; }
 .wrap.who { max-width: calc(var(--wrap) + 2 * var(--gut)); }
 .who .big { max-width: 60ch; }
 @media (max-width: 560px) { .intro h1 { font-size: clamp(2.2rem, 10vw, 3rem); overflow-wrap: anywhere; } }
+/* hero title on one line, smaller */
+.tag.tag-soft { font-size: clamp(2.2rem, .4rem + 4.7vw, 5.6rem); white-space: nowrap; }
+.tag.tag-soft .w { display: inline; white-space: nowrap; }
+@media (max-width: 760px) { .tag.tag-soft { white-space: normal; font-size: clamp(2.4rem, 11vw, 3.6rem); } .tag.tag-soft .w { display: block; } }

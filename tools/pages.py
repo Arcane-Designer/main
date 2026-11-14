@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '36'                      # bump after CSS/JS changes so browsers refetch
+V = '38'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -349,7 +349,6 @@ home += f'''<section class="hero-x dark-stage">
     <h1 class="tag tag-soft"><span class="w">Don&rsquo;t go to school</span> <span class="w">for{NB}AI.</span></h1>
     <p class="big">Download a kit, follow along with short videos of us doing the work, and make something real with AI tonight.</p>
     <div class="row">{btn("/free-guide/", "Get the free 7-day guide")}<a class="tlink light" href="/kits/">Browse the kits</a></div>
-    <p class="price-note">Kits from $47 <i></i> All of them for $297</p>
   </div>
 </section>
 
@@ -478,10 +477,10 @@ kp += f'''<section class="intro glow">
     {''.join(kit_card(k, "main" if k.get("lead") else "") for k in KITS)}
     <a class="price link-card kit-card bundle-card" href="/kits/complete-bundle/" data-anim="up"><span class="flag">Best value</span><h3>{BUNDLE["name"]}</h3><span class="amt">${BUNDLE["price"]}</span><p>{BUNDLE["line"]}</p><span class="see">See what&rsquo;s inside</span></a>
   </div>
-  <div class="wrap free-strip" data-anim="up">
+  <div class="wrap"><div class="free-strip" data-anim="up">
     <div><h3>Not sure yet?</h3><p>Start with {FREE["name"]}. It&rsquo;s free, and it&rsquo;s the easiest way to find out if the kits are for you.</p></div>
     {btn("/free-guide/", "Get the free guide")}
-  </div>
+  </div></div>
 </section>
 <section class="sec gray-sec">
   <div class="wrap faq-wrap">
