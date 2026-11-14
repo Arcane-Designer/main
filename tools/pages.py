@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '40'                      # bump after CSS/JS changes so browsers refetch
+V = '42'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -212,14 +212,14 @@ KITS = [
          faq=[('Do I need to know how to code for the Build level?', 'No. You&rsquo;ll use Codex, which writes the code for you. You describe what you want in plain English and we show you every click.'),
               ('Which AI tools does it use?', 'Mostly ChatGPT and Claude for writing, Claude for recurring tasks and Codex for the Build level. The prompts work in other tools too.')]),
     dict(slug='ai-beginner', name='AI Beginner Kit', price=47, pose='stands',
-         line='A plain-English tour of ChatGPT, Claude, Gemini, Copilot and Perplexity.',
+         line='A plain-English tour of ChatGPT, Claude, Gemini, Grok, Copilot, Perplexity and Meta&rsquo;s Muse.',
          who='You keep hearing about AI and you haven&rsquo;t really used it yet. Or you&rsquo;ve tried ChatGPT a few times and it didn&rsquo;t stick.',
-         inside=[('The five big tools', 'What ChatGPT, Claude, Gemini, Microsoft Copilot and Perplexity are each good at, in plain words.'),
+         inside=[('The big seven', 'What ChatGPT, Claude, Gemini, Grok, Microsoft Copilot, Perplexity and Meta&rsquo;s Muse are each good at, in plain words.'),
                  ('Watch us use them', 'Short screen-share videos of us doing everyday tasks in each one.'),
                  ('Your first prompts', 'Copy-and-paste prompts for your first sessions, so you never start from a blank box.'),
                  ('A one-page cheat sheet', 'Which tool to open for which job. Print it, stick it by your desk.')],
          tip='Pick one tool and use it every day for a week before you try the others. Habit beats variety at the start.',
-         faq=[('Do I have to pay for these AI tools?', 'No. All five have a free version, and everything in this kit works on the free plans.')]),
+         faq=[('Do I have to pay for these AI tools?', 'No. Every tool in the kit has a free way to start, and the core lessons work on free plans.')]),
     dict(slug='start-a-business', name='Start a Business with AI', price=97, pose='presents-floor',
          line='Use AI to test an idea, name it, price it and find your first customers.',
          who='You have a business idea, or a side hustle you want to make real, and you want help thinking it through without paying a consultant.',
@@ -246,7 +246,7 @@ KITS = [
                  ('Money', 'Pricing, simple budgets and a basic forecast.'),
                  ('Marketing and sales', 'Posts, emails, outreach and follow-ups.')],
          tip='Save the prompts that work for you in one document. That document becomes your own playbook.',
-         faq=[('Do the prompts work in any AI tool?', 'Yes. They&rsquo;re written to work in ChatGPT, Claude, Gemini and Copilot.')]),
+         faq=[('Do the prompts work in any AI tool?', 'Yes. They&rsquo;re written to work in ChatGPT, Claude, Gemini, Grok and Copilot.')]),
 ]
 BUNDLE = dict(slug='complete-bundle', name='The Complete Bundle', price=297, pose='hands-up',
               line='Every kit, plus updates as the AI tools change.',
@@ -268,10 +268,10 @@ QUESTIONS = [
         ('How do I start using AI?', 'Pick one free tool, like ChatGPT or Claude, and use it for something you actually need this week. Ask it to draft an email, plan a meal or explain a bill. Real tasks teach you faster than tutorials. Our free 7-day guide gives you one small task a day to build the habit.'),
         ('What is a prompt?', 'A prompt is just what you type to the AI. Good prompts give context: who you are, what you want, who it&rsquo;s for and what a good answer looks like. Think of it like briefing a smart new coworker on their first day.'),
         ('How long does it take to learn AI?', 'You can do something useful in your first hour. Getting comfortable takes a couple of weeks of everyday use. Building automations takes longer, but it&rsquo;s closer to a weekend project than a semester.'),
-        ('Do I need to pay for AI tools?', 'Not to start. ChatGPT, Claude, Gemini, Copilot and Perplexity all have free versions. Paid plans add more use and better models, and most people only upgrade once they&rsquo;re using a tool every day.'),
+        ('Do I need to pay for AI tools?', 'Not to start. ChatGPT, Claude, Gemini, Grok, Copilot and Perplexity all have free versions. Paid plans add more use and better models, and most people only upgrade once they&rsquo;re using a tool every day.'),
     ]),
     ('Choosing tools', [
-        ('What&rsquo;s the difference between ChatGPT, Claude, Gemini, Copilot and Perplexity?', 'They overlap a lot. ChatGPT is the all-rounder most people try first. Claude is great for writing and long documents. Gemini fits right into Google&rsquo;s apps. Copilot lives inside Microsoft Word, Excel and Outlook. Perplexity is built for research, with sources linked in its answers.'),
+        ('What&rsquo;s the difference between ChatGPT, Claude, Gemini, Grok, Copilot, Perplexity and Muse?', 'They overlap a lot. ChatGPT is the all-rounder most people try first. Claude is great for writing and long documents. Gemini fits right into Google&rsquo;s apps. Grok is built into X and is quick on current events. Copilot lives inside Microsoft Word, Excel and Outlook. Perplexity is built for research, with sources linked in its answers. Muse is Meta&rsquo;s agent that can carry out tasks for you, like booking and buying.'),
         ('What&rsquo;s the best AI for a small business?', 'The one your team will actually use every day. If you live in Google Workspace, try Gemini. If you live in Microsoft 365, try Copilot. For marketing writing, ChatGPT and Claude are both strong. Most small businesses end up using two.'),
         ('Is it safe to put business information into AI?', 'Treat it like email. Don&rsquo;t paste passwords, card numbers or private customer data. Check each tool&rsquo;s settings for whether your chats are used for training, and use business plans when you&rsquo;re handling sensitive work.'),
     ]),
@@ -355,8 +355,7 @@ home += f'''<section class="hero-x dark-stage">
 <section class="pin-price dark-stage" aria-label="What learning AI usually costs, compared with our kits">
   <div class="pin-sticky">
     <div class="wrap price-scene">
-      <div class="perch-alt"><img src="/assets/arc/relaxed.webp" alt="Arc, the Arcane Designer mascot, lounging" width="900" height="452"></div>
-      <div class="bubble scene-bubble" aria-hidden="true"><span data-a="Watch the price." data-b="Way better.">Watch the price.</span></div>
+      <div class="point-arc"><img src="/assets/arc/crouch-point.webp" alt="Arc, the Arcane Designer mascot, crouching and pointing at the price" width="513" height="900"><div class="bubble scene-bubble" aria-hidden="true"><span data-a="Watch the price." data-b="Way better.">Watch the price.</span></div></div>
       <p class="scene-kicker">What it costs to learn AI</p>
       <div class="ticker" data-stages="{stage_data}"><span class="cur">$</span><span class="num">22,000</span></div>
       <p class="scene-label">{STAGES[0][1]}</p>

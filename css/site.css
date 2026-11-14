@@ -849,3 +849,16 @@ p { text-wrap: pretty; }
 .book3d .b1 { width: 30%; right: -4%; top: auto; bottom: 16%; }
 .book3d .b2 { width: 18%; right: 27%; top: auto; bottom: 22%; }
 .book3d .b3 { width: 13%; right: 13%; top: auto; bottom: 40%; }
+
+/* price scene: Arc crouches above the price and points down at it, bubble to his right */
+.price-scene { grid-template-areas: "arc steps" "kick steps" "tick steps" "label steps" "sub steps"; }
+.point-arc { grid-area: arc; display: flex; align-items: center; gap: 18px; margin-bottom: 14px; }
+.point-arc img { width: clamp(90px, 8vw, 120px); filter: drop-shadow(0 16px 20px rgba(0,0,0,.5)); }
+.point-arc .scene-bubble { position: relative; right: auto; top: auto; transform: none; align-self: flex-start; margin-top: 12%; }
+.point-arc .scene-bubble::after { left: -7px; right: auto; transform: translateY(-50%) rotate(135deg); }
+@media (max-width: 860px) {
+  .price-scene { grid-template-areas: "arc" "kick" "tick" "label" "sub" "steps"; }
+  .point-arc img { width: 76px; }
+  .point-arc .scene-bubble { left: auto; transform: none; font-size: .88rem; }
+  .point-arc .scene-bubble::after { display: block; }
+}
