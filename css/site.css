@@ -900,3 +900,4 @@ p { text-wrap: pretty; }
 .book3d .front .b-brand, .book3d .b-brand { font-size: 6.4cqw; }
 .book3d .back span { font-size: 8.5cqw; }
 .book3d .spine span { font-size: 5cqw; }
+.contact-form { max-width: 720px; }

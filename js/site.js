@@ -392,7 +392,7 @@ document.querySelectorAll('form[data-form]').forEach((form) => {
     if (!form.reportValidity()) return;
     const show = (cls, msg) => { status.hidden = false; status.className = 'form-status ' + cls; status.textContent = msg; status.focus?.(); };
     const endpoint = SITE.forms[kind];
-    if (!endpoint) { show('err', 'Signups open soon. Check back in a few days.'); return; }
+    if (!endpoint) { show('err', kind === 'contact' ? 'Messages aren\'t switched on yet. Check back in a few days.' : 'Signups open soon. Check back in a few days.'); return; }
     const btn = form.querySelector('[type="submit"]'); btn.disabled = true;
     try {
       const res = await fetch(endpoint, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });

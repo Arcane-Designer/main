@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '68'                      # bump after CSS/JS changes so browsers refetch
+V = '70'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -720,7 +720,7 @@ ab += footer()
 write('/about/', ab)
 
 # ================================================================ contact (old address kept)
-ct = head('Contact | Arcane Designer', 'Get in touch with Arcane Designer by email or on LinkedIn.', '/contact')
+ct = head('Contact | Arcane Designer', 'Send Arcane Designer a message about a kit, the AI Monday podcast or anything else.', '/contact')
 ct += header('/contact')
 ct += f'''<section class="intro glow contact-intro">
   <div class="wrap">
@@ -732,10 +732,25 @@ ct += f'''<section class="intro glow contact-intro">
   </div>
 </section>
 <section class="sec" style="padding-top:0">
-  <div class="wrap about-cards">
-    <div class="inside-card" data-anim="up"><h3>LinkedIn</h3><p>Message us on LinkedIn. <a class="tlink" href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">Arcane Designer on LinkedIn</a></p></div>
-    <div class="inside-card" data-anim="up" style="--d:.08s"><h3>AI Monday</h3><p>Ideas for the podcast? Find us on Instagram. <a class="tlink" href="{PODCAST_LINKS[-1][1]}" target="_blank" rel="noopener">@aimondaypod</a></p></div>
-    <div class="inside-card" data-anim="up" style="--d:.16s"><h3>New to AI?</h3><p>The free guide is the quickest way in. <a class="tlink" href="/free-guide/">Get the free guide</a></p></div>
+  <div class="wrap">
+    <form class="form form-card contact-form" data-form="contact" data-thanks="Thanks, it came through. We&rsquo;ll get back to you soon." novalidate data-anim="up">
+      <div class="row">
+        <div class="field"><label for="c-name">Your name</label><input id="c-name" name="name" autocomplete="name" required></div>
+        <div class="field"><label for="c-email">Email</label><input id="c-email" name="email" type="email" autocomplete="email" required></div>
+      </div>
+      <fieldset class="field">
+        <legend>What&rsquo;s it about? <span class="opt">(optional)</span></legend>
+        <div class="choices">
+          <label><input type="radio" name="topic" value="A kit"> A kit</label>
+          <label><input type="radio" name="topic" value="The podcast"> The podcast</label>
+          <label><input type="radio" name="topic" value="Something else"> Something else</label>
+        </div>
+      </fieldset>
+      <div class="field"><label for="c-msg">Message</label><textarea id="c-msg" name="message" required></textarea></div>
+      <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="form-foot"><button class="btn" type="submit"><span>Send message</span></button></div>
+      <div class="form-status" role="status" tabindex="-1" hidden></div>
+    </form>
   </div>
 </section>
 '''
