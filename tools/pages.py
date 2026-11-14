@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '56'                      # bump after CSS/JS changes so browsers refetch
+V = '58'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -81,15 +81,16 @@ def header(cur):
 
 
 def footer():
-    links = ''.join(f'<a href="{h}">{t}</a>' for h, t in [('/kits/', 'Kits'), ('/free-guide/', 'Free guide'), ('/podcast/', 'Podcast'), ('/questions/', 'Questions'), ('/about/', 'About')])
+    links = ''.join(f'<a href="{h}">{t}</a>' for h, t in [('/kits/', 'Kits'), ('/podcast/', 'Podcast'), ('/questions/', 'Questions'), ('/about/', 'About')])
     pod = ''.join(f'<a href="{u}" target="_blank" rel="noopener">{l}</a>' for l, u in PODCAST_LINKS)
     return f'''</main>
 <footer class="site-foot">
   <div class="wrap">
     <div class="foot-row">
-      <div style="display:grid;gap:12px">
+      <div class="foot-brand">
         <a class="brand" href="/">{BRAND}</a>
         <span>AI starter kits for everyday people.</span>
+        {btn("/free-guide/", "Get the free guide")}
       </div>
       <div class="foot-cols">
         <div class="foot-col"><b>Explore</b><nav aria-label="Footer">{links}</nav></div>

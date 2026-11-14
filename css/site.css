@@ -873,3 +873,6 @@ p { text-wrap: pretty; }
 .site-foot .foot-col:first-child nav { grid-template-columns: repeat(2, auto); column-gap: 26px; }
 .site-foot .foot-col:first-child nav { grid-template-columns: 1fr; }
 .foot-base { display: flex; justify-content: flex-end; margin-top: 30px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.08); font-size: .9rem; color: rgba(245,243,250,.55); }
+.foot-brand { display: grid; gap: 6px; justify-items: start; align-content: start; }
+.foot-brand .btn { margin-top: 18px; padding: 1.05em 1.6em 1em; font-size: 1.02rem; }
+.site-foot a.btn, .site-foot a.btn:hover { color: #0c1a15; text-decoration: none; }
