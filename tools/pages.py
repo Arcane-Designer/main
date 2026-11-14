@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '43'                      # bump after CSS/JS changes so browsers refetch
+V = '45'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -16,7 +16,7 @@ FONTS = ('https://fonts.googleapis.com/css2?family=Bebas+Neue'
 # Fill these in as things go live. Empty means the button or section falls back or stays hidden.
 CHECKOUT = {}        # kit slug -> checkout link (Lemon Squeezy, Gumroad, Stripe...). Until set, "Get the kit" opens the free guide signup.
 VIDEOS = {}          # kit slug -> embeddable video page link, shown on that kit's page
-PODCAST_LINKS = []   # [(label, url)] e.g. [('YouTube', 'https://...'), ('Spotify', 'https://...')]
+PODCAST_LINKS = [('YouTube', 'https://www.youtube.com/@AIMonday'), ('Spotify', 'https://open.spotify.com/show/3YuS205Pz6owg1eH1KXLul'), ('Instagram', 'https://www.instagram.com/aimondaypod/')]   # add Apple Podcasts when ready
 EPISODES = []        # [(title, one-line summary, url)]
 
 BRAND = ('<span class="mark3d" aria-hidden="true">'
@@ -82,6 +82,7 @@ def header(cur):
 def footer():
     links = ''.join(f'<a href="{h}">{t}</a>' for h, t in [('/kits/', 'Kits'), ('/free-guide/', 'Free guide'), ('/podcast/', 'Podcast'), ('/questions/', 'Questions'), ('/about/', 'About'), ('/contact', 'Contact')])
     links += f'<a href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">LinkedIn</a>'
+    links += ''.join(f'<a href="{u}" target="_blank" rel="noopener">{l}</a>' for l, u in PODCAST_LINKS)
     return f'''</main>
 <footer class="site-foot">
   <div class="wrap">
@@ -305,6 +306,7 @@ ORG = {
     'address': {'@type': 'PostalAddress', 'addressLocality': 'Spokane', 'addressRegion': 'WA', 'addressCountry': 'US'},
     'sameAs': [LINKEDIN_BIZ],
 }
+ORG['sameAs'] += [u for _, u in PODCAST_LINKS]
 
 
 def product_schema(k):
@@ -422,9 +424,9 @@ home += f'''<section class="hero-x dark-stage">
   <div class="wrap pod">
     <div class="pod-art" data-anim="left"><img src="/assets/arc/presents-floor.webp" alt="" width="499" height="900" loading="lazy"><span class="mic">AI<br>Mondays</span></div>
     <div data-anim="right">
-      <h2>AI Mondays</h2>
-      <p class="big" style="margin-top:18px">Our podcast. Each episode takes one idea from a kit and shows it working, start to finish, on real screens.</p>
-      <p style="margin-top:26px"><a class="tlink" href="/podcast/">About the podcast</a></p>
+      <h2>AI Monday</h2>
+      <p class="big" style="margin-top:18px">Our podcast. AI news, the tools worth trying and real examples of us doing the same kind of work that&rsquo;s in the kits.</p>
+      <div class="row" style="margin-top:26px"><a class="btn" href="{PODCAST_LINKS[0][1]}" target="_blank" rel="noopener"><span>Watch on YouTube</span></a><a class="tlink" href="{PODCAST_LINKS[1][1]}" target="_blank" rel="noopener">Listen on Spotify</a><a class="tlink" href="/podcast/">About the podcast</a></div>
     </div>
   </div>
 </section>
@@ -448,7 +450,7 @@ home += f'''<section class="hero-x dark-stage">
         <div class="cards">
           <a class="lcard go" href="/free-guide/"><b>Free guide</b><span>Seven days, one small task a day.</span></a>
           <a class="lcard" href="/kits/"><b>The kits</b><span>Pick one and start today.</span></a>
-          <a class="lcard" href="/podcast/"><b>AI Mondays</b><span>Watch it work, one idea at a time.</span></a>
+          <a class="lcard" href="/podcast/"><b>AI Monday</b><span>Watch how we use AI for real.</span></a>
           <a class="lcard" href="/questions/"><b>Questions</b><span>Plain answers about using AI.</span></a>
         </div>
       </div>
@@ -629,14 +631,16 @@ fg += footer()
 write('/free-guide/', fg)
 
 # ================================================================ podcast
-pc = head('AI Mondays Podcast | Arcane Designer', 'AI Mondays is a podcast about using AI for real work. Each episode takes one idea from an Arcane Designer kit and shows it working on real screens.', '/podcast/')
+pc = head('AI Monday Podcast | Arcane Designer', 'AI Monday is a podcast about AI news, tools and using AI for real work, with live examples of the same work covered in the Arcane Designer kits.', '/podcast/')
 pc += header('/podcast/')
-listen = ''.join(f'<a class="btn dark" href="{u}" target="_blank" rel="noopener"><span>{l}</span></a>' for l, u in PODCAST_LINKS)
+def _verb(l):
+    return ('Watch on ' if l == 'YouTube' else 'Listen on ' if l in ('Spotify', 'Apple Podcasts') else 'Follow on ') + l
+listen = ''.join(f'<a class="btn {"" if i == 0 else "dark"}" href="{u}" target="_blank" rel="noopener"><span>{_verb(l)}</span></a>' for i, (l, u) in enumerate(PODCAST_LINKS))
 pc += f'''<section class="intro glow">
   <div class="wrap work-intro">
     <div data-anim="up">
-      <h1>AI Mondays.</h1>
-      <p class="big">A podcast about using AI for real work. Short episodes, real screens, one idea at a time.</p>
+      <h1>AI Monday.</h1>
+      <p class="big">A podcast about AI news, the tools worth trying and how we actually use them. Watch the kits come to life.</p>
       {f'<div class="row" style="margin-top:26px;gap:12px">{listen}</div>' if listen else ''}
     </div>
     <img src="/assets/arc/presents-floor.webp" alt="" width="499" height="900" data-anim="right">
@@ -644,9 +648,9 @@ pc += f'''<section class="intro glow">
 </section>
 <section class="sec" style="padding-top:20px">
   <div class="wrap inside">
-    <div class="inside-card" data-anim="up"><span class="n">01</span><h3>One idea per episode</h3><p>Each episode takes one topic from a kit, like writing a week of posts, and does it live.</p></div>
-    <div class="inside-card" data-anim="up" style="--d:.08s"><span class="n">02</span><h3>Watch it work</h3><p>Real screens, real tools, real mistakes. You see exactly what we type and what comes back.</p></div>
-    <div class="inside-card" data-anim="up" style="--d:.16s"><span class="n">03</span><h3>Take it further</h3><p>Every episode links to the kit it came from, if you want the full set of prompts.</p></div>
+    <div class="inside-card" data-anim="up"><span class="n">01</span><h3>See how we work</h3><p>Real examples of us using AI live, the same kind of work you&rsquo;ll find in the kits.</p></div>
+    <div class="inside-card" data-anim="up" style="--d:.08s"><span class="n">02</span><h3>AI news and tools</h3><p>What&rsquo;s new in AI, which tools are worth your time and what we&rsquo;re using right now.</p></div>
+    <div class="inside-card" data-anim="up" style="--d:.16s"><span class="n">03</span><h3>Take it further</h3><p>Like what you see? The kits give you the prompts and steps to do it yourself.</p></div>
   </div>
 </section>
 '''
