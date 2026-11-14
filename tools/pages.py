@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '60'                      # bump after CSS/JS changes so browsers refetch
+V = '61'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -637,7 +637,9 @@ pc = head('AI Monday Podcast | Arcane Designer', 'AI Monday is a podcast about A
 pc += header('/podcast/')
 def _verb(l):
     return ('Watch on ' if l == 'YouTube' else 'Listen on ' if l in ('Spotify', 'Apple Podcasts') else 'Follow on ') + l
-listen = ''.join(f'<a class="btn {"" if i == 0 else "dark"}" href="{u}" target="_blank" rel="noopener"><span>{_verb(l)}</span></a>' for i, (l, u) in enumerate(PODCAST_LINKS))
+LISTEN = [(l, u) for l, u in PODCAST_LINKS if l != 'Instagram']
+INSTA = next((u for l, u in PODCAST_LINKS if l == 'Instagram'), '')
+listen = ''.join(f'<a class="btn {"" if i == 0 else "dark"}" href="{u}" target="_blank" rel="noopener"><span>{_verb(l)}</span></a>' for i, (l, u) in enumerate(LISTEN))
 pc += f'''<section class="intro glow">
   <div class="wrap work-intro">
     <div data-anim="up">
@@ -654,7 +656,8 @@ pc += f'''<section class="intro glow">
     <div class="inside-card" data-anim="up" style="--d:.08s"><span class="n">02</span><h3>AI news and tools</h3><p>What&rsquo;s new in AI, which tools are worth your time and what we&rsquo;re using right now.</p></div>
     <div class="inside-card" data-anim="up" style="--d:.16s"><span class="n">03</span><h3>Take it further</h3><p>Like what you see? The kits give you the prompts and steps to do it yourself.</p></div>
   </div>
-</section>
+''' + (f'''  <div class="wrap insta-row" data-anim="up"><span>Clips, behind the scenes and episode news</span><a class="insta" href="{INSTA}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/></svg>Follow @aimondaypod on Instagram</a></div>
+''' if INSTA else '') + '''</section>
 '''
 if EPISODES:
     pc += '<section class="sec gray-sec"><div class="wrap"><h2 style="margin-bottom:30px">Episodes</h2><div class="episodes">' + ''.join(
