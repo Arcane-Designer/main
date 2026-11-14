@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '54'                      # bump after CSS/JS changes so browsers refetch
+V = '56'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -89,14 +89,15 @@ def footer():
     <div class="foot-row">
       <div style="display:grid;gap:12px">
         <a class="brand" href="/">{BRAND}</a>
-        <span>AI starter kits for everyday people.<br>Arcane Designer LLC, Spokane, Washington.</span>
+        <span>AI starter kits for everyday people.</span>
       </div>
       <div class="foot-cols">
         <div class="foot-col"><b>Explore</b><nav aria-label="Footer">{links}</nav></div>
         <div class="foot-col"><b>AI Monday podcast</b><nav aria-label="Podcast">{pod}</nav></div>
-        <div class="foot-col"><b>Get in touch</b><a href="/contact">Contact</a><a href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">LinkedIn</a><span>&copy; <span id="year">2026</span> Arcane Designer LLC</span></div>
+        <div class="foot-col"><b>Get in touch</b><a href="/contact">Contact</a><a href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">LinkedIn</a></div>
       </div>
     </div>
+    <div class="foot-base"><span>&copy; <span id="year">2026</span> Arcane Designer LLC</span></div>
   </div>
 </footer>
 <script src="/js/site.js?v={V}" defer></script>

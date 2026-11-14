@@ -872,3 +872,4 @@ p { text-wrap: pretty; }
 .foot-col nav { display: grid; gap: 8px; }
 .site-foot .foot-col:first-child nav { grid-template-columns: repeat(2, auto); column-gap: 26px; }
 .site-foot .foot-col:first-child nav { grid-template-columns: 1fr; }
+.foot-base { display: flex; justify-content: flex-end; margin-top: 30px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.08); font-size: .9rem; color: rgba(245,243,250,.55); }
