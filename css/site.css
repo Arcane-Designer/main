@@ -891,3 +891,12 @@ p { text-wrap: pretty; }
 .insta svg { width: 17px; height: 17px; }
 .book-stage { width: 54%; margin-bottom: 6%; left: -5%; }
 .book3d .b3 { bottom: 30%; right: 5%; width: 12%; }
+.book-glow { display: none; }
+.book-stage { left: -8%; }
+.book-stage { container-type: inline-size; }
+.book3d .front { padding: 13cqw 12cqw 12cqw; gap: 8cqw; }
+.book3d .front b { font-size: 14.5cqw; }
+.book3d .b-kicker { font-size: 7cqw; }
+.book3d .front .b-brand, .book3d .b-brand { font-size: 6.4cqw; }
+.book3d .back span { font-size: 8.5cqw; }
+.book3d .spine span { font-size: 5cqw; }
