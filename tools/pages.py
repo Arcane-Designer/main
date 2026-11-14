@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '72'                      # bump after CSS/JS changes so browsers refetch
+V = '73'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -19,6 +19,22 @@ CHECKOUT = {}        # kit slug -> checkout link (Lemon Squeezy, Gumroad, Stripe
 VIDEOS = {}          # kit slug -> embeddable video page link, shown on that kit's page
 PODCAST_LINKS = [('YouTube', 'https://www.youtube.com/@AIMonday'), ('Spotify', 'https://open.spotify.com/show/3YuS205Pz6owg1eH1KXLul'), ('Apple Podcasts', 'https://podcasts.apple.com/us/podcast/ai-monday-ai-news-tools-and-leaders/id6834921078'), ('Instagram', 'https://www.instagram.com/aimondaypod/')]
 EPISODES = []        # [(title, one-line summary, url)]
+
+ICONS = {
+    'YouTube': '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="4.5" width="21" height="15" rx="4.5" fill="#FF0033"/><path d="M10 8.6v6.8l5.8-3.4z" fill="#fff"/></svg>',
+    'Spotify': '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#1ED760"/><path d="M6.4 9.3c3.9-1.1 8.2-.8 11.5 1M7 12.4c3.2-.9 6.6-.6 9.4.9M7.6 15.4c2.6-.7 5.2-.5 7.4.7" fill="none" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round"/></svg>',
+    'Apple Podcasts': '<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="ap-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F452FF"/><stop offset="1" stop-color="#832BC1"/></linearGradient></defs><rect x="1" y="1" width="22" height="22" rx="6" fill="url(#ap-g)"/><circle cx="12" cy="10" r="2.2" fill="#fff"/><path d="M10.8 13.6h2.4l-.5 5.4h-1.4z" fill="#fff"/><path d="M8 14.6a5.2 5.2 0 1 1 8 0M6 16.2a7.6 7.6 0 1 1 12 0" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>',
+}
+
+
+def pbtn(label, url):
+    verb = 'Watch on ' if label == 'YouTube' else 'Listen on '
+    return f'<a class="pbtn" href="{url}" target="_blank" rel="noopener">{ICONS[label]}<span><small>{verb.strip()}</small>{label}</span></a>'
+
+
+def listen_row():
+    return '<div class="pbtns">' + ''.join(pbtn(l, u) for l, u in PODCAST_LINKS if l in ICONS) + '</div>'
+
 
 BRAND = ('<span class="mark3d" aria-hidden="true">'
          '<img class="hx" data-h="b" src="/assets/brand/hex-blue.webp" alt="" width="64" height="64">'
@@ -424,11 +440,12 @@ home += f'''<section class="hero-x dark-stage">
 
 <section class="sec podcast-teaser">
   <div class="wrap pod">
-    <div class="pod-art" data-anim="left"><img src="/assets/arc/presents-floor.webp" alt="" width="499" height="900" loading="lazy"><span class="mic">AI<br>Mondays</span></div>
+    <div class="pod-art" data-anim="left"><img src="/assets/arc/presents-floor.webp" alt="" width="499" height="900" loading="lazy"><span class="mic">AI<br>Monday</span></div>
     <div data-anim="right">
       <h2>AI Monday</h2>
       <p class="big" style="margin-top:18px">Our podcast. AI news, the tools worth trying and real examples of us doing the same kind of work that&rsquo;s in the kits.</p>
-      <div class="row" style="margin-top:26px"><a class="btn" href="{PODCAST_LINKS[0][1]}" target="_blank" rel="noopener"><span>Watch on YouTube</span></a><a class="tlink" href="{PODCAST_LINKS[1][1]}" target="_blank" rel="noopener">Listen on Spotify</a><a class="tlink" href="{PODCAST_LINKS[2][1]}" target="_blank" rel="noopener">Apple Podcasts</a><a class="tlink" href="/podcast/">About the podcast</a></div>
+      <div style="margin-top:26px">{listen_row()}</div>
+      <p style="margin-top:22px"><a class="tlink" href="/podcast/">About the podcast</a></p>
     </div>
   </div>
 </section>
@@ -639,7 +656,7 @@ pc += f'''<section class="intro glow">
     <div data-anim="up">
       <h1>AI Monday.</h1>
       <p class="big">A podcast about AI news, the tools worth trying and how we actually use them. Watch the kits come to life.</p>
-      {f'<div class="row" style="margin-top:26px;gap:12px">{listen}</div>' if listen else ''}
+      <div style="margin-top:28px">{listen_row()}</div>
     </div>
     <img src="/assets/arc/presents-floor.webp" alt="" width="499" height="900" data-anim="right">
   </div>
@@ -693,7 +710,7 @@ ab += f'''<section class="intro glow">
   <div class="wrap work-intro">
     <div data-anim="up">
       <h1>We&rsquo;re Jordan and{NB}Nathan.</h1>
-      <p class="big">Practical AI training &amp; tools for business owners, marketers, and everyday people. We&rsquo;re a sister and brother from Spokane who think the best way to learn AI is to use it.</p>
+      <p class="big">Practical AI training &amp; tools for business owners, marketers, and everyday people. We think the best way to learn AI is to use it.</p>
     </div>
     <img src="/assets/arc/stands.webp" alt="" width="336" height="900" data-anim="right">
   </div>

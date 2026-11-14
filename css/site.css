@@ -903,3 +903,14 @@ p { text-wrap: pretty; }
 .contact-form { max-width: 720px; }
 .foot-brand { max-width: 330px; }
 .hero-x { padding-top: clamp(80px, 12vh, 140px); }
+
+/* podcast platform buttons: matching, each with its logo */
+.pbtns { display: flex; flex-wrap: wrap; gap: 12px; }
+.pbtn { display: inline-flex; align-items: center; gap: 11px; padding: 9px 18px 9px 12px; border-radius: 14px; text-decoration: none; color: #fff;
+  background: linear-gradient(180deg, #34323f, #1b1a24); border: 1px solid rgba(255,255,255,.14);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 4px 0 #08070c, 0 14px 26px -12px rgba(0,0,0,.6); transition: transform .14s, box-shadow .14s; }
+.pbtn:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 6px 0 #08070c, 0 18px 30px -12px rgba(0,0,0,.6); }
+.pbtn:active { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 1px 0 #08070c; }
+.pbtn svg { width: 26px; height: 26px; flex: none; }
+.pbtn span { display: grid; line-height: 1.1; font-weight: 700; font-size: 1rem; }
+.pbtn small { font-size: .7rem; font-weight: 500; color: rgba(255,255,255,.65); }
