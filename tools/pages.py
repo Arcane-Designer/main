@@ -5,11 +5,12 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '45'                      # bump after CSS/JS changes so browsers refetch
+V = '46'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
 LINKEDIN_NATHAN = 'https://www.linkedin.com/in/nathan-gellatly/'
+LINKEDIN_JORDAN = 'https://www.linkedin.com/in/jordangellatly/'
 FONTS = ('https://fonts.googleapis.com/css2?family=Bebas+Neue'
          '&family=Figtree:wght@400;500;600;700&family=Archivo:wdth,wght@62..125,400..900&display=swap')
 
@@ -302,7 +303,7 @@ ORG = {
     'logo': BASE + '/android-chrome-512x512.png', 'image': BASE + '/assets/og.png', 'email': EMAIL,
     'slogan': 'Don’t go to school for AI. Download this and get started.',
     'description': 'Downloadable AI starter kits with real prompts and short videos that help everyday people, business owners and marketers start using AI.',
-    'founder': [{'@type': 'Person', 'name': 'Nathan Gellatly', 'sameAs': LINKEDIN_NATHAN}, {'@type': 'Person', 'name': 'Jordan'}],
+    'founder': [{'@type': 'Person', 'name': 'Nathan Gellatly', 'sameAs': LINKEDIN_NATHAN}, {'@type': 'Person', 'name': 'Jordan Gellatly', 'sameAs': LINKEDIN_JORDAN}],
     'address': {'@type': 'PostalAddress', 'addressLocality': 'Spokane', 'addressRegion': 'WA', 'addressCountry': 'US'},
     'sameAs': [LINKEDIN_BIZ],
 }
@@ -701,7 +702,7 @@ ab += f'''<section class="intro glow">
 </section>
 <section class="sec" style="padding-top:20px">
   <div class="wrap about-cards">
-    <div class="inside-card" data-anim="up"><h3>Jordan</h3><p>Jordan leads the videos. When a kit says &ldquo;watch me do it,&rdquo; that&rsquo;s Jordan, solving a real task with AI on screen.</p></div>
+    <div class="inside-card" data-anim="up"><h3>Jordan</h3><p>Jordan leads the videos. When a kit says &ldquo;watch me do it,&rdquo; that&rsquo;s Jordan, solving a real task with AI on screen. <a class="tlink" href="{LINKEDIN_JORDAN}" target="_blank" rel="noopener">Jordan on LinkedIn</a></p></div>
     <div class="inside-card" data-anim="up" style="--d:.08s"><h3>Nathan</h3><p>Nathan designs and builds websites, apps and brands, most of it with AI. He builds the kits and this site. <a class="tlink" href="{LINKEDIN_NATHAN}" target="_blank" rel="noopener">Nathan on LinkedIn</a></p></div>
     <div class="inside-card arc-card" data-anim="up" style="--d:.16s"><img src="/assets/arc/crouch-point.webp" alt="" width="513" height="900" loading="lazy"><h3>And Arc</h3><p>The bird in the mask. Arc shows up with tips throughout the kits, and he&rsquo;s much better at lounging than we are.</p></div>
   </div>
