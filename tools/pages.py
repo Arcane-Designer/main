@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '63'                      # bump after CSS/JS changes so browsers refetch
+V = '66'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -619,12 +619,6 @@ fg += f'''<section class="intro glow">
       </div><div class="book-glow"></div></div>
       <img class="guide-arc" src="/assets/arc/hands-up.webp" alt="" width="459" height="900">
     </div>
-  </div>
-</section>
-<section class="sec" style="padding-top:20px">
-  <div class="wrap">
-    <h2 data-anim="left" style="margin-bottom:36px">What the week looks like</h2>
-    <ol class="days">{''.join(f'<li data-anim="up" style="--d:{i * .06:.2f}s"><span>Day {i + 1}</span><b>{t}</b><p>{d}</p></li>' for i, (t, d) in enumerate(DAYS))}</ol>
   </div>
 </section>
 '''

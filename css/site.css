@@ -889,3 +889,5 @@ p { text-wrap: pretty; }
 .insta svg { width: 16px; height: 16px; }
 .insta { padding: .42em 1.1em; font-size: 1rem; line-height: 1.3; }
 .insta svg { width: 17px; height: 17px; }
+.book-stage { width: 54%; margin-bottom: 6%; left: -5%; }
+.book3d .b3 { bottom: 30%; right: 5%; width: 12%; }
