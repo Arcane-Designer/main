@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '70'                      # bump after CSS/JS changes so browsers refetch
+V = '72'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -89,7 +89,7 @@ def footer():
     <div class="foot-row">
       <div class="foot-brand">
         <a class="brand" href="/">{BRAND}</a>
-        <span>AI starter kits for everyday people.</span>
+        <span>Practical AI training &amp; tools for business owners, marketers, and everyday people.</span>
         {btn("/free-guide/", "Get the free guide")}
       </div>
       <div class="foot-cols">
@@ -303,7 +303,7 @@ ORG = {
     'name': 'Arcane Designer', 'legalName': 'Arcane Designer LLC', 'url': BASE + '/',
     'logo': BASE + '/android-chrome-512x512.png', 'image': BASE + '/assets/og.png',
     'slogan': 'Don’t go to school for AI. Download this and get started.',
-    'description': 'Downloadable AI starter kits with real prompts and short videos that help everyday people, business owners and marketers start using AI.',
+    'description': 'Practical AI training & tools for business owners, marketers, and everyday people. Starter kits with real prompts and short videos covering ChatGPT, Claude, Gemini, Grok, Copilot, Perplexity and Muse.',
     'founder': [{'@type': 'Person', 'name': 'Nathan Gellatly', 'sameAs': LINKEDIN_NATHAN}, {'@type': 'Person', 'name': 'Jordan Gellatly', 'sameAs': LINKEDIN_JORDAN}],
     'address': {'@type': 'PostalAddress', 'addressLocality': 'Spokane', 'addressRegion': 'WA', 'addressCountry': 'US'},
     'sameAs': [LINKEDIN_BIZ],
@@ -344,7 +344,7 @@ STAGES = [(22000, 'An Ivy League executive AI program', 'Months of classes'),
 HOME_Q = [ALL_Q[0], ALL_Q[3], QUESTIONS[4][1][0], QUESTIONS[4][1][2], QUESTIONS[3][1][0]]
 
 home = head('Arcane Designer | AI Starter Kits: Don’t Go to School for AI',
-            'Downloadable AI starter kits with real prompts and short videos of us doing the work. Learn ChatGPT, Claude and more by using them. Start with the free 7-day guide.',
+            'Practical AI training & tools for business owners, marketers, and everyday people. Learn ChatGPT, Claude, Gemini and more by using them. Start with the free 7-day guide.',
             '/', schema=[ORG, faq_schema(HOME_Q)])
 home += header('/')
 stage_data = json.dumps([[n, plain(l), plain(s)] for n, l, s in STAGES]).replace('"', '&quot;')
@@ -693,7 +693,7 @@ ab += f'''<section class="intro glow">
   <div class="wrap work-intro">
     <div data-anim="up">
       <h1>We&rsquo;re Jordan and{NB}Nathan.</h1>
-      <p class="big">A sister and brother from Spokane who use AI every day, and who think the best way to learn it is to use it.</p>
+      <p class="big">Practical AI training &amp; tools for business owners, marketers, and everyday people. We&rsquo;re a sister and brother from Spokane who think the best way to learn AI is to use it.</p>
     </div>
     <img src="/assets/arc/stands.webp" alt="" width="336" height="900" data-anim="right">
   </div>

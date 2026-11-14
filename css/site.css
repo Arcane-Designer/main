@@ -901,3 +901,5 @@ p { text-wrap: pretty; }
 .book3d .back span { font-size: 8.5cqw; }
 .book3d .spine span { font-size: 5cqw; }
 .contact-form { max-width: 720px; }
+.foot-brand { max-width: 330px; }
+.hero-x { padding-top: clamp(80px, 12vh, 140px); }
