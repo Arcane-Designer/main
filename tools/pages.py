@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '48'                      # bump after CSS/JS changes so browsers refetch
+V = '49'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -17,7 +17,7 @@ FONTS = ('https://fonts.googleapis.com/css2?family=Bebas+Neue'
 # Fill these in as things go live. Empty means the button or section falls back or stays hidden.
 CHECKOUT = {}        # kit slug -> checkout link (Lemon Squeezy, Gumroad, Stripe...). Until set, "Get the kit" opens the free guide signup.
 VIDEOS = {}          # kit slug -> embeddable video page link, shown on that kit's page
-PODCAST_LINKS = [('YouTube', 'https://www.youtube.com/@AIMonday'), ('Spotify', 'https://open.spotify.com/show/3YuS205Pz6owg1eH1KXLul'), ('Instagram', 'https://www.instagram.com/aimondaypod/')]   # add Apple Podcasts when ready
+PODCAST_LINKS = [('YouTube', 'https://www.youtube.com/@AIMonday'), ('Spotify', 'https://open.spotify.com/show/3YuS205Pz6owg1eH1KXLul'), ('Apple Podcasts', 'https://podcasts.apple.com/us/podcast/ai-monday-ai-news-tools-and-leaders/id6834921078'), ('Instagram', 'https://www.instagram.com/aimondaypod/')]
 EPISODES = []        # [(title, one-line summary, url)]
 
 BRAND = ('<span class="mark3d" aria-hidden="true">'
@@ -427,7 +427,7 @@ home += f'''<section class="hero-x dark-stage">
     <div data-anim="right">
       <h2>AI Monday</h2>
       <p class="big" style="margin-top:18px">Our podcast. AI news, the tools worth trying and real examples of us doing the same kind of work that&rsquo;s in the kits.</p>
-      <div class="row" style="margin-top:26px"><a class="btn" href="{PODCAST_LINKS[0][1]}" target="_blank" rel="noopener"><span>Watch on YouTube</span></a><a class="tlink" href="{PODCAST_LINKS[1][1]}" target="_blank" rel="noopener">Listen on Spotify</a><a class="tlink" href="/podcast/">About the podcast</a></div>
+      <div class="row" style="margin-top:26px"><a class="btn" href="{PODCAST_LINKS[0][1]}" target="_blank" rel="noopener"><span>Watch on YouTube</span></a><a class="tlink" href="{PODCAST_LINKS[1][1]}" target="_blank" rel="noopener">Listen on Spotify</a><a class="tlink" href="{PODCAST_LINKS[2][1]}" target="_blank" rel="noopener">Apple Podcasts</a><a class="tlink" href="/podcast/">About the podcast</a></div>
     </div>
   </div>
 </section>
