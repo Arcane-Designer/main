@@ -866,3 +866,9 @@ p { text-wrap: pretty; }
 .arc-card { display: block; }
 .arc-card h3 { margin-bottom: 10px; }
 .arc-card p img { float: right; width: 66px; margin: -46px 0 4px 14px; shape-outside: margin-box; }
+.foot-cols { display: flex; flex-wrap: wrap; gap: 26px clamp(32px, 5vw, 70px); }
+.foot-col { display: grid; gap: 10px; align-content: start; }
+.foot-col > b { color: #fff; font-weight: 700; }
+.foot-col nav { display: grid; gap: 8px; }
+.site-foot .foot-col:first-child nav { grid-template-columns: repeat(2, auto); column-gap: 26px; }
+.site-foot .foot-col:first-child nav { grid-template-columns: 1fr; }

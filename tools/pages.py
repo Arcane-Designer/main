@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '49'                      # bump after CSS/JS changes so browsers refetch
+V = '52'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -82,8 +82,7 @@ def header(cur):
 
 def footer():
     links = ''.join(f'<a href="{h}">{t}</a>' for h, t in [('/kits/', 'Kits'), ('/free-guide/', 'Free guide'), ('/podcast/', 'Podcast'), ('/questions/', 'Questions'), ('/about/', 'About'), ('/contact', 'Contact')])
-    links += f'<a href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">LinkedIn</a>'
-    links += ''.join(f'<a href="{u}" target="_blank" rel="noopener">{l}</a>' for l, u in PODCAST_LINKS)
+    pod = ''.join(f'<a href="{u}" target="_blank" rel="noopener">{l}</a>' for l, u in PODCAST_LINKS)
     return f'''</main>
 <footer class="site-foot">
   <div class="wrap">
@@ -92,10 +91,10 @@ def footer():
         <a class="brand" href="/">{BRAND}</a>
         <span>AI starter kits for everyday people.<br>Arcane Designer LLC, Spokane, Washington.</span>
       </div>
-      <div style="display:grid;gap:12px;align-content:start">
-        <nav aria-label="Footer">{links}</nav>
-        <a href="mailto:{EMAIL}">{EMAIL}</a>
-        <span>&copy; <span id="year">2026</span> Arcane Designer LLC</span>
+      <div class="foot-cols">
+        <div class="foot-col"><b>Explore</b><nav aria-label="Footer">{links}</nav></div>
+        <div class="foot-col"><b>AI Monday podcast</b><nav aria-label="Podcast">{pod}</nav></div>
+        <div class="foot-col"><b>Get in touch</b><a href="mailto:{EMAIL}">{EMAIL}</a><a href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">LinkedIn</a><span>&copy; <span id="year">2026</span> Arcane Designer LLC</span></div>
       </div>
     </div>
   </div>
