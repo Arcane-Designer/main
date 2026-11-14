@@ -5,6 +5,7 @@ const SITE = {
   email: 'nathan@arcanedesigner.com',        // set in tools/pages.py too (EMAIL); Google Workspace address
   forms: {
     contact: '',        // Formspree endpoint, e.g. https://formspree.io/f/xxxxxxx
+    guide: '',          // free-guide signup endpoint (Kit form action or Formspree)
     questionnaire: '',  // Formspree endpoint for the client questionnaire
   },
 };
@@ -143,6 +144,35 @@ addEventListener('resize', onScroll);
   });
 })();
 
+// 2c. Home: the price of learning AI counts down to ours as you scroll
+(() => {
+  const sec = document.querySelector('.pin-price');
+  if (!sec) return;
+  const tick = sec.querySelector('.ticker'), num = tick.querySelector('.num');
+  const stages = JSON.parse(tick.dataset.stages);
+  const label = sec.querySelector('.scene-label'), sub = sec.querySelector('.scene-sub');
+  const steps = [...sec.querySelectorAll('.scene-steps li')];
+  const bubble = sec.querySelector('.bubble span'), lines = bubble ? [bubble.dataset.a, bubble.dataset.b] : [];
+  let shown = -1, said = 0;
+  const fmt = (n) => Math.round(n).toLocaleString('en-US');
+  const render = (t) => {   // t runs 0..stages.length-1; each stage holds, then counts down to the next
+    const i = Math.min(stages.length - 1, Math.floor(t)), frac = t - i;
+    const f = i >= stages.length - 1 ? 0 : ease(clamp((frac - .35) / .65));
+    const val = i >= stages.length - 1 ? stages[i][0] : stages[i][0] + (stages[i + 1][0] - stages[i][0]) * f;
+    num.textContent = fmt(val);
+    const cur = f > .5 ? i + 1 : i;
+    if (cur !== shown) {
+      shown = cur; label.textContent = stages[cur][1]; sub.textContent = stages[cur][2];
+      steps.forEach((li, k) => { li.classList.toggle('on', k === cur); li.classList.toggle('passed', k < cur); });
+    }
+    const last = cur === stages.length - 1;
+    tick.classList.toggle('final', last);
+    if (bubble && said !== +last) { said = +last; bubble.classList.add('swap'); setTimeout(() => { bubble.textContent = lines[said]; bubble.classList.remove('swap'); }, 200); }
+  };
+  if (STATIC || REDUCE) { document.documentElement.classList.add('no-pin'); render(stages.length - 1); return; }
+  scenes.push(() => render(clamp((pinProgress(sec) - .06) / .8) * (stages.length - 1)));
+})();
+
 // 3. Process page: each step's triangle arrives as that step enters the screen and the step dims as it leaves
 (() => {
   const hex = document.querySelector('.proc-art .hexbuild');
@@ -245,6 +275,13 @@ onScroll();
     tx = (e.clientX - r.left) / r.width - .5; ty = (e.clientY - r.top) / r.height - .5; kick();
   }, { passive: true });
   hero.addEventListener('pointerleave', () => { tx = 0; ty = 0; kick(); });
+})();
+
+/* ---- free guide: remember which kit someone came from ---- */
+(() => {
+  const kit = new URLSearchParams(location.search).get('kit');
+  const f = document.querySelector('form[data-form="guide"] input[name="kit"]');
+  if (kit && f) f.value = kit;
 })();
 
 /* ---- Start a project: "Get started" on a pricing card pre-picks that package ---- */

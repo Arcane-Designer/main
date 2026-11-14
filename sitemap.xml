@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://arcanedesigner.com/</loc><lastmod>2026-11-10</lastmod></url>
-  <url><loc>https://arcanedesigner.com/work/</loc><lastmod>2026-11-10</lastmod></url>
-  <url><loc>https://arcanedesigner.com/process/</loc><lastmod>2026-11-10</lastmod></url>
-  <url><loc>https://arcanedesigner.com/pricing/</loc><lastmod>2026-11-10</lastmod></url>
-  <url><loc>https://arcanedesigner.com/contact</loc><lastmod>2026-11-10</lastmod></url>
+  <url><loc>https://arcanedesigner.com/</loc></url>
+  <url><loc>https://arcanedesigner.com/kits/</loc></url>
+  <url><loc>https://arcanedesigner.com/kits/ai-for-marketing/</loc></url>
+  <url><loc>https://arcanedesigner.com/kits/ai-beginner/</loc></url>
+  <url><loc>https://arcanedesigner.com/kits/start-a-business/</loc></url>
+  <url><loc>https://arcanedesigner.com/kits/build-your-website/</loc></url>
+  <url><loc>https://arcanedesigner.com/kits/top-100-prompts/</loc></url>
+  <url><loc>https://arcanedesigner.com/kits/complete-bundle/</loc></url>
+  <url><loc>https://arcanedesigner.com/free-guide/</loc></url>
+  <url><loc>https://arcanedesigner.com/podcast/</loc></url>
+  <url><loc>https://arcanedesigner.com/questions/</loc></url>
+  <url><loc>https://arcanedesigner.com/about/</loc></url>
+  <url><loc>https://arcanedesigner.com/contact</loc></url>
 </urlset>

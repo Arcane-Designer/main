@@ -1,37 +1,40 @@
 #!/usr/bin/env python3
-"""Writes the site's HTML pages. Shared head, header and footer live here so every page matches.
+"""Writes every page of arcanedesigner.com. Shared head, header and footer live here so pages match.
 Run from the repo root:  python3 tools/pages.py
-Edit copy here, then re-run. The generated .html files are what GitHub Pages serves."""
-import json, math, os, re
+Edit copy and prices here, then re-run. The generated index.html files are what GitHub Pages serves.
+Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
+import json, math, os, re, shutil
 
-V = '30'                      # bump after CSS/JS changes so browsers refetch
+V = '36'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
-LINKEDIN_PERSON = 'https://www.linkedin.com/in/nathan-gellatly/'         # Nathan's profile URL (About block on Process). Empty = hidden.
-FONTS = ('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@600'
+LINKEDIN_NATHAN = 'https://www.linkedin.com/in/nathan-gellatly/'
+FONTS = ('https://fonts.googleapis.com/css2?family=Bebas+Neue'
          '&family=Figtree:wght@400;500;600;700&family=Archivo:wdth,wght@62..125,400..900&display=swap')
 
-LOGO = '''<svg viewBox="0 0 40 40" aria-hidden="true"><g stroke="currentColor" stroke-width="2.2" stroke-linejoin="round">
-<polygon points="20,3 29.5,8.5 29.5,19.5 20,25 10.5,19.5 10.5,8.5" fill="#238DBB"/>
-<polygon points="14.5,14 24,19.5 24,30.5 14.5,36 5,30.5 5,19.5" fill="#FF6B93"/>
-<polygon points="25.5,14 35,19.5 35,30.5 25.5,36 16,30.5 16,19.5" fill="#08D8A0"/></g></svg>'''
+# Fill these in as things go live. Empty means the button or section falls back or stays hidden.
+CHECKOUT = {}        # kit slug -> checkout link (Lemon Squeezy, Gumroad, Stripe...). Until set, "Get the kit" opens the free guide signup.
+VIDEOS = {}          # kit slug -> embeddable video page link, shown on that kit's page
+PODCAST_LINKS = []   # [(label, url)] e.g. [('YouTube', 'https://...'), ('Spotify', 'https://...')]
+EPISODES = []        # [(title, one-line summary, url)]
+
 BRAND = ('<span class="mark3d" aria-hidden="true">'
-         '<img class="hx" data-h="b" src="assets/brand/hex-blue.webp" alt="" width="64" height="64">'
-         '<img class="hx" data-h="p" src="assets/brand/hex-pink.webp" alt="" width="64" height="64">'
-         '<img class="hx" data-h="t" src="assets/brand/hex-teal.webp" alt="" width="64" height="64">'
+         '<img class="hx" data-h="b" src="/assets/brand/hex-blue.webp" alt="" width="64" height="64">'
+         '<img class="hx" data-h="p" src="/assets/brand/hex-pink.webp" alt="" width="64" height="64">'
+         '<img class="hx" data-h="t" src="/assets/brand/hex-teal.webp" alt="" width="64" height="64">'
          '</span><span class="word">Arcane Designer</span>')
-NAV = [('work.html', 'Work'), ('process.html', 'Process'), ('pricing.html', 'Pricing')]
+NAV = [('/kits/', 'Kits'), ('/podcast/', 'Podcast'), ('/questions/', 'Questions'), ('/about/', 'About')]
 AC = ' aria-current="page"'
+NB = '&nbsp;'
 
 
 def btn(href, text, cls=''):
     return f'<a class="btn {cls}" href="{href}"><span>{text}</span></a>'
 
 
-def head(title, desc, path, extra='', noindex=False, schema=None):
-    stem = path[:-5]
-    canon = BASE + '/' + ('' if path == 'index.html' else (stem + '/' if stem in FOLDER_PAGES else stem))
+def head(title, desc, route, noindex=False, schema=None, extra=''):
+    canon = BASE + route
     s = f'''<!doctype html>
 <html lang="en" class="no-js">
 <head>
@@ -46,62 +49,46 @@ def head(title, desc, path, extra='', noindex=False, schema=None):
 <meta property="og:url" content="{canon}">
 <meta property="og:image" content="{BASE}/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#100b28" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
-<link rel="icon" href="favicon-48x48.png" sizes="48x48" type="image/png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0c0b11">
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/favicon-48x48.png" sizes="48x48" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="{FONTS}">
-<link rel="stylesheet" href="css/site.css?v={V}">
+<link rel="stylesheet" href="/css/site.css?v={V}">
 <script>document.documentElement.className='js'</script>
 {extra}'''
-    if schema:
-        s += '<script type="application/ld+json">' + json.dumps(schema, ensure_ascii=False) + '</script>\n'
+    for sc in (schema if isinstance(schema, list) else [schema] if schema else []):
+        s += '<script type="application/ld+json">' + json.dumps(sc, ensure_ascii=False) + '</script>\n'
     return s + '</head>\n'
 
 
 def header(cur):
-    links = ''.join(f'<a href="{h}"{AC if h == cur else ""}>{t}</a>' for h, t in NAV)
+    links = ''.join(f'<a href="{h}"{AC if cur.startswith(h) else ""}>{t}</a>' for h, t in NAV)
     return f'''<body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="site-head">
   <div class="wrap head-row">
-    <a class="brand" href="./" aria-label="Arcane Designer home">{BRAND}</a>
+    <a class="brand" href="/" aria-label="Arcane Designer home">{BRAND}</a>
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
-    <nav class="nav" id="nav" aria-label="Main">{links}{btn("contact.html", "Start a project")}</nav>
+    <nav class="nav" id="nav" aria-label="Main">{links}{btn("/free-guide/", "Free guide")}</nav>
   </div>
 </header>
 <main id="main">
 '''
 
 
-def closer(title='Got an old website?', body='Send the link. You&rsquo;ll get back a short list of what&rsquo;s worth changing and what it would cost.'):
-    return f'''<section class="closer navy-sec">
-  <div class="wrap closer-grid">
-    <div data-anim="left">
-      <h2>{title}</h2>
-      <p>{body}</p>
-      {btn("contact.html", "Start a project")}
-    </div>
-    <img class="arc" src="assets/arc/hands-up.webp" alt="" width="459" height="900" loading="lazy" data-anim="right">
-  </div>
-</section>
-'''
-
-
 def footer():
-    links = ''.join(f'<a href="{h}">{t}</a>' for h, t in NAV + [('contact.html', 'Contact')])
-    if LINKEDIN_BIZ:
-        links += f'<a href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">LinkedIn</a>'
+    links = ''.join(f'<a href="{h}">{t}</a>' for h, t in [('/kits/', 'Kits'), ('/free-guide/', 'Free guide'), ('/podcast/', 'Podcast'), ('/questions/', 'Questions'), ('/about/', 'About'), ('/contact', 'Contact')])
+    links += f'<a href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">LinkedIn</a>'
     return f'''</main>
 <footer class="site-foot">
   <div class="wrap">
     <div class="foot-row">
       <div style="display:grid;gap:12px">
-        <a class="brand" href="./">{BRAND}</a>
-        <span>Website and logo redesigns.<br>Arcane Designer LLC, Spokane, Washington.</span>
+        <a class="brand" href="/">{BRAND}</a>
+        <span>AI starter kits for everyday people.<br>Arcane Designer LLC, Spokane, Washington.</span>
       </div>
       <div style="display:grid;gap:12px;align-content:start">
         <nav aria-label="Footer">{links}</nav>
@@ -111,37 +98,43 @@ def footer():
     </div>
   </div>
 </footer>
-<script src="js/site.js?v={V}" defer></script>
+<script src="/js/site.js?v={V}" defer></script>
 </body>
 </html>
 '''
 
 
-def compare(slug, label, pos=16, eager=False, wipe=False):
-    ld = '' if eager else ' loading="lazy"'
-    w = ' data-scroll-wipe' if wipe else ''
-    auto = ' auto' if wipe else ''
-    ctrl = '' if wipe else f'<input type="range" min="0" max="100" step="0.1" value="{pos}" aria-label="Drag to compare the old and new {label} website">'
-    return f'''<div class="compare{auto}" style="--pos:{pos}%"{w}>
-  <img src="assets/samples/{slug}-before.webp" alt="{label} website before the redesign" width="1440" height="900"{ld}>
-  <img class="after" src="assets/samples/{slug}-after.webp" alt="{label} website after the redesign" width="1440" height="900"{ld}>
-  <span class="tag l"><i></i>Before</span><span class="tag r"><i></i>After</span>
-  <span class="handle" aria-hidden="true"></span>
-  {ctrl}
-</div>'''
+def closer(title='Ready when you are.', body='Start with the free guide. Seven days, one small task a day, and you&rsquo;ll be using AI for real by the end of the week.', label='Get the free guide', href='/free-guide/', arc='hands-up'):
+    sizes = {'hands-up': (459, 900), 'presents': (499, 900), 'stands': (336, 900)}
+    w, h = sizes.get(arc, (459, 900))
+    return f'''<section class="closer navy-sec">
+  <div class="wrap closer-grid">
+    <div data-anim="left">
+      <h2>{title}</h2>
+      <p>{body}</p>
+      {btn(href, label)}
+    </div>
+    <img class="arc" src="/assets/arc/{arc}.webp" alt="" width="{w}" height="{h}" loading="lazy" data-anim="right">
+  </div>
+</section>
+'''
 
 
-LOCK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 7V5a3.5 3.5 0 0 1 7 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="7" width="10" height="7.5" rx="2" fill="currentColor"/></svg>'
+def tip(text, pose='crouch-point'):
+    return f'''<aside class="arc-tip" data-anim="up"><img src="/assets/arc/{pose}.webp" alt="" width="120" height="120" loading="lazy"><p><b>Arc&rsquo;s tip</b>{text}</p></aside>'''
 
 
-def browser(url, inner):
-    return f'<div class="browser"><div class="bar"><span class="dots"><i></i><i></i><i></i></span><b>{LOCK}{url}</b><span class="dots ghost"></span></div>{inner}</div>'
+def faq_html(items):
+    return ''.join(f'<details><summary>{q}</summary><div><p>{a}</p></div></details>' for q, a in items)
 
 
-def hexsvg(label='Six steps'):
-    """A 3D hexagon made of six thick triangular pieces. Each piece flies in when its step turns on (js/site.js).
-    Each piece is a slab: a top face plus the side walls you'd see from slightly above (walls facing down)."""
-    C, R, D = 200, 170, 22           # center, radius, slab thickness
+def plain(s):
+    return re.sub(r'<[^>]+>', '', s).replace('&rsquo;', '’').replace('&ldquo;', '“').replace('&rdquo;', '”').replace('&amp;', '&').replace(NB, ' ')
+
+
+def hexsvg(label='Six pieces'):
+    """A 3D hexagon made of six thick triangular pieces. Each piece flies in when its step turns on (js/site.js)."""
+    C, R, D = 200, 170, 22
     pts = [(C + R * math.cos(math.radians(-90 + 60 * k)), C + R * math.sin(math.radians(-90 + 60 * k))) for k in range(6)]
     tops = ['url(#hg-teal)', 'url(#hg-blue)', 'url(#hg-pink)'] * 2
     walls = ['url(#hw-teal)', 'url(#hw-blue)', 'url(#hw-pink)'] * 2
@@ -154,10 +147,10 @@ def hexsvg(label='Six steps'):
         for i in range(3):
             p1, p2 = tri[i], tri[(i + 1) % 3]
             ex, ey = p2[0] - p1[0], p2[1] - p1[1]
-            nx, ny = ey, -ex                              # a normal of the edge
+            nx, ny = ey, -ex
             mx, my = (p1[0] + p2[0]) / 2 - cx, (p1[1] + p2[1]) / 2 - cy
-            if nx * mx + ny * my < 0: nx, ny = -nx, -ny   # make it point outward
-            if ny > 1e-6:                                 # wall faces down, so it is visible
+            if nx * mx + ny * my < 0: nx, ny = -nx, -ny
+            if ny > 1e-6:
                 q = f'{p1[0]:.1f},{p1[1]:.1f} {p2[0]:.1f},{p2[1]:.1f} {p2[0]:.1f},{p2[1] + D:.1f} {p1[0]:.1f},{p1[1] + D:.1f}'
                 side.append(f'<polygon class="wall" points="{q}" fill="{walls[k]}"/>')
         dx, dy = cx - C, cy - C
@@ -167,7 +160,7 @@ def hexsvg(label='Six steps'):
         top = ' '.join(f'{x:.1f},{y:.1f}' for x, y in tri)
         bev = ' '.join(f'{cx + (x - cx) * .82:.1f},{cy + (y - cy) * .82:.1f}' for x, y in tri)
         groups.append((cy, f'<g class="tri" data-i="{k}" style="--tx:{tx:.0f}px;--ty:{ty:.0f}px;--rot:{rot}deg">{"".join(side)}<polygon class="top" points="{top}" fill="{tops[k]}"/><polygon class="gloss" points="{top}" fill="url(#hg-gloss)"/><polygon class="bevel" points="{bev}"/><text x="{cx:.1f}" y="{cy:.1f}">{k + 1}</text></g>'))
-    groups.sort(key=lambda g: g[0])   # back to front, so lower pieces cover the walls of upper ones
+    groups.sort(key=lambda g: g[0])
     outline = ' '.join(f'{x:.1f},{y:.1f}' for x, y in pts)
     return f'''<svg class="hexbuild" viewBox="0 0 400 420" role="img" aria-label="{label}">
   <defs>
@@ -184,535 +177,583 @@ def hexsvg(label='Six steps'):
 </svg>'''
 
 
-FOLDER_PAGES = ('work', 'process', 'pricing', 'questionnaire')   # new pages: served as /name/ with no .html version
+WRITTEN = []
 
 
-def write(name, html):
-    # Clean addresses. New pages live in folders (/pricing/), contact keeps contact.html because the old site used it.
-    # Everything else is linked from the site root so it works from inside a folder.
-    html = re.sub(r'href="(work|process|pricing|questionnaire)\.html', r'href="/\1/', html)
-    html = re.sub(r'href="(work|process|pricing|questionnaire)(?=[#?"])', r'href="/\1/', html)
-    html = re.sub(r'href="contact\.html', 'href="/contact', html)
-    html = re.sub(r'href="contact(?=[#?"])', 'href="/contact', html)
-    html = re.sub(r'(src|href)="(css|js|assets)/', r'\1="/\2/', html)
-    html = re.sub(r'href="(favicon-[^"]+|apple-touch-icon\.png)"', r'href="/\1"', html)
-    html = html.replace('href="./"', 'href="/"')
-    stem = name[:-5]
-    if stem in FOLDER_PAGES:
-        os.makedirs(stem, exist_ok=True)
-        if os.path.exists(name):
-            os.remove(name)
-        name = f'{stem}/index.html'
-    with open(name, 'w') as f:
+def write(route, html):
+    """route '/' -> index.html, '/kits/' -> kits/index.html, '/contact' -> contact.html, '/404' -> 404.html"""
+    if route == '/':
+        path = 'index.html'
+    elif route.endswith('/'):
+        path = route.strip('/') + '/index.html'
+    else:
+        path = route.strip('/') + '.html'
+    os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
+    with open(path, 'w') as f:
         f.write(html)
-    print('wrote', name)
+    WRITTEN.append(route)
+    print('wrote', path)
 
 
-# ---------------------------------------------------------------- shared content
-PRICES = [
-    dict(key='website', name='Website redesign', amt='1,500', blurb='For most small business websites.',
-         items=['Up to 10 pages', 'Three design options to click through', 'One round of changes', 'Built on the platform you already use',
-                'Works on phones, tablets and computers', 'Search basics on every page', 'A week of fine-tuning after launch'], main=True),
-    dict(key='larger', name='Larger website', amt='3,500', blurb='For sites with more than 10 pages, or extras like online booking, ordering or a small store.',
-         items=['11 to 25 pages', 'Everything in the website redesign', 'Booking, ordering or store features set up on your platform',
-                'Existing content moved over and tidied', 'A written quote before work starts']),
-    dict(key='logo', name='Logo redesign', amt='500', blurb='A cleaner version of your logo, or a new one.',
-         items=['Three directions to choose from', 'One round of changes', 'Files for web, print and social media', 'Color and font notes for consistency']),
+# ================================================================ content
+FREE = dict(slug='free-guide', name='Your First 7 Days with AI', price='Free',
+            line='One small task a day. By day seven you&rsquo;ll be using AI for real work.')
+
+KITS = [
+    dict(slug='ai-for-marketing', name='AI for Marketing', price=97, pose='presents', lead=True,
+         line='Have AI write your posts, emails and ads in your brand, on a schedule.',
+         who='You do the marketing for a business, or you want to. You&rsquo;re tired of staring at a blank caption box, and you&rsquo;ve heard AI can help but every answer it gives you sounds generic.',
+         inside=[('Social posts', 'Prompts that turn one idea into a week of posts, written the way your brand talks.'),
+                 ('Email campaigns', 'Welcome emails, newsletters and promos, plus how to get AI to remember your offers.'),
+                 ('Ad copy', 'Headlines and variations to test, for the platforms small businesses actually use.'),
+                 ('Website content', 'Page copy, product descriptions and FAQs that read like a person wrote them.')],
+         levels=True,
+         tip='Before you ask for a single post, tell the AI who your customer is and what they care about. Every answer after that gets better.',
+         faq=[('Do I need to know how to code for the Build level?', 'No. You&rsquo;ll use Codex, which writes the code for you. You describe what you want in plain English and we show you every click.'),
+              ('Which AI tools does it use?', 'Mostly ChatGPT and Claude for writing, Claude for recurring tasks and Codex for the Build level. The prompts work in other tools too.')]),
+    dict(slug='ai-beginner', name='AI Beginner Kit', price=47, pose='stands',
+         line='A plain-English tour of ChatGPT, Claude, Gemini, Copilot and Perplexity.',
+         who='You keep hearing about AI and you haven&rsquo;t really used it yet. Or you&rsquo;ve tried ChatGPT a few times and it didn&rsquo;t stick.',
+         inside=[('The five big tools', 'What ChatGPT, Claude, Gemini, Microsoft Copilot and Perplexity are each good at, in plain words.'),
+                 ('Watch us use them', 'Short screen-share videos of us doing everyday tasks in each one.'),
+                 ('Your first prompts', 'Copy-and-paste prompts for your first sessions, so you never start from a blank box.'),
+                 ('A one-page cheat sheet', 'Which tool to open for which job. Print it, stick it by your desk.')],
+         tip='Pick one tool and use it every day for a week before you try the others. Habit beats variety at the start.',
+         faq=[('Do I have to pay for these AI tools?', 'No. All five have a free version, and everything in this kit works on the free plans.')]),
+    dict(slug='start-a-business', name='Start a Business with AI', price=97, pose='presents-floor',
+         line='Use AI to test an idea, name it, price it and find your first customers.',
+         who='You have a business idea, or a side hustle you want to make real, and you want help thinking it through without paying a consultant.',
+         inside=[('Test the idea', 'Prompts that poke holes in your idea before you spend money on it.'),
+                 ('Name and brand', 'Find a name, a voice and a simple look you can actually use.'),
+                 ('A one-page plan', 'Who it&rsquo;s for, what it costs and how it makes money, all on one page.'),
+                 ('Your first customers', 'Outreach messages and launch posts written with AI, in your voice.')],
+         tip='Ask the AI to argue against your idea first. If it survives that, you&rsquo;re onto something.',
+         faq=[('Is this legal or tax advice?', 'No. It helps you plan and get moving. For legal setup and taxes, talk to a professional in your state.')]),
+    dict(slug='build-your-website', name='Build Your Website with AI', price=97, pose='crouch-point',
+         line='Plan, write and build a website with AI, then keep making it better.',
+         who='You need a website, or yours is old and you want to fix it yourself. You&rsquo;re comfortable clicking around, and you&rsquo;d like AI to do the heavy lifting.',
+         inside=[('Pick your platform', 'Squarespace, Wix, WordPress or a simple custom site, and how to choose.'),
+                 ('Plan the pages', 'Have AI map out exactly which pages you need and what goes on each one.'),
+                 ('Write every page', 'Copy that sounds like you, from the home page to the FAQs.'),
+                 ('Get found', 'How to set up your site so Google and AI tools can find it and recommend it.')],
+         tip='Write your FAQs as the real questions customers ask you. AI tools love quoting a clear answer.',
+         faq=[('Will this work with the website I already have?', 'Yes. Most of the kit is about planning and writing, and that works on any platform.')]),
+    dict(slug='top-100-prompts', name='Top 100 Prompts for Starting a Business', price=47, pose='flabbergasted',
+         line='The 100 prompts we&rsquo;d hand a friend who was starting a business tomorrow.',
+         who='You want to start something and you&rsquo;d rather not figure out what to ask AI from scratch.',
+         inside=[('Idea and research', 'Size up your market, your competition and your customers.'),
+                 ('Brand and voice', 'Names, taglines, tone and a short brand guide.'),
+                 ('Money', 'Pricing, simple budgets and a basic forecast.'),
+                 ('Marketing and sales', 'Posts, emails, outreach and follow-ups.')],
+         tip='Save the prompts that work for you in one document. That document becomes your own playbook.',
+         faq=[('Do the prompts work in any AI tool?', 'Yes. They&rsquo;re written to work in ChatGPT, Claude, Gemini and Copilot.')]),
 ]
+BUNDLE = dict(slug='complete-bundle', name='The Complete Bundle', price=297, pose='hands-up',
+              line='Every kit, plus updates as the AI tools change.',
+              who='You want the whole set, or you&rsquo;re buying for a marketing person or a small team.',
+              tip='Start with the Beginner Kit even if you&rsquo;ve used AI before. It fills in the gaps fast.',
+              faq=[('What happens when the tools change?', 'We update the kits, and bundle owners get the new versions.')])
+ALL = KITS + [BUNDLE]
+BY = {k['slug']: k for k in ALL}
+LADDER = [('Your First 7 Days with AI', '/free-guide/', 'Free'), ('AI Beginner Kit', '/kits/ai-beginner/', '$47'), ('AI for Marketing', '/kits/ai-for-marketing/', '$97'),
+          ('Start a Business with AI', '/kits/start-a-business/', '$97'), ('Build Your Website with AI', '/kits/build-your-website/', '$97'), ('Top 100 Prompts', '/kits/top-100-prompts/', '$47')]
 
-FAQ = [
-    ('Is there a monthly fee?', 'No. You pay for the project once. Your platform and hosting bills stay the same and keep going to the same companies.'),
-    ('Do you host my website?', 'No. The new design is built on the platform you already use, so nothing moves, and nothing depends on Arcane Designer afterward.'),
-    ('Which platforms do you work with?', 'Squarespace, Wix, WordPress, Shopify, Webflow and GoDaddy cover most sites. On something else? Send the link and you&rsquo;ll get a straight answer.'),
-    ('Do I have to share my password?', 'No. Most platforms let you add a helper account with its own login. When the project ends, you delete it.'),
-    ('How long does it take?', 'It depends on the size of the site and how quickly feedback comes back. You&rsquo;ll get a rough timeline with your quote.'),
-    ('How does payment work?', 'Half at the start and half at launch, through Stripe invoices. Card or bank transfer both work.'),
-    ('What if my site needs more than the starting price covers?', 'You&rsquo;ll get a written quote before anything starts, and it won&rsquo;t change without your OK.'),
-    ('Do you change the words on my site?', 'Only if you want us to. We can keep your current wording exactly as it is, lightly tidy it, or write new sections where a page needs them. Rewriting every page from scratch can be added to the quote.'),
-    ('Do you use AI?', 'Yes, for research, sketching ideas, building faster and catching mistakes. Every design and page is still reviewed by a person before you see it.'),
-    ('Where are you based?', 'Spokane, Washington. The work is done remotely, so it doesn&rsquo;t matter where your business is.'),
+LEVELS = [('Ask', 'Real prompts for posts, emails, ads and web pages. Copy, paste, tweak, done.'),
+          ('Automate', 'Set up recurring Claude tasks, so new content shows up on a schedule without you asking.'),
+          ('Build', 'Use Codex to build a small program that knows when to post and writes it in your brand. Even if you&rsquo;ve never written code.')]
+
+# Questions library, grouped. Written for people first, and plain enough for AI tools to quote.
+QUESTIONS = [
+    ('Getting started', [
+        ('How do I start using AI?', 'Pick one free tool, like ChatGPT or Claude, and use it for something you actually need this week. Ask it to draft an email, plan a meal or explain a bill. Real tasks teach you faster than tutorials. Our free 7-day guide gives you one small task a day to build the habit.'),
+        ('What is a prompt?', 'A prompt is just what you type to the AI. Good prompts give context: who you are, what you want, who it&rsquo;s for and what a good answer looks like. Think of it like briefing a smart new coworker on their first day.'),
+        ('How long does it take to learn AI?', 'You can do something useful in your first hour. Getting comfortable takes a couple of weeks of everyday use. Building automations takes longer, but it&rsquo;s closer to a weekend project than a semester.'),
+        ('Do I need to pay for AI tools?', 'Not to start. ChatGPT, Claude, Gemini, Copilot and Perplexity all have free versions. Paid plans add more use and better models, and most people only upgrade once they&rsquo;re using a tool every day.'),
+    ]),
+    ('Choosing tools', [
+        ('What&rsquo;s the difference between ChatGPT, Claude, Gemini, Copilot and Perplexity?', 'They overlap a lot. ChatGPT is the all-rounder most people try first. Claude is great for writing and long documents. Gemini fits right into Google&rsquo;s apps. Copilot lives inside Microsoft Word, Excel and Outlook. Perplexity is built for research, with sources linked in its answers.'),
+        ('What&rsquo;s the best AI for a small business?', 'The one your team will actually use every day. If you live in Google Workspace, try Gemini. If you live in Microsoft 365, try Copilot. For marketing writing, ChatGPT and Claude are both strong. Most small businesses end up using two.'),
+        ('Is it safe to put business information into AI?', 'Treat it like email. Don&rsquo;t paste passwords, card numbers or private customer data. Check each tool&rsquo;s settings for whether your chats are used for training, and use business plans when you&rsquo;re handling sensitive work.'),
+    ]),
+    ('Marketing with AI', [
+        ('Can AI write my social media posts?', 'Yes, and it does a good job once it knows your brand. Give it examples of posts you like, describe your customer and tell it your voice. Then have it draft a week at a time and edit before you post.'),
+        ('How do I get AI to sound like my brand?', 'Write a short brand guide: who you serve, how you talk, words you use and words you never use. Paste a few of your best posts. Save that as a reusable instruction, and every draft starts closer to your voice.'),
+        ('What does automating marketing with AI mean?', 'It means the AI makes content on a schedule without you typing a prompt each time. For example, a recurring task that drafts next week&rsquo;s posts every Friday. Our AI for Marketing kit walks you through setting one up.'),
+        ('Will AI replace marketers?', 'It&rsquo;s changing the job. Marketers who use AI get through more work and spend more time on ideas and strategy. That&rsquo;s why business owners are buying AI training for their marketing people now.'),
+    ]),
+    ('Learning AI', [
+        ('Is an AI course or certificate worth it?', 'It depends on your goal. University certificates in AI marketing often cost $2,000 to $5,000 and take months. If you want to use AI in your work, hands-on practice gets you there faster and for far less. That&rsquo;s the idea behind our kits.'),
+        ('Can a beginner build an app or tool with AI?', 'Yes. Tools like Codex write the code from plain-English instructions. You won&rsquo;t become a programmer overnight, but you can build a small, useful tool, like one that drafts and schedules your posts.'),
+    ]),
+    ('Our kits', [
+        ('What&rsquo;s inside a kit?', 'Each kit is a download with copy-and-paste prompts, short screen-share videos of us doing the work and a first project to finish. You can start the day you buy it.'),
+        ('Do the kits get updated?', 'Yes. AI tools change fast, so we update the kits as they do. Complete Bundle owners get the new versions.'),
+        ('Can I buy a kit for my team?', 'Yes. A lot of business owners buy the AI for Marketing kit for their marketing person or team. For a whole team, the Complete Bundle covers everything.'),
+        ('What&rsquo;s in the free guide?', 'Seven days of small, real tasks with AI, plus a welcome video from Jordan. It&rsquo;s the easiest way to find out if the kits are for you.'),
+    ]),
 ]
+ALL_Q = [qa for _, qs in QUESTIONS for qa in qs]
 
 ORG = {
-    '@context': 'https://schema.org', '@type': 'ProfessionalService', '@id': BASE + '/#business',
+    '@context': 'https://schema.org', '@type': 'Organization', '@id': BASE + '/#org',
     'name': 'Arcane Designer', 'legalName': 'Arcane Designer LLC', 'url': BASE + '/',
     'logo': BASE + '/android-chrome-512x512.png', 'image': BASE + '/assets/og.png', 'email': EMAIL,
-    'description': 'One-time website and logo redesigns for small businesses, based in Spokane, Washington.',
-    'founder': {'@type': 'Person', 'name': 'Nathan Gellatly'},
+    'slogan': 'Don’t go to school for AI. Download this and get started.',
+    'description': 'Downloadable AI starter kits with real prompts and short videos that help everyday people, business owners and marketers start using AI.',
+    'founder': [{'@type': 'Person', 'name': 'Nathan Gellatly', 'sameAs': LINKEDIN_NATHAN}, {'@type': 'Person', 'name': 'Jordan'}],
     'address': {'@type': 'PostalAddress', 'addressLocality': 'Spokane', 'addressRegion': 'WA', 'addressCountry': 'US'},
-    'areaServed': [{'@type': 'City', 'name': 'Spokane'}, {'@type': 'Country', 'name': 'United States'}],
-    'priceRange': '$500 to $3,500+',
-    'makesOffer': [{'@type': 'Offer', 'name': p['name'], 'description': p['blurb'],
-                    'priceSpecification': {'@type': 'PriceSpecification', 'minPrice': int(p['amt'].replace(',', '')), 'priceCurrency': 'USD'}} for p in PRICES],
+    'sameAs': [LINKEDIN_BIZ],
 }
-if LINKEDIN_BIZ:
-    ORG['sameAs'] = [LINKEDIN_BIZ]
 
-# Work samples. Only ones with both images on disk are shown.
-SAMPLES_ALL = [
-    dict(slug='northbank-plumbing', name='Northbank Plumbing &amp; Heat', kind='Plumbing and furnace repair', url='northbankplumbing.com',
-         notes=[('Call in one tap', 'When the basement is flooding, the phone number should be the biggest thing on the page.'),
-                ('Less to read', 'The old site said everything at once. The new one says the important part, big.'),
-                ('Built for phones', 'Most emergency calls start on a phone, so the layout started there too.')]),
-    dict(slug='hillyard-hounds', name='Hillyard Hounds', kind='Dog grooming and daycare', url='hillyardhounds.com',
-         notes=[('Warm and human', 'Real dogs, real people, soft shapes. It feels like a place you&rsquo;d leave your dog.'),
-                ('Booking up front', 'Booking a groom used to be buried. Now it&rsquo;s one tap away.')]),
-    dict(slug='sunny-side-cafe', name='Sunny Side Caf&eacute;', kind='Breakfast caf&eacute;', url='sunnysidecafe.com',
-         notes=[('All sunshine', 'Bright colors, wavy shapes and a lot of pancakes.'),
-                ('Menu in reach', 'Today&rsquo;s menu and hours, without downloading a PDF.')]),
-    dict(slug='lilac-row-bakery', name='Lilac Row Bakery', kind='Neighborhood bakery', url='lilacrowbakery.com',
-         notes=[('Hours up top', 'They used to be buried in a sidebar. Now they sit above everything else.'),
-                ('Food first', 'A warm, editorial look built around what they actually bake.'),
-                ('One clear next step', 'Order ahead, or come by. Everything else gets out of the way.')]),
-]
-# ferrous-coffee is parked (source files kept in tools/samples-src) until it is redone.
-SAMPLES = [s for s in SAMPLES_ALL if os.path.exists(f'assets/samples/{s["slug"]}-after.webp') and os.path.exists(f'assets/samples/{s["slug"]}-before.webp')]
-def _logo(slug, which):
-    for ext in ('svg', 'png'):
-        if os.path.exists(f'assets/logos/{slug}-{which}.{ext}'):
-            return f'assets/logos/{slug}-{which}.{ext}'
-SHOW_LOGOS = False   # hidden until the logo redesigns are redone with Nathan
-LOGOS = [] if not SHOW_LOGOS else [(s, _logo(s['slug'], 'old'), _logo(s['slug'], 'new')) for s in SAMPLES_ALL if _logo(s['slug'], 'old') and _logo(s['slug'], 'new')]
 
-STEPS = [
-    ('Send your site', 'Use the contact form or email a link. You&rsquo;ll get back what&rsquo;s worth changing, and a price.'),
-    ('Deposit and questionnaire', 'Half the price up front, by card or bank transfer. Then a short questionnaire about your customers, your taste and what has to stay.'),
-    ('Three designs to choose from', 'Three different directions, built as real web pages you can click through on your phone. Pick one, or mix parts of each.'),
-    ('One round of changes', 'Send one list of changes. They get made, and you sign off before anything is built.'),
-    ('Build and launch', 'The new design goes onto the platform you already use. You add a helper login, so your password stays yours. The second half is due at launch.'),
-    ('A week of fine-tuning', 'For a week after launch, anything you want adjusted gets fine-tuned. Then you delete the helper login, and the site is entirely yours.'),
-]
-STEP_COLORS = ['var(--teal-ink)', 'var(--blue-ink)', 'var(--pink-ink)'] * 2
+def product_schema(k):
+    return {'@context': 'https://schema.org', '@type': 'Product', 'name': plain(k['name']), 'description': plain(k['line']),
+            'brand': {'@type': 'Brand', 'name': 'Arcane Designer'}, 'image': BASE + f'/assets/arc/{k["pose"]}.webp',
+            'offers': {'@type': 'Offer', 'price': str(k['price']), 'priceCurrency': 'USD', 'url': BASE + f'/kits/{k["slug"]}/'}}
 
-# ---------------------------------------------------------------- home
-s0 = next(x for x in SAMPLES_ALL if x['slug'] == 'hillyard-hounds')
-home = head('Arcane Designer | Website Redesigns for Small Businesses',
-            'One-time website redesigns for small businesses, from $1,500. Pick from three designs, built on the platform you already use, no monthly fees. Logo redesigns from $500.',
-            'index.html', extra=f'<link rel="preload" as="image" href="assets/samples/{s0["slug"]}-before.webp">\n', schema=ORG)
-home += header('')
+
+def faq_schema(items):
+    return {'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': [
+        {'@type': 'Question', 'name': plain(q), 'acceptedAnswer': {'@type': 'Answer', 'text': plain(a)}} for q, a in items]}
+
+
+def buy_href(slug):
+    return CHECKOUT.get(slug) or f'/free-guide/?kit={slug}'
+
+
+def kit_card(k, cls=''):
+    return f'''<a class="price link-card kit-card {cls}" href="/kits/{k["slug"]}/" data-anim="up"><h3>{k["name"]}</h3><span class="amt">${k["price"]}</span><p>{k["line"]}</p><span class="see">See what&rsquo;s inside</span></a>'''
+
+
+# ================================================================ home
+FLOATERS = [('teal', 7, 18, 120, .7, -14), ('pink', 86, 14, 92, .5, 10), ('blue', 14, 70, 70, .9, 8), ('teal', 80, 64, 140, .35, -6),
+            ('pink', 27, 8, 46, 1.1, 20), ('blue', 66, 6, 58, .8, -18), ('pink', 93, 48, 44, 1.2, 4), ('teal', 3, 48, 40, 1.3, 30)]
+fl_html = ''.join(f'<img class="fl" src="/assets/brand/hex-{c}.webp" alt="" style="--x:{x}%;--y:{y}%;--s:{sz}px;--k:{k};--r:{r}deg;--i:{i}">' for i, (c, x, y, sz, k, r) in enumerate(FLOATERS))
+
+# The price drop: what learning AI usually costs, counting down to ours as you scroll (figures from the plan's Nov 2026 research)
+STAGES = [(22000, 'An Ivy League executive AI program', 'Months of classes'),
+          (5000, 'A university AI marketing certificate', 'Often $2,000 to $5,000'),
+          (500, 'A professional marketing qualification', 'Usually $500 to $700'),
+          (297, 'Every Arcane Designer kit, all of it', 'Start tonight')]
+
+HOME_Q = [ALL_Q[0], ALL_Q[3], QUESTIONS[4][1][0], QUESTIONS[4][1][2], QUESTIONS[3][1][0]]
+
+home = head('Arcane Designer | AI Starter Kits: Don’t Go to School for AI',
+            'Downloadable AI starter kits with real prompts and short videos of us doing the work. Learn ChatGPT, Claude and more by using them. Start with the free 7-day guide.',
+            '/', schema=[ORG, faq_schema(HOME_Q)])
+home += header('/')
+stage_data = json.dumps([[n, plain(l), plain(s)] for n, l, s in STAGES]).replace('"', '&quot;')
 home += f'''<section class="hero-x dark-stage">
-  <div class="floaters" aria-hidden="true"><img class="fl" src="assets/brand/hex-teal.webp" alt="" style="--x:7%;--y:18%;--s:120px;--k:0.7;--r:-14deg;--i:0"><img class="fl" src="assets/brand/hex-pink.webp" alt="" style="--x:86%;--y:14%;--s:92px;--k:0.5;--r:10deg;--i:1"><img class="fl" src="assets/brand/hex-blue.webp" alt="" style="--x:14%;--y:70%;--s:70px;--k:0.9;--r:8deg;--i:2"><img class="fl" src="assets/brand/hex-teal.webp" alt="" style="--x:80%;--y:64%;--s:140px;--k:0.35;--r:-6deg;--i:3"><img class="fl" src="assets/brand/hex-pink.webp" alt="" style="--x:27%;--y:8%;--s:46px;--k:1.1;--r:20deg;--i:4"><img class="fl" src="assets/brand/hex-blue.webp" alt="" style="--x:66%;--y:6%;--s:58px;--k:0.8;--r:-18deg;--i:5"><img class="fl" src="assets/brand/hex-pink.webp" alt="" style="--x:93%;--y:48%;--s:44px;--k:1.2;--r:4deg;--i:6"><img class="fl" src="assets/brand/hex-teal.webp" alt="" style="--x:3%;--y:48%;--s:40px;--k:1.3;--r:30deg;--i:7"></div>
+  <div class="floaters" aria-hidden="true">{fl_html}</div>
   <div class="wrap hero-x-inner">
-    <h1 class="tag"><span class="w">Look</span> <span class="w">the</span> <span class="w">part.</span></h1>
-    <p class="big">Website and logo redesigns for small businesses that have outgrown their old look. One project, built on the platform you already have, and then it&rsquo;s all yours.</p>
-    <div class="row">{btn("contact.html", "Start a project")}<a class="tlink light" href="work.html">See the work</a></div>
-    <p class="price-note">Websites from $1,500 <i></i> Logos from $500</p>
+    <h1 class="tag tag-soft"><span class="w">Don&rsquo;t go to school</span> <span class="w">for{NB}AI.</span></h1>
+    <p class="big">Download a kit, follow along with short videos of us doing the work, and make something real with AI tonight.</p>
+    <div class="row">{btn("/free-guide/", "Get the free 7-day guide")}<a class="tlink light" href="/kits/">Browse the kits</a></div>
+    <p class="price-note">Kits from $47 <i></i> All of them for $297</p>
   </div>
 </section>
 
-<section class="pin-reveal dark-stage" aria-label="Example redesign: scroll to see the new version">
+<section class="pin-price dark-stage" aria-label="What learning AI usually costs, compared with our kits">
   <div class="pin-sticky">
-    <div class="wrap">
-      <div class="hero-stage">
-        <div class="perch"><img src="assets/arc/relaxed.webp" alt="Arc, the Arcane Designer mascot, lounging on top of the browser window" width="900" height="452"></div>
-        <div class="bubble" aria-hidden="true"><span data-a="Scroll down. Watch this." data-b="Much better.">Scroll down. Watch this.</span></div>
-        {browser(s0['url'], compare(s0['slug'], s0['name'], 100, eager=True, wipe=True))}
-      </div>
+    <div class="wrap price-scene">
+      <div class="perch-alt"><img src="/assets/arc/relaxed.webp" alt="Arc, the Arcane Designer mascot, lounging" width="900" height="452"></div>
+      <div class="bubble scene-bubble" aria-hidden="true"><span data-a="Watch the price." data-b="Way better.">Watch the price.</span></div>
+      <p class="scene-kicker">What it costs to learn AI</p>
+      <div class="ticker" data-stages="{stage_data}"><span class="cur">$</span><span class="num">22,000</span></div>
+      <p class="scene-label">{STAGES[0][1]}</p>
+      <p class="scene-sub">{STAGES[0][2]}</p>
+      <ol class="scene-steps">{''.join(f'<li data-s="{i}"><b>${n:,}</b>{plain(l)}</li>' for i, (n, l, s) in enumerate(STAGES))}</ol>
     </div>
   </div>
 </section>
 
-<section class="sec" style="padding-top:clamp(40px,5vw,70px)">
+<section class="sec">
   <div class="wrap split-head">
-    <h2 data-anim="left">No two businesses should look alike.</h2>
+    <h2 data-anim="left">You learn AI by using it.</h2>
     <div data-anim="right" style="display:grid;gap:18px">
-      <p class="big">A plumber, a dog groomer and a breakfast caf&eacute; need very different things from a website.</p>
-      <a class="tlink" href="work.html" style="justify-self:start">See them up close</a>
+      <p class="big">Courses spend weeks on theory. Every kit hands you real prompts and a first project, so the learning happens while you work.</p>
     </div>
   </div>
-  <div class="marquee" data-anim="up"><div class="track">
-'''
-thumbs = ''.join(f'<a class="thumb" href="work.html#{s["slug"]}"><div class="img"><img src="assets/samples/{s["slug"]}-after.webp" alt="" width="1440" height="900" loading="lazy"></div><span>{s["name"]} <em>{s["kind"]}</em></span></a>' for s in SAMPLES)
-home += thumbs + thumbs.replace('<a class="thumb"', '<a class="thumb" aria-hidden="true" tabindex="-1"')
-pins = [(85, 8.6), (85, 26), (8, 52), (14.6, 70), (34, 82.5)]
-notes = ['The phone number is in tiny print. On a phone, you&rsquo;d have to zoom in just to tap it.',
-         'Coupons that expired in 2013. Not a great look.',
-         'A narrow box built for 2009 screens. Huge empty edges on a monitor, squished on a phone.',
-         'A paragraph stuffed with &ldquo;Spokane plumber&rdquo; for Google. People skip right over it.',
-         '&ldquo;Best viewed in Internet Explorer 8.&rdquo; That browser retired years ago.']
-pin_html = ''.join(f'<span class="pin" data-n="{i}" style="left:{x}%;top:{y}%;--i:{i}">{i + 1}</span>' for i, (x, y) in enumerate(pins))
-note_html = ''.join(f'<li data-n="{i}" style="--i:{i}"><b>{i + 1}</b><span>{t}</span></li>' for i, t in enumerate(notes))
-home += f'''  </div></div>
-</section>
-
-<section class="sec redpen-sec">
-  <div class="wrap">
-    <div class="split-head">
-      <h2 data-anim="left">Sound familiar?</h2>
-      <p class="big" data-anim="right">The kinds of problems we run into on old sites all the time.</p>
-    </div>
-    <div class="redpen">
-      {browser('northbankplumbing.com', f'<div class="shot"><img src="assets/samples/redpen-plumbing.webp" alt="An outdated plumbing company website from around 2013" width="1440" height="900" loading="lazy">{pin_html}</div>')}
-      <ol class="redpen-notes">{note_html}</ol>
-    </div>
+  <div class="wrap kit-grid">
+    {''.join(kit_card(k) for k in KITS[:3])}
   </div>
+  <p class="wrap" style="margin-top:34px"><a class="tlink" href="/kits/">See all the kits</a></p>
 </section>
 
-<section class="pin-steps" aria-label="How it works">
+<section class="pin-steps" aria-label="The kits, piece by piece">
   <div class="pin-sticky">
     <div class="wrap mini-steps">
-      {hexsvg(label='The six steps')}
+      {hexsvg('Six pieces: the free guide and five kits')}
       <div>
-        <h2>Six steps, start to finish.</h2>
-        <ol>{''.join(f'<li data-step="{i}">{t}</li>' for i, (t, _) in enumerate(STEPS))}</ol>
-        <a class="tlink" href="process.html">How each step works</a>
+        <h2>Start free. Add pieces as you go.</h2>
+        <ol>{''.join(f'<li data-step="{i}"><a href="{u}">{n}</a><em>{p}</em></li>' for i, (n, u, p) in enumerate(LADDER))}</ol>
+        <a class="tlink" href="/kits/complete-bundle/">Or get the whole hexagon for $297</a>
       </div>
     </div>
   </div>
 </section>
 
-<section class="sec" id="reviews" hidden>
-  <div class="wrap">
-    <h2 style="margin-bottom:40px">What clients say.</h2>
-    <div class="reviews" data-reviews aria-roledescription="carousel" aria-label="Client reviews">
-      <div class="review-stage" aria-live="polite"></div>
-      <div class="review-ctrls">
-        <button class="arrow prev" type="button" aria-label="Previous review"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 5v14L6 12z"/></svg></button>
-        <button class="arrow next" type="button" aria-label="Next review"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 5v14l9-7z"/></svg></button>
-        <div class="dots"></div>
-      </div>
+<section class="sec spotlight">
+  <div class="wrap spot-grid">
+    <div data-anim="left">
+      <h2>Stop typing a prompt every time you need a post.</h2>
+      <p class="big" style="margin-top:20px">The AI for Marketing kit takes you from asking good questions to having AI make your content on its own, in your brand.</p>
+      <div class="row" style="margin-top:28px">{btn("/kits/ai-for-marketing/", "See the marketing kit")}<span class="muted">$97</span></div>
+    </div>
+    <ol class="levels" data-anim="right">{''.join(f'<li><span class="n">0{i + 1}</span><b>{t}</b><p>{d}</p></li>' for i, (t, d) in enumerate(LEVELS))}</ol>
+  </div>
+  <div class="wrap">{tip(BY["ai-for-marketing"]["tip"])}</div>
+</section>
+
+<section class="sec team-sec navy-sec">
+  <div class="wrap team">
+    <div data-anim="left">
+      <h2>Got a marketing person? Hand them this.</h2>
+      <p class="big">Sending one employee to a university AI certificate can cost $2,000 to $5,000. The marketing kit is $97, and they can start this afternoon.</p>
+      <div class="row" style="margin-top:26px">{btn("/kits/ai-for-marketing/", "Get it for your team")}<a class="tlink light" href="/kits/complete-bundle/">Or the full bundle</a></div>
+    </div>
+    <div class="team-compare" data-anim="right">
+      <div><span>University certificate</span><b>$2,000+</b><i>Months of classes</i></div>
+      <div class="ours"><span>AI for Marketing kit</span><b>$97</b><i>Start today</i></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec podcast-teaser">
+  <div class="wrap pod">
+    <div class="pod-art" data-anim="left"><img src="/assets/arc/presents-floor.webp" alt="" width="499" height="900" loading="lazy"><span class="mic">AI<br>Mondays</span></div>
+    <div data-anim="right">
+      <h2>AI Mondays</h2>
+      <p class="big" style="margin-top:18px">Our podcast. Each episode takes one idea from a kit and shows it working, start to finish, on real screens.</p>
+      <p style="margin-top:26px"><a class="tlink" href="/podcast/">About the podcast</a></p>
     </div>
   </div>
 </section>
 
 <section class="sec gray-sec">
-  <div class="wrap">
-    <div class="split-head">
-      <h2 data-anim="left">Prices, up front.</h2>
-      <p class="big" data-anim="right">Most small business sites fit the first one. If yours needs more, you&rsquo;ll get a quote before anything starts.</p>
+  <div class="wrap faq-wrap">
+    <h2 data-anim="left">Questions.</h2>
+    <div>
+      <div class="faq" data-anim="up">{faq_html(HOME_Q)}</div>
+      <p style="margin-top:26px"><a class="tlink" href="/questions/">More questions about AI</a></p>
     </div>
-    <div class="prices">
-'''
-for i, p in enumerate(PRICES):
-    home += f'''      <a class="price link-card{" main" if p.get("main") else ""}" href="pricing.html#plan-{p["key"]}" data-anim="up" style="--d:{i * .12:.2f}s"><h3>{p["name"]}</h3><span class="from">Starting at</span><span class="amt">${p["amt"]}</span><p>{p["blurb"]}</p><span class="see">See what&rsquo;s included</span></a>
-'''
-home += '''    </div>
   </div>
 </section>
-'''
-home += """<section class="pin-laptop navy-sec" aria-label="Where to next">
+
+<section class="pin-laptop navy-sec" aria-label="Where to next">
   <div class="pin-sticky">
     <div class="wrap laptop-scene">
-      <div class="arc-desk"><img src="assets/arc/laptop.webp" alt="Arc working on a laptop" width="849" height="1012" loading="lazy"><span class="emit" aria-hidden="true"></span></div>
+      <div class="arc-desk"><img src="/assets/arc/laptop.webp" alt="Arc working on a laptop" width="849" height="1012" loading="lazy"><span class="emit" aria-hidden="true"></span></div>
       <div class="launch">
         <h2>Where to next?</h2>
         <div class="cards">
-          <a class="lcard" href="work.html"><b>Work</b><span>Every before and after, up close.</span></a>
-          <a class="lcard" href="process.html"><b>Process</b><span>How a project runs, step by step.</span></a>
-          <a class="lcard" href="pricing.html"><b>Pricing</b><span>What it costs and what&rsquo;s included.</span></a>
-          <a class="lcard go" href="contact.html"><b>Start a project</b><span>Send your site and we&rsquo;ll take a look.</span></a>
+          <a class="lcard go" href="/free-guide/"><b>Free guide</b><span>Seven days, one small task a day.</span></a>
+          <a class="lcard" href="/kits/"><b>The kits</b><span>Pick one and start today.</span></a>
+          <a class="lcard" href="/podcast/"><b>AI Mondays</b><span>Watch it work, one idea at a time.</span></a>
+          <a class="lcard" href="/questions/"><b>Questions</b><span>Plain answers about using AI.</span></a>
         </div>
       </div>
     </div>
   </div>
 </section>
-"""
+'''
 home += footer()
-write('index.html', home)
+write('/', home)
 
-# ---------------------------------------------------------------- work
-work = head('Work | Arcane Designer Website Redesigns',
-            'Before and after website redesigns by Arcane Designer, each in a different style. Drag the slider to compare old and new.',
-            'work.html')
-work += header('work.html')
-work += '''<section class="intro glow">
+# ================================================================ kits index
+kp = head('AI Starter Kits | Arcane Designer', 'Downloadable AI kits for beginners, marketers, new business owners and DIY website builders. Real prompts and short videos. From $47.', '/kits/',
+          schema=[ORG] + [product_schema(k) for k in ALL])
+kp += header('/kits/')
+kp += f'''<section class="intro glow">
   <div class="wrap work-intro">
     <div data-anim="up">
-      <h1>Before and after.</h1>
-      <p class="big">Drag the slider on any of them. A few examples, each in a different style. Client projects and their reviews will join them here.</p>
+      <h1>Pick a kit. Start{NB}today.</h1>
+      <p class="big">Each kit is a download with real prompts, short videos of us doing the work and a first project to finish.</p>
     </div>
-    <img src="assets/arc/presents.webp" alt="" width="499" height="900" data-anim="right">
-  </div>
-</section>
-<section class="sec" style="padding-top:30px">
-  <div class="wrap work-list">
-'''
-for s in SAMPLES:
-    notes = ''.join(f'<div><b>{t}</b>{d}</div>' for t, d in s['notes'])
-    work += f'''    <article class="work-item" id="{s["slug"]}">
-      <div class="meta" data-anim="up"><h3>{s["name"]}</h3><span class="kind">{s["kind"]} &middot; <i>example</i></span></div>
-      <div data-anim="tilt">{browser(s["url"], compare(s["slug"], s["name"]))}</div>
-      <div class="work-notes" data-anim="up">{notes}</div>
-    </article>
-'''
-work += '''  </div>
-</section>
-'''
-if LOGOS:
-    work += '''<section class="sec gray-sec">
-  <div class="wrap">
-    <div class="split-head"><h2 data-anim="left">Logo redesigns.</h2><p class="big" data-anim="right">The same made-up businesses, old logo and new.</p></div>
-    <div class="logos">
-'''
-    for i, (s, lo, ln) in enumerate(LOGOS):
-        work += f'''      <figure class="logo-card" data-anim="up" style="--d:{(i % 3) * .1:.1f}s"><div><small>Old</small><img src="{lo}" alt="Old {s["name"]} logo" loading="lazy"></div><div><small>New</small><img src="{ln}" alt="New {s["name"]} logo" loading="lazy"></div><figcaption>{s["name"]}</figcaption></figure>
-'''
-    work += '''    </div>
-  </div>
-</section>
-'''
-work += closer('Want yours on this page?', 'Send your website and see what it could look like.') + footer()
-write('work.html', work)
-
-# ---------------------------------------------------------------- process
-proc = head('How It Works | Arcane Designer',
-            'How an Arcane Designer website redesign works, in six steps: send your site, questionnaire, three clickable designs, one round of changes, build and launch, a week of fine-tuning.',
-            'process.html')
-proc += header('process.html')
-proc += '''<section class="intro glow">
-  <div class="wrap proc-intro">
-    <div data-anim="up">
-      <h1>From old site to new one, in six steps.</h1>
-      <p class="big">What happens, and what you&rsquo;ll need to do along the way.</p>
-    </div>
-    <img class="arc" src="assets/arc/stands.webp" alt="" width="336" height="900" data-anim="right">
+    <img src="/assets/arc/presents.webp" alt="" width="499" height="900" data-anim="right">
   </div>
 </section>
 <section class="sec" style="padding-top:10px">
-  <div class="wrap proc">
-    <div class="proc-art">''' + hexsvg(label='Progress through the six steps') + '''<div class="count">6 steps</div></div>
-    <div class="proc-steps">
-'''
-for i, (t, d) in enumerate(STEPS):
-    proc += f'''      <div class="proc-step" style="--c:{STEP_COLORS[i]}"><span class="n">{i + 1:02d}</span><h3>{t}</h3><p>{d}</p></div>
-'''
-who = f'<a class="tlink" href="{LINKEDIN_PERSON}" target="_blank" rel="noopener">Nathan Gellatly</a>' if LINKEDIN_PERSON else '<span class="tlink">Nathan Gellatly</span>'
-proc += f'''    </div>
+  <div class="wrap kit-grid">
+    {''.join(kit_card(k, "main" if k.get("lead") else "") for k in KITS)}
+    <a class="price link-card kit-card bundle-card" href="/kits/complete-bundle/" data-anim="up"><span class="flag">Best value</span><h3>{BUNDLE["name"]}</h3><span class="amt">${BUNDLE["price"]}</span><p>{BUNDLE["line"]}</p><span class="see">See what&rsquo;s inside</span></a>
+  </div>
+  <div class="wrap free-strip" data-anim="up">
+    <div><h3>Not sure yet?</h3><p>Start with {FREE["name"]}. It&rsquo;s free, and it&rsquo;s the easiest way to find out if the kits are for you.</p></div>
+    {btn("/free-guide/", "Get the free guide")}
   </div>
 </section>
-<section class="sec navy-sec">
-  <div class="wrap ai-block">
-    <img src="assets/arc/presents-floor.webp" alt="" width="499" height="900" loading="lazy" data-anim="left">
-    <div class="copy" data-anim="right">
-      <h2>Yes, we use AI.</h2>
-      <p>It&rsquo;s how we keep projects quick and prices low without cutting corners on quality. We just didn&rsquo;t want it to be a surprise.</p>
+<section class="sec gray-sec">
+  <div class="wrap faq-wrap">
+    <h2 data-anim="left">About the kits.</h2>
+    <div class="faq" data-anim="up">{faq_html(QUESTIONS[4][1])}</div>
+  </div>
+</section>
+'''
+kp += footer()
+write('/kits/', kp)
+
+# ================================================================ kit pages
+for k in ALL:
+    others = [o for o in KITS if o['slug'] != k['slug']][:3]
+    is_bundle = k['slug'] == 'complete-bundle'
+    inside = KITS if is_bundle else None
+    p = head(f'{plain(k["name"])} | Arcane Designer', plain(k['line']) + ' A downloadable AI kit with real prompts and short videos.', f'/kits/{k["slug"]}/',
+             schema=[product_schema(k), faq_schema(k['faq'])])
+    p += header('/kits/')
+    sizes = {'presents': (499, 900), 'stands': (336, 900), 'presents-floor': (499, 900), 'crouch-point': (513, 900), 'flabbergasted': (395, 900), 'hands-up': (459, 900)}
+    w, h = sizes[k['pose']]
+    p += f'''<section class="intro glow kit-hero">
+  <div class="wrap kit-hero-grid">
+    <div data-anim="up">
+      <a class="back" href="/kits/">All kits</a>
+      <h1>{k["name"]}</h1>
+      <p class="big">{k["line"]}</p>
+      <div class="buy">
+        <span class="amt">${k["price"]}</span>
+        {btn(buy_href(k["slug"]), "Get the kit")}
+      </div>
+      <p class="muted small">One-time price. Yours to keep.</p>
     </div>
+    <img src="/assets/arc/{k["pose"]}.webp" alt="" width="{w}" height="{h}" data-anim="right">
   </div>
 </section>
-<section class="sec">
+'''
+    if VIDEOS.get(k['slug']):
+        p += f'''<section class="sec" style="padding-top:0"><div class="wrap"><div class="video" data-anim="tilt"><iframe src="{VIDEOS[k["slug"]]}" title="{plain(k["name"])} walkthrough" allow="fullscreen" loading="lazy"></iframe></div></div></section>
+'''
+    p += f'''<section class="sec" style="padding-top:20px">
+  <div class="wrap who" data-anim="up">
+    <h2>Who it&rsquo;s for</h2>
+    <p class="big">{k["who"]}</p>
+  </div>
+</section>
+'''
+    if is_bundle:
+        p += f'''<section class="sec gray-sec">
+  <div class="wrap">
+    <h2 data-anim="left" style="margin-bottom:36px">Everything that&rsquo;s included</h2>
+    <div class="kit-grid">{''.join(kit_card(o) for o in KITS)}</div>
+    <p class="muted" style="margin-top:28px">Bought separately, that&rsquo;s ${sum(o["price"] for o in KITS)}. The bundle is ${k["price"]}, and it includes updates as the tools change.</p>
+  </div>
+</section>
+'''
+    else:
+        p += f'''<section class="sec gray-sec">
+  <div class="wrap">
+    <h2 data-anim="left" style="margin-bottom:36px">What&rsquo;s inside</h2>
+    <div class="inside">{''.join(f'<div class="inside-card" data-anim="up" style="--d:{i * .08:.2f}s"><span class="n">0{i + 1}</span><h3>{t}</h3><p>{d}</p></div>' for i, (t, d) in enumerate(k["inside"]))}</div>
+  </div>
+</section>
+'''
+    if k.get('levels'):
+        p += f'''<section class="sec">
+  <div class="wrap spot-grid">
+    <div data-anim="left">
+      <h2>Three levels, one engine.</h2>
+      <p class="big" style="margin-top:20px">Start by asking. Then set it to run on a schedule. Then build something that runs your marketing for you.</p>
+    </div>
+    <ol class="levels" data-anim="right">{''.join(f'<li><span class="n">0{i + 1}</span><b>{t}</b><p>{d}</p></li>' for i, (t, d) in enumerate(LEVELS))}</ol>
+  </div>
+</section>
+'''
+    p += f'''<section class="sec" style="padding-block:20px 60px"><div class="wrap">{tip(k["tip"], "crouch-point")}</div></section>
+<section class="sec gray-sec">
   <div class="wrap faq-wrap">
     <h2 data-anim="left">Questions.</h2>
-    <div class="faq" data-anim="up">
-'''
-for q, a in FAQ[:6]:
-    proc += f'      <details><summary>{q}</summary><div><p>{a}</p></div></details>\n'
-proc += f'''    </div>
+    <div class="faq" data-anim="up">{faq_html(k["faq"] + QUESTIONS[4][1][:2])}</div>
   </div>
 </section>
-<section class="sec gray-sec" style="padding-block:clamp(70px,8vw,110px)">
-  <div class="wrap about">
-    <h2 data-anim="left">Who&rsquo;s behind it.</h2>
-    <div class="copy" data-anim="right">
-      <p>Arcane Designer is a one-person design studio in Spokane, Washington, run by {who}.</p>
+'''
+    if not is_bundle:
+        p += f'''<section class="sec">
+  <div class="wrap">
+    <h2 data-anim="left" style="margin-bottom:36px">Pairs well with</h2>
+    <div class="kit-grid">{''.join(kit_card(o) for o in others)}</div>
+    <div class="free-strip" data-anim="up" style="margin-top:34px">
+      <div><h3>Want all of them?</h3><p>The Complete Bundle has every kit for ${BUNDLE["price"]}, plus updates as the tools change.</p></div>
+      {btn("/kits/complete-bundle/", "See the bundle")}
     </div>
   </div>
 </section>
 '''
-proc += closer() + footer()
-write('process.html', proc)
+    p += footer()
+    write(f'/kits/{k["slug"]}/', p)
 
-# ---------------------------------------------------------------- pricing
-faq_schema = {'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': [
-    {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a.replace('&rsquo;', '’').replace('&ldquo;', '“').replace('&rdquo;', '”')}} for q, a in FAQ]}
-pr = head('Pricing | Website Redesigns from $1,500 | Arcane Designer',
-          'Website redesigns from $1,500 for up to 10 pages. Larger sites from $3,500, logo redesigns from $500. Paid half up front and half at launch, no monthly fees.',
-          'pricing.html', schema=[ORG, faq_schema])
-pr += header('pricing.html')
-pr += '''<section class="intro glow">
-  <div class="wrap split-head" style="margin-bottom:0">
-    <h1 data-anim="left">What it costs.</h1>
-    <p class="big" data-anim="right" style="margin:0">One project, paid half at the start and half at launch. Bigger jobs get a written quote first.</p>
+# ================================================================ free guide
+DAYS = [('Pick one tool', 'Set up a free AI account and get comfortable with the chat box.'),
+        ('Ask for real help', 'Hand it something on your actual to-do list.'),
+        ('Tell it about you', 'Give it context about your work, so its answers fit you.'),
+        ('Write something', 'Draft an email, a post or a bio with it, then make it yours.'),
+        ('Plan your week', 'Use it to sort your week and break a big task into steps.'),
+        ('Try a second tool', 'Run the same task in another tool and compare.'),
+        ('Finish a project', 'Take one small project from start to done with AI&rsquo;s help.')]
+fg = head('Free Guide: Your First 7 Days with AI | Arcane Designer', 'A free 7-day guide to start using AI for real, one small task a day, with a welcome video from Jordan.', '/free-guide/')
+fg += header('/free-guide/')
+fg += f'''<section class="intro glow">
+  <div class="wrap guide-grid">
+    <div data-anim="up">
+      <h1>Your first 7 days with{NB}AI.</h1>
+      <p class="big">A free guide that gets you using AI for real, one small task a day. Jordan kicks it off with a short welcome video.</p>
+      <form class="form form-card guide-form" data-form="guide" novalidate>
+        <div class="row">
+          <div class="field"><label for="g-name">First name</label><input id="g-name" name="first_name" autocomplete="given-name" required></div>
+          <div class="field"><label for="g-email">Email</label><input id="g-email" name="email" type="email" autocomplete="email" required></div>
+        </div>
+        <input type="hidden" name="kit" value="">
+        <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="form-foot"><button class="btn" type="submit"><span>Send me the guide</span></button></div>
+        <div class="form-status" role="status" tabindex="-1" hidden></div>
+      </form>
+    </div>
+    <img src="/assets/arc/hands-up.webp" alt="" width="459" height="900" data-anim="right">
   </div>
 </section>
 <section class="sec" style="padding-top:20px">
   <div class="wrap">
-    <div class="prices">
-'''
-for i, p in enumerate(PRICES):
-    items = ''.join(f'<li>{x}</li>' for x in p['items'])
-    flag = '<span class="flag">Most common</span>' if p.get('main') else ''
-    pr += f'''      <div class="price{" main" if p.get("main") else ""}" id="plan-{p["key"]}" data-anim="up" style="--d:{i * .12:.2f}s">{flag}<h3>{p["name"]}</h3><span class="from">Starting at</span><span class="amt">${p["amt"]}</span><p>{p["blurb"]}</p><ul>{items}</ul>{btn("contact.html?plan=" + p["key"], "Get started", "" if p.get("main") else "dark")}</div>
-'''
-pr += '''    </div>
-    <p class="muted small" style="margin-top:30px">These are early prices and will go up as the portfolio grows.</p>
-  </div>
-</section>
-<section class="sec gray-sec" style="padding-block:clamp(56px,6vw,84px)">
-  <div class="wrap extra">
-    <div class="copy" data-anim="left">
-      <h2 style="color:var(--ink)">What stays with you.</h2>
-      <p>Your platform, hosting and domain stay with you, billed by the same companies as now. Nothing gets marked up or taken over.</p>
-      <p>There&rsquo;s no maintenance plan. After the week of fine-tuning the project is done, and later changes can be quoted as a small new project.</p>
-    </div>
-    <ul class="checks" data-anim="right" style="align-self:center">
-      <li>Your site keeps its address and its accounts</li>
-      <li>You own the designs and the words</li>
-      <li>Layouts tested on real phones</li>
-      <li>Search basics on every page</li>
-    </ul>
-  </div>
-</section>
-<section class="sec" id="faq">
-  <div class="wrap faq-wrap">
-    <h2 data-anim="left">Questions.</h2>
-    <div class="faq" data-anim="up">
-'''
-for q, a in FAQ:
-    pr += f'      <details><summary>{q}</summary><div><p>{a}</p></div></details>\n'
-pr += '''    </div>
+    <h2 data-anim="left" style="margin-bottom:36px">What the week looks like</h2>
+    <ol class="days">{''.join(f'<li data-anim="up" style="--d:{i * .06:.2f}s"><span>Day {i + 1}</span><b>{t}</b><p>{d}</p></li>' for i, (t, d) in enumerate(DAYS))}</ol>
   </div>
 </section>
 '''
-pr += closer() + footer()
-write('pricing.html', pr)
+fg += closer('Want to go further?', 'Every kit picks up where the guide leaves off, with real prompts and a first project.', 'Browse the kits', '/kits/', 'presents')
+fg += footer()
+write('/free-guide/', fg)
 
-# ---------------------------------------------------------------- contact
-ct = head('Start a Project | Arcane Designer',
-          'Send Arcane Designer a link to your current website. You will get back ideas for what to change and a price.',
-          'contact.html')
-ct += header('contact.html')
+# ================================================================ podcast
+pc = head('AI Mondays Podcast | Arcane Designer', 'AI Mondays is a podcast about using AI for real work. Each episode takes one idea from an Arcane Designer kit and shows it working on real screens.', '/podcast/')
+pc += header('/podcast/')
+listen = ''.join(f'<a class="btn dark" href="{u}" target="_blank" rel="noopener"><span>{l}</span></a>' for l, u in PODCAST_LINKS)
+pc += f'''<section class="intro glow">
+  <div class="wrap work-intro">
+    <div data-anim="up">
+      <h1>AI Mondays.</h1>
+      <p class="big">A podcast about using AI for real work. Short episodes, real screens, one idea at a time.</p>
+      {f'<div class="row" style="margin-top:26px;gap:12px">{listen}</div>' if listen else ''}
+    </div>
+    <img src="/assets/arc/presents-floor.webp" alt="" width="499" height="900" data-anim="right">
+  </div>
+</section>
+<section class="sec" style="padding-top:20px">
+  <div class="wrap inside">
+    <div class="inside-card" data-anim="up"><span class="n">01</span><h3>One idea per episode</h3><p>Each episode takes one topic from a kit, like writing a week of posts, and does it live.</p></div>
+    <div class="inside-card" data-anim="up" style="--d:.08s"><span class="n">02</span><h3>Watch it work</h3><p>Real screens, real tools, real mistakes. You see exactly what we type and what comes back.</p></div>
+    <div class="inside-card" data-anim="up" style="--d:.16s"><span class="n">03</span><h3>Take it further</h3><p>Every episode links to the kit it came from, if you want the full set of prompts.</p></div>
+  </div>
+</section>
+'''
+if EPISODES:
+    pc += '<section class="sec gray-sec"><div class="wrap"><h2 style="margin-bottom:30px">Episodes</h2><div class="episodes">' + ''.join(
+        f'<a class="episode" href="{u}" target="_blank" rel="noopener"><b>{t}</b><span>{s}</span></a>' for t, s, u in EPISODES) + '</div></div></section>\n'
+pc += closer('Start before Monday.', 'Grab the free 7-day guide and you&rsquo;ll have something to show by the next episode.')
+pc += footer()
+write('/podcast/', pc)
+
+# ================================================================ questions library
+qa = head('AI Questions, Answered Plainly | Arcane Designer', 'Plain answers to common questions about getting started with AI: which tool to use, what a prompt is, AI for small business marketing and more.', '/questions/',
+          schema=faq_schema(ALL_Q))
+qa += header('/questions/')
+qa += f'''<section class="intro glow">
+  <div class="wrap work-intro">
+    <div data-anim="up">
+      <h1>Questions about AI, answered plainly.</h1>
+      <p class="big">The things people ask us most. If yours isn&rsquo;t here, email us and we&rsquo;ll add it.</p>
+    </div>
+    <img src="/assets/arc/flabbergasted.webp" alt="" width="395" height="900" data-anim="right">
+  </div>
+</section>
+'''
+for i, (group, items) in enumerate(QUESTIONS):
+    qa += f'''<section class="sec {'gray-sec' if i % 2 else ''}" style="padding-block:clamp(50px,6vw,80px)">
+  <div class="wrap faq-wrap">
+    <h2 data-anim="left">{group}</h2>
+    <div class="faq" data-anim="up">{faq_html(items)}</div>
+  </div>
+</section>
+'''
+qa += closer()
+qa += footer()
+write('/questions/', qa)
+
+# ================================================================ about
+ab = head('About Arcane Designer | Jordan and Nathan', 'Arcane Designer is a sister and brother team from Spokane making downloadable AI starter kits, plus Arc, the bird in the mask.', '/about/', schema=ORG)
+ab += header('/about/')
+ab += f'''<section class="intro glow">
+  <div class="wrap work-intro">
+    <div data-anim="up">
+      <h1>We&rsquo;re Jordan and{NB}Nathan.</h1>
+      <p class="big">A sister and brother from Spokane who use AI every day, and who think the best way to learn it is to use it.</p>
+    </div>
+    <img src="/assets/arc/stands.webp" alt="" width="336" height="900" data-anim="right">
+  </div>
+</section>
+<section class="sec" style="padding-top:20px">
+  <div class="wrap about-cards">
+    <div class="inside-card" data-anim="up"><h3>Jordan</h3><p>Jordan leads the videos. When a kit says &ldquo;watch me do it,&rdquo; that&rsquo;s Jordan, solving a real task with AI on screen.</p></div>
+    <div class="inside-card" data-anim="up" style="--d:.08s"><h3>Nathan</h3><p>Nathan designs and builds websites, apps and brands, most of it with AI. He builds the kits and this site. <a class="tlink" href="{LINKEDIN_NATHAN}" target="_blank" rel="noopener">Nathan on LinkedIn</a></p></div>
+    <div class="inside-card arc-card" data-anim="up" style="--d:.16s"><img src="/assets/arc/crouch-point.webp" alt="" width="513" height="900" loading="lazy"><h3>And Arc</h3><p>The bird in the mask. Arc shows up with tips throughout the kits, and he&rsquo;s much better at lounging than we are.</p></div>
+  </div>
+</section>
+<section class="sec gray-sec">
+  <div class="wrap split-head" style="margin-bottom:0">
+    <h2 data-anim="left">Why kits, and not a course?</h2>
+    <div data-anim="right" style="display:grid;gap:16px">
+      <p class="big">AI changes every few months. A semester-long course is out of date before it ends.</p>
+      <p class="big">A kit gets you working the same day, and we update it when the tools change.</p>
+    </div>
+  </div>
+</section>
+'''
+ab += closer()
+ab += footer()
+write('/about/', ab)
+
+# ================================================================ contact (old address kept)
+ct = head('Contact | Arcane Designer', 'Get in touch with Arcane Designer by email or on LinkedIn.', '/contact')
+ct += header('/contact')
 ct += f'''<section class="intro glow contact-intro">
   <div class="wrap">
-    <img src="assets/arc/presents-floor.webp" alt="" width="499" height="900" data-anim="left">
+    <img src="/assets/arc/presents-floor.webp" alt="" width="499" height="900" data-anim="left">
     <div data-anim="up">
-      <h1>Start a project.</h1>
-      <p class="big">Send a link to your current site and a little about what you want. You&rsquo;ll get a reply by email with ideas and a price.</p>
+      <h1>Say hello.</h1>
+      <p class="big">Questions about a kit, an idea for the podcast or something you want us to cover? We read everything.</p>
     </div>
   </div>
 </section>
 <section class="sec" style="padding-top:0">
-  <div class="wrap contact-grid">
-    <form class="form form-card" data-form="contact" novalidate data-anim="up">
-      <div class="row">
-        <div class="field"><label for="c-name">Your name</label><input id="c-name" name="name" autocomplete="name" required></div>
-        <div class="field"><label for="c-biz">Business name</label><input id="c-biz" name="business" autocomplete="organization" required></div>
-      </div>
-      <div class="row">
-        <div class="field"><label for="c-email">Email</label><input id="c-email" name="email" type="email" autocomplete="email" required></div>
-        <div class="field"><label for="c-site">Current website</label><input id="c-site" name="website" type="text" inputmode="url" placeholder="yourbusiness.com" required></div>
-      </div>
-      <fieldset class="field">
-        <legend>Which package fits? <span class="opt">(optional, pick any)</span></legend>
-        <div class="choices">
-          <label><input type="checkbox" name="package" value="Website redesign (from $1,500)" data-plan="website"> Website redesign <small>$1,500+</small></label>
-          <label><input type="checkbox" name="package" value="Larger website (from $3,500)" data-plan="larger"> Larger website <small>$3,500+</small></label>
-          <label><input type="checkbox" name="package" value="Logo redesign (from $500)" data-plan="logo"> Logo redesign <small>$500+</small></label>
-          <label><input type="checkbox" name="package" value="Something else"> Something else</label>
-          <label><input type="checkbox" name="package" value="Not sure yet"> Not sure yet</label>
-        </div>
-        <a class="hint tlink" href="pricing.html" style="justify-self:start">Compare packages</a>
-      </fieldset>
-      <div class="field"><label for="c-msg">Anything else? <span class="opt">(optional)</span></label><span class="hint">Something else you need, a deadline, a budget. Whatever&rsquo;s useful.</span><textarea id="c-msg" name="message"></textarea></div>
-      <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <div class="form-foot"><button class="btn" type="submit"><span>Send it over</span></button></div>
-      <div class="form-status" role="status" tabindex="-1" hidden></div>
-    </form>
-    <aside class="contact-side" data-anim="right">
-      <div class="card"><h3>Prefer email?</h3><a class="mail" href="mailto:{EMAIL}">{EMAIL}</a></div>
-      <div class="card"><h3>Or find us on LinkedIn</h3><a class="tlink" href="{LINKEDIN_BIZ}" target="_blank" rel="noopener" style="justify-self:start">Arcane Designer on LinkedIn</a></div>
-      <div class="card"><h3>What happens next</h3>
-        <ol class="next-steps">
-          <li><b>1</b><span>You get a short list of what&rsquo;s worth changing, and a price.</span></li>
-          <li><b>2</b><span>If you want to go ahead, a questionnaire and a deposit invoice come next.</span></li>
-          <li><b>3</b><span>Then the three designs. <a class="tlink" href="process.html">The full process</a></span></li>
-        </ol>
-      </div>
-    </aside>
+  <div class="wrap about-cards">
+    <div class="inside-card" data-anim="up"><h3>Email</h3><p><a class="mail tlink" href="mailto:{EMAIL}">{EMAIL}</a></p></div>
+    <div class="inside-card" data-anim="up" style="--d:.08s"><h3>LinkedIn</h3><p><a class="tlink" href="{LINKEDIN_BIZ}" target="_blank" rel="noopener">Arcane Designer on LinkedIn</a></p></div>
+    <div class="inside-card" data-anim="up" style="--d:.16s"><h3>New to AI?</h3><p>The free guide is the quickest way in. <a class="tlink" href="/free-guide/">Get the free guide</a></p></div>
   </div>
 </section>
 '''
 ct += footer()
-write('contact.html', ct)
+write('/contact', ct)
 
-# ---------------------------------------------------------------- questionnaire
-def fld(id_, label, hint='', kind='textarea', req=False, ph=''):
-    r = ' required' if req else ''
-    h = f'<span class="hint">{hint}</span>' if hint else ''
-    p = f' placeholder="{ph}"' if ph else ''
-    ctrl = f'<textarea id="q-{id_}" name="{id_}"{r}{p}></textarea>' if kind == 'textarea' else f'<input id="q-{id_}" name="{id_}" type="{kind}"{r}{p}>'
-    return f'<div class="field"><label for="q-{id_}">{label}</label>{h}{ctrl}</div>'
-
-
-def choices(name, legend, opts, typ='checkbox', hint=''):
-    h = f'<span class="hint">{hint}</span>' if hint else ''
-    o = ''.join(f'<label><input type="{typ}" name="{name}" value="{x}"> {x}</label>' for x in opts)
-    return f'<fieldset class="field"><legend>{legend}</legend>{h}<div class="choices">{o}</div></fieldset>'
-
-
-QS = [
-    ('About you', [
-        '<div class="row">' + fld('name', 'Your name', kind='text', req=True) + fld('business', 'Business name', kind='text', req=True) + '</div>',
-        '<div class="row">' + fld('email', 'Email', kind='email', req=True) + fld('website', 'Current website', kind='text', ph='yourbusiness.com') + '</div>',
-        fld('about', 'In a few sentences, what does your business do?', 'Say it the way you would to a new customer.'),
-        fld('different', 'What makes you different from others who do the same thing?'),
-    ]),
-    ('Your customers', [
-        fld('customers', 'Who are your best customers?', 'Age, where they live, what they need, how they usually find you.'),
-        fld('action', 'What&rsquo;s the one thing you most want people to do on your website?', 'Call, book, order, visit, request a quote, something else.'),
-        fld('questions', 'What do customers ask you about most often?', 'These usually belong on the site.'),
-    ]),
-    ('Your current website', [
-        fld('keep', 'What do you like about your current site and want to keep?'),
-        fld('fix', 'What frustrates you about it, or what do customers complain about?'),
-        choices('platform', 'Which platform is it built on?', ['Squarespace', 'Wix', 'WordPress', 'Shopify', 'GoDaddy', 'Webflow', 'Not sure', 'Other'], 'radio', 'Not sure is fine. It&rsquo;s easy to tell from the site.'),
-        fld('pages', 'Which pages should the new site have?', 'A rough list is great: Home, Services, About, Contact, and so on.'),
-    ]),
-    ('Look and feel', [
-        fld('likes', 'Share a few websites you like, and what you like about them', 'They don&rsquo;t need to be in your industry.'),
-        fld('dislikes', 'Any websites or styles you really don&rsquo;t like?'),
-        choices('feel', 'Which words fit how you want to come across?', ['Warm', 'Professional', 'Playful', 'Calm', 'Bold', 'Classic', 'Modern', 'Rugged', 'Elegant', 'Down to earth', 'Premium', 'Quirky'], hint='Pick as many as you like.'),
-        fld('colors', 'Colors and fonts', 'Brand colors you have, colors you love, colors you never want to see.'),
-        choices('logo', 'Your logo', ['Keep it as is', 'Open to a refresh', 'I need a new one', 'I don&rsquo;t have one'], 'radio'),
-    ]),
-    ('Must do, must not do', [
-        fld('dos', 'Things the new site must do or include'),
-        fld('donts', 'Things it must never do or include'),
-    ]),
-    ('Practical bits', [
-        fld('photos', 'Do you have photos you&rsquo;d like to use?', 'Of your work, your space, your team. Phone photos are often great.'),
-        fld('deadline', 'Any deadline or busy season to plan around?', kind='text'),
-        fld('access', 'Who manages your website account today?', 'You, someone on your team, a past designer, nobody sure.', kind='text'),
-        fld('notes', 'Anything else on your mind?'),
-    ]),
-]
-qn = head('Project Questionnaire | Arcane Designer', 'Questionnaire for Arcane Designer redesign clients.', 'questionnaire.html', noindex=True)
-qn += header('')
-qn += '''<section class="intro glow">
-  <div class="wrap q-wrap">
-    <h1 data-anim="up">About your business.</h1>
-    <p class="big" data-anim="up" style="--d:.1s">Takes about 20 minutes. Short answers are fine, and you can skip anything. Your answers save in this browser, so you can finish later.</p>
-  </div>
-</section>
-<section class="sec" style="padding-top:0">
-  <div class="wrap q-wrap">
-    <form class="form" data-form="questionnaire" data-draft data-thanks="Got it, thank you. Next up: your three designs." novalidate>
-      <div class="q-progress" aria-hidden="true"><div class="track"><div class="fill"></div></div><div class="lbl"><span class="count"></span><span>Saved in this browser</span></div></div>
-'''
-for i, (title, fields) in enumerate(QS, 1):
-    qn += f'      <div class="q-section"><h2><span class="n">{i}</span>{title}</h2>{"".join(fields)}</div>\n'
-qn += '''      <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <div><button class="btn" type="submit"><span>Send my answers</span></button></div>
-      <div class="form-status" role="status" tabindex="-1" hidden></div>
-    </form>
-  </div>
-</section>
-'''
-qn += footer()
-write('questionnaire.html', qn)
-
-# ---------------------------------------------------------------- 404
-nf = head('Page Not Found | Arcane Designer', 'This page does not exist.', '404.html', extra='<base href="/">\n', noindex=True)
-nf += header('')
+# ================================================================ 404
+nf = head('Page Not Found | Arcane Designer', 'This page does not exist.', '/404', noindex=True)
+nf += header('/404')
 nf += f'''<section class="sec glow">
   <div class="wrap" style="display:grid;grid-template-columns:auto 1fr;gap:clamp(24px,5vw,60px);align-items:center;max-width:960px">
-    <img src="assets/arc/flabbergasted.webp" alt="" width="395" height="900" style="width:clamp(110px,14vw,170px)">
+    <img src="/assets/arc/flabbergasted.webp" alt="" width="395" height="900" style="width:clamp(110px,14vw,170px)">
     <div style="display:grid;gap:22px;justify-items:start">
       <h1 style="font-size:clamp(2.4rem,1.6rem + 3vw,4rem)">That page isn&rsquo;t here.</h1>
-      <p class="big">It probably moved when the site was redesigned. A little ironic.</p>
-      {btn("/", "Go to the home page")}
+      <p class="big">We moved things around. The kits and the free guide are a click away.</p>
+      <div class="row" style="display:flex;gap:18px;flex-wrap:wrap;align-items:center">{btn("/", "Go to the home page")}<a class="tlink" href="/kits/">See the kits</a></div>
     </div>
   </div>
 </section>
 '''
 nf += footer()
-write('404.html', nf)
+write('/404', nf)
+
+# ================================================================ sitemap
+with open('sitemap.xml', 'w') as f:
+    f.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+    for r in WRITTEN:
+        if r == '/404':
+            continue
+        f.write(f'  <url><loc>{BASE}{r}</loc></url>\n')
+    f.write('</urlset>\n')
+print('wrote sitemap.xml')
