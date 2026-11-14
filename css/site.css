@@ -876,3 +876,4 @@ p { text-wrap: pretty; }
 .foot-brand { display: grid; gap: 6px; justify-items: start; align-content: start; }
 .foot-brand .btn { margin-top: 18px; padding: 1.05em 1.6em 1em; font-size: 1.02rem; }
 .site-foot a.btn, .site-foot a.btn:hover { color: #0c1a15; text-decoration: none; }
+.foot-cols { column-gap: clamp(44px, 6.5vw, 96px); }
