@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '61'                      # bump after CSS/JS changes so browsers refetch
+V = '63'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -656,7 +656,7 @@ pc += f'''<section class="intro glow">
     <div class="inside-card" data-anim="up" style="--d:.08s"><span class="n">02</span><h3>AI news and tools</h3><p>What&rsquo;s new in AI, which tools are worth your time and what we&rsquo;re using right now.</p></div>
     <div class="inside-card" data-anim="up" style="--d:.16s"><span class="n">03</span><h3>Take it further</h3><p>Like what you see? The kits give you the prompts and steps to do it yourself.</p></div>
   </div>
-''' + (f'''  <div class="wrap insta-row" data-anim="up"><span>Clips, behind the scenes and episode news</span><a class="insta" href="{INSTA}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/></svg>Follow @aimondaypod on Instagram</a></div>
+''' + (f'''  <div class="wrap insta-row" data-anim="up"><span>Clips, behind the scenes and episode news</span><a class="insta" href="{INSTA}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/></svg>Follow @aimondaypod</a></div>
 ''' if INSTA else '') + '''</section>
 '''
 if EPISODES:
