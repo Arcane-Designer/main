@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '42'                      # bump after CSS/JS changes so browsers refetch
+V = '43'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -254,6 +254,7 @@ BUNDLE = dict(slug='complete-bundle', name='The Complete Bundle', price=297, pos
               tip='Start with the Beginner Kit even if you&rsquo;ve used AI before. It fills in the gaps fast.',
               faq=[('What happens when the tools change?', 'We update the kits, and bundle owners get the new versions.')])
 ALL = KITS + [BUNDLE]
+ALL_SEPARATE = sum(k['price'] for k in KITS)
 BY = {k['slug']: k for k in ALL}
 LADDER = [('Your First 7 Days with AI', '/free-guide/', 'Free'), ('AI Beginner Kit', '/kits/ai-beginner/', '$47'), ('AI for Marketing', '/kits/ai-for-marketing/', '$97'),
           ('Start a Business with AI', '/kits/start-a-business/', '$97'), ('Build Your Website with AI', '/kits/build-your-website/', '$97'), ('Top 100 Prompts', '/kits/top-100-prompts/', '$47')]
@@ -474,7 +475,7 @@ kp += f'''<section class="intro glow">
 <section class="sec" style="padding-top:10px">
   <div class="wrap kit-grid">
     {''.join(kit_card(k, "main" if k.get("lead") else "") for k in KITS)}
-    <a class="price link-card kit-card bundle-card" href="/kits/complete-bundle/" data-anim="up"><span class="flag">Best value</span><h3>{BUNDLE["name"]}</h3><span class="amt">${BUNDLE["price"]}</span><p>{BUNDLE["line"]}</p><span class="see">See what&rsquo;s inside</span></a>
+    <a class="price link-card kit-card bundle-card" href="/kits/complete-bundle/" data-anim="up"><span class="flag">Best value</span><h3>{BUNDLE["name"]}</h3><span class="amt"><s class="was">${ALL_SEPARATE}</s>${BUNDLE["price"]}</span><p>Every kit, plus updates as the AI tools change. You save ${ALL_SEPARATE - BUNDLE["price"]} over buying them one by one.</p><span class="see">See what&rsquo;s inside</span></a>
   </div>
   <div class="wrap"><div class="free-strip" data-anim="up">
     <div><h3>Not sure yet?</h3><p>Start with {FREE["name"]}. It&rsquo;s free, and it&rsquo;s the easiest way to find out if the kits are for you.</p></div>
@@ -508,7 +509,7 @@ for k in ALL:
       <h1>{k["name"]}</h1>
       <p class="big">{k["line"]}</p>
       <div class="buy">
-        <span class="amt">${k["price"]}</span>
+        <span class="amt">{f'<s class="was">${ALL_SEPARATE}</s>' if is_bundle else ''}${k["price"]}</span>
         {btn(buy_href(k["slug"]), "Get the kit")}
       </div>
       <p class="muted small">One-time price. Yours to keep.</p>

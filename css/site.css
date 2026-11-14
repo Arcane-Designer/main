@@ -862,3 +862,4 @@ p { text-wrap: pretty; }
   .point-arc .scene-bubble { left: auto; transform: none; font-size: .88rem; }
   .point-arc .scene-bubble::after { display: block; }
 }
+.amt .was { font-size: .5em; font-weight: 700; color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--pink); text-decoration-thickness: 3px; margin-right: 12px; vertical-align: .35em; letter-spacing: -.02em; }
