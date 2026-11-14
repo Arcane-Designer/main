@@ -812,3 +812,40 @@ p { text-wrap: pretty; }
 .tag.tag-soft { font-size: clamp(2.2rem, .4rem + 4.7vw, 5.6rem); white-space: nowrap; }
 .tag.tag-soft .w { display: inline; white-space: nowrap; }
 @media (max-width: 760px) { .tag.tag-soft { white-space: normal; font-size: clamp(2.4rem, 11vw, 3.6rem); } .tag.tag-soft .w { display: block; } }
+
+/* free guide: a guidebook spinning above Arc's raised hands */
+.guide-grid { align-items: end; }
+.guide-art { position: relative; width: clamp(200px, 20vw, 290px); margin-right: clamp(0px, 3vw, 55px); display: grid; justify-items: center; }
+.guide-art .guide-arc { width: 78%; margin-top: -6px; position: relative; z-index: 1; }
+.book-stage { position: relative; width: 62%; aspect-ratio: 3 / 4; perspective: 900px; z-index: 2; animation: bookFloat 4s ease-in-out infinite; margin-bottom: -4%; }
+.book3d { --t: 22px; position: absolute; inset: 0; transform-style: preserve-3d; animation: bookSpin 9s linear infinite; }
+.book3d .face { position: absolute; backface-visibility: hidden; }
+.book3d .front, .book3d .back { inset: 0; border-radius: 4px 10px 10px 4px; }
+.book3d .front { transform: translateZ(calc(var(--t) / 2)); overflow: hidden; display: grid; align-content: space-between; padding: 14% 12% 12%; color: #fff;
+  background: radial-gradient(80% 60% at 20% 15%, rgba(8,216,160,.35), transparent 70%), radial-gradient(70% 60% at 90% 95%, rgba(255,107,147,.35), transparent 70%), linear-gradient(160deg, #22202c, #0c0b11);
+  box-shadow: inset 6px 0 10px -4px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.08); }
+.book3d .front::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 35%, rgba(255,255,255,0) 70%, rgba(255,255,255,.08) 100%); pointer-events: none; }
+.book3d .front b { position: relative; z-index: 1; font: 800 clamp(1rem, .5rem + 1.2vw, 1.5rem)/1.02 var(--font-head); font-variation-settings: 'wdth' 108; letter-spacing: -.03em;
+  background: linear-gradient(180deg, #fff, #c9ced8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.book3d .b-kicker { position: relative; z-index: 1; font: 400 .8rem/1 var(--font-mark); letter-spacing: .14em; color: #5ff5cb; }
+.book3d .b-brand { position: relative; z-index: 1; font: 400 .72rem/1 var(--font-mark); letter-spacing: .12em; color: rgba(255,255,255,.6); }
+.book3d .b-hex { position: absolute; filter: drop-shadow(0 6px 8px rgba(0,0,0,.5)); }
+.book3d .b1 { width: 34%; right: -6%; top: 26%; transform: rotate(-12deg); }
+.book3d .b2 { width: 20%; right: 20%; top: 50%; transform: rotate(14deg); }
+.book3d .b3 { width: 15%; right: 6%; top: 62%; transform: rotate(-6deg); }
+.book3d .back { transform: rotateY(180deg) translateZ(calc(var(--t) / 2)); display: grid; align-content: center; gap: 6px; padding: 14%; background: linear-gradient(160deg, #1d1b27, #0c0b11); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+.book3d .back span { font: 400 1rem/1 var(--font-mark); letter-spacing: .1em; color: rgba(255,255,255,.75); }
+.book3d .spine { top: 0; bottom: 0; left: 0; width: var(--t); transform: translateX(calc(var(--t) / -2)) rotateY(-90deg); background: linear-gradient(90deg, #0a0910, #2a2836 50%, #0a0910); display: grid; place-items: center; }
+.book3d .spine span { writing-mode: vertical-rl; transform: rotate(180deg); font: 400 .6rem/1 var(--font-mark); letter-spacing: .12em; color: #5ff5cb; white-space: nowrap; }
+.book3d .pages { top: 2%; bottom: 2%; right: 0; width: calc(var(--t) - 2px); transform: translateX(calc(var(--t) / 2 - 1px)) rotateY(90deg); background: repeating-linear-gradient(90deg, #f3f1ea 0 2px, #dcd8cc 2px 3px); }
+.book3d .top { left: 0; right: 2%; top: 0; height: calc(var(--t) - 2px); transform: translateY(calc(var(--t) / -2 + 1px)) rotateX(90deg); background: repeating-linear-gradient(0deg, #f3f1ea 0 2px, #dcd8cc 2px 3px); }
+.book-glow { position: absolute; left: 10%; right: 10%; bottom: -14%; height: 18%; background: radial-gradient(closest-side, rgba(8,216,160,.45), transparent); filter: blur(6px); }
+@keyframes bookSpin { from { transform: rotateY(0deg) rotateX(8deg); } to { transform: rotateY(360deg) rotateX(8deg); } }
+@keyframes bookFloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+@media (max-width: 760px) { .guide-grid .guide-art { display: none; } }
+@media (prefers-reduced-motion: reduce) { .book3d { transform: rotateY(-24deg) rotateX(8deg); } }
+.book3d .front { align-content: start; gap: 10%; }
+.book3d .front .b-brand { position: absolute; left: 12%; bottom: 9%; }
+.book3d .b1 { width: 30%; right: -4%; top: auto; bottom: 16%; }
+.book3d .b2 { width: 18%; right: 27%; top: auto; bottom: 22%; }
+.book3d .b3 { width: 13%; right: 13%; top: auto; bottom: 40%; }

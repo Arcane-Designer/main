@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '38'                      # bump after CSS/JS changes so browsers refetch
+V = '40'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -289,7 +289,7 @@ QUESTIONS = [
         ('What&rsquo;s inside a kit?', 'Each kit is a download with copy-and-paste prompts, short screen-share videos of us doing the work and a first project to finish. You can start the day you buy it.'),
         ('Do the kits get updated?', 'Yes. AI tools change fast, so we update the kits as they do. Complete Bundle owners get the new versions.'),
         ('Can I buy a kit for my team?', 'Yes. A lot of business owners buy the AI for Marketing kit for their marketing person or team. For a whole team, the Complete Bundle covers everything.'),
-        ('What&rsquo;s in the free guide?', 'Seven days of small, real tasks with AI, plus a welcome video from Jordan. It&rsquo;s the easiest way to find out if the kits are for you.'),
+        ('What&rsquo;s in the free guide?', 'Seven days of small, real tasks with AI, each with a prompt you can copy. It&rsquo;s the easiest way to find out if the kits are for you.'),
     ]),
 ]
 ALL_Q = [qa for _, qs in QUESTIONS for qa in qs]
@@ -587,13 +587,13 @@ DAYS = [('Pick one tool', 'Set up a free AI account and get comfortable with the
         ('Plan your week', 'Use it to sort your week and break a big task into steps.'),
         ('Try a second tool', 'Run the same task in another tool and compare.'),
         ('Finish a project', 'Take one small project from start to done with AI&rsquo;s help.')]
-fg = head('Free Guide: Your First 7 Days with AI | Arcane Designer', 'A free 7-day guide to start using AI for real, one small task a day, with a welcome video from Jordan.', '/free-guide/')
+fg = head('Free Guide: Your First 7 Days with AI | Arcane Designer', 'A free 7-day guide to start using AI for real, one small task a day, with a ready-to-use prompt for every day.', '/free-guide/')
 fg += header('/free-guide/')
 fg += f'''<section class="intro glow">
   <div class="wrap guide-grid">
     <div data-anim="up">
       <h1>Your first 7 days with{NB}AI.</h1>
-      <p class="big">A free guide that gets you using AI for real, one small task a day. Jordan kicks it off with a short welcome video.</p>
+      <p class="big">A free guide that gets you using AI for real, one small task a day. Every day comes with a prompt to copy and a small win to show for it.</p>
       <form class="form form-card guide-form" data-form="guide" novalidate>
         <div class="row">
           <div class="field"><label for="g-name">First name</label><input id="g-name" name="first_name" autocomplete="given-name" required></div>
@@ -605,7 +605,16 @@ fg += f'''<section class="intro glow">
         <div class="form-status" role="status" tabindex="-1" hidden></div>
       </form>
     </div>
-    <img src="/assets/arc/hands-up.webp" alt="" width="459" height="900" data-anim="right">
+    <div class="guide-art" data-anim="right" aria-hidden="true">
+      <div class="book-stage"><div class="book3d">
+        <div class="face front"><img class="b-hex b1" src="/assets/brand/hex-teal.webp" alt=""><img class="b-hex b2" src="/assets/brand/hex-pink.webp" alt=""><img class="b-hex b3" src="/assets/brand/hex-blue.webp" alt=""><span class="b-kicker">Free guide</span><b>Your First 7&nbsp;Days with&nbsp;AI</b><span class="b-brand">Arcane Designer</span></div>
+        <div class="face back"><span>7 days</span><span>7 small wins</span><span class="b-brand">Arcane Designer</span></div>
+        <div class="face spine"><span>Your First 7 Days with AI</span></div>
+        <div class="face pages"></div>
+        <div class="face top"></div>
+      </div><div class="book-glow"></div></div>
+      <img class="guide-arc" src="/assets/arc/hands-up.webp" alt="" width="459" height="900">
+    </div>
   </div>
 </section>
 <section class="sec" style="padding-top:20px">
