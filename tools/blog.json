@@ -1,0 +1,75 @@
+[
+  {
+    "slug": "canva-generative-ai-controls",
+    "date": "2026-11-20",
+    "layout": "brief",
+    "category": "Tool update",
+    "title": "Canva now lets you turn off its generative AI tools",
+    "summary": "Two new settings give you separate control over the tools you use and what turns up when you search the library.",
+    "cover": "/assets/blog/canva-ai-controls.jpg",
+    "lead": "If you’ve ever searched Canva for a photo and scrolled past a stack of AI illustrations, there’s a new setting for that. Canva added two controls on November 19. One changes what you see in the library. The other hides the tools that generate content.",
+    "settings_label": "Canva’s two AI settings",
+    "settings": [
+      {
+        "name": "Generative AI Control",
+        "description": "Hide or restore the generative AI tools in Canva.",
+        "path": "Profile / Settings / Permissions"
+      },
+      {
+        "name": "AI-Generated Content Control",
+        "description": "See fewer AI-generated assets in library search and recommendations.",
+        "path": "Profile / Your account / AI Personalization"
+      }
+    ],
+    "sections": [
+      {
+        "id": "choose-the-right-setting",
+        "heading": "Which setting should you change?",
+        "paragraphs": [
+          "Start with the library setting if your main problem is finding assets. Maybe you want a photo of an actual workshop for a flyer, but you still use generative tools to sketch out ideas. Limiting AI content in the library leaves those tools available. Canva describes it as showing less generated content, so check the asset itself when its origin matters.",
+          "If you mainly open Canva to lay out flyers, slides, or social graphics with material you already have, the Permissions setting is the one to look at. With generative AI switched off, Canva hides those features. You can turn them back on the next time you want them."
+        ]
+      },
+      {
+        "id": "what-happens-to-the-editor",
+        "heading": "You can still use Background Remover",
+        "paragraphs": [
+          "Canva puts tools that edit existing material in a separate category. It says Background Remover and Magic Grab are still available to users who already have access to them, even with the generative tools switched off. That matters if your usual job is cutting a person out of a photo and moving them next to a headline.",
+          "The library setting also leaves your existing designs in place. If a team needs to replace an image in an old flyer, open the design and check the image itself. Changing what you see on your next search won’t swap out artwork you’ve already used."
+        ]
+      },
+      {
+        "id": "who-gets-it",
+        "heading": "Who gets the new controls?",
+        "paragraphs": [
+          "Canva says both controls are included on Free and Pro. Organizations on Canva Business, Enterprise, Teams, and Education already have admin controls for AI, so check with your workspace admin if you’re editing in a shared account with its own rules.",
+          "The useful part of this release is that you can decide what kind of material you want to find separately from what tools you want in the editor. If you like using AI to draft but prefer to start with creator-made assets, you can set up Canva for that mix."
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "name": "Canva’s announcement and screenshots of the settings",
+        "url": "https://www.canva.com/newsroom/news/ai-controls-canva/"
+      }
+    ],
+    "faq": [
+      [
+        "Can I turn off generative AI in Canva?",
+        "Yes. In Canva, open your profile, go to Settings, and choose Permissions. Switch off the setting for generative AI features. You can return to the same setting to turn them on again."
+      ],
+      [
+        "Can I show fewer AI images in Canva and keep the AI tools?",
+        "Yes. Open your profile, choose Your account, and look for AI Personalization. The library preference reduces AI-generated assets in search results and recommendations. It is separate from the setting for generative tools."
+      ],
+      [
+        "Do Canva’s new AI controls cost extra?",
+        "Canva says both controls are included on Free and Pro at no extra cost. The availability of individual editing tools still depends on your plan."
+      ],
+      [
+        "Will changing the Canva library setting affect my existing designs?",
+        "The library setting applies to results you see when browsing or searching. You can open an existing design to review or replace any asset you’ve already added."
+      ]
+    ]
+  }
+]

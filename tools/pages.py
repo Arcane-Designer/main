@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '73'                      # bump after CSS/JS changes so browsers refetch
+V = '75'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -41,7 +41,7 @@ BRAND = ('<span class="mark3d" aria-hidden="true">'
          '<img class="hx" data-h="p" src="/assets/brand/hex-pink.webp" alt="" width="64" height="64">'
          '<img class="hx" data-h="t" src="/assets/brand/hex-teal.webp" alt="" width="64" height="64">'
          '</span><span class="word">Arcane Designer</span>')
-NAV = [('/kits/', 'Kits'), ('/podcast/', 'Podcast'), ('/questions/', 'Questions'), ('/about/', 'About')]
+NAV = [('/kits/', 'Kits'), ('/podcast/', 'Podcast'), ('/blog/', 'Blog'), ('/questions/', 'Questions'), ('/about/', 'About')]
 AC = ' aria-current="page"'
 NB = '&nbsp;'
 
@@ -50,7 +50,7 @@ def btn(href, text, cls=''):
     return f'<a class="btn {cls}" href="{href}"><span>{text}</span></a>'
 
 
-def head(title, desc, route, noindex=False, schema=None, extra=''):
+def head(title, desc, route, noindex=False, schema=None, extra='', og_type='website', og_image='/assets/og.png'):
     canon = BASE + route
     s = f'''<!doctype html>
 <html lang="en" class="no-js">
@@ -60,11 +60,11 @@ def head(title, desc, route, noindex=False, schema=None, extra=''):
 <title>{title}</title>
 <meta name="description" content="{desc}">
 {'<meta name="robots" content="noindex, nofollow">' if noindex else f'<link rel="canonical" href="{canon}">'}
-<meta property="og:type" content="website">
+<meta property="og:type" content="{og_type}">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:url" content="{canon}">
-<meta property="og:image" content="{BASE}/assets/og.png">
+<meta property="og:image" content="{BASE}{og_image}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0c0b11">
 <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
@@ -97,7 +97,7 @@ def header(cur):
 
 
 def footer():
-    links = ''.join(f'<a href="{h}">{t}</a>' for h, t in [('/kits/', 'Kits'), ('/podcast/', 'Podcast'), ('/questions/', 'Questions'), ('/about/', 'About')])
+    links = ''.join(f'<a href="{h}">{t}</a>' for h, t in NAV)
     pod = ''.join(f'<a href="{u}" target="_blank" rel="noopener">{l}</a>' for l, u in PODCAST_LINKS)
     return f'''</main>
 <footer class="site-foot">
@@ -676,6 +676,126 @@ if EPISODES:
 pc += closer('Start before Monday.', 'Grab the free 7-day guide and you&rsquo;ll have something to show by the next episode.')
 pc += footer()
 write('/podcast/', pc)
+
+# ================================================================ blog
+# Every post is one entry in tools/blog.json (format in tools/BLOG.md). Newest first, five to a page:
+# /blog/ is page 1, then /blog/page/2/, /blog/page/3/ ... once there are more than five posts.
+from html import escape as _esc
+BLOG_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'blog.json')
+MONTHS = 'January February March April May June July August September October November December'.split()
+PER_PAGE = 5
+LAYOUTS = {'brief'}          # article color themes in css/site.css (.blog-post--brief: light pink reading area)
+
+
+def esc(t):
+    return _esc(t, quote=False)
+
+
+def nice_date(d):
+    y, m, dd = (int(x) for x in d.split('-'))
+    return f'{MONTHS[m - 1]} {dd}, {y}'
+
+
+POSTS = sorted(json.load(open(BLOG_JSON)) if os.path.exists(BLOG_JSON) else [], key=lambda p: (p['date'], p['title']), reverse=True)
+for p in POSTS:
+    assert p.get('layout', 'brief') in LAYOUTS, f'{p["slug"]}: unknown layout {p.get("layout")}'
+
+
+def post_card(p, i=0, lead=False):
+    art = f'<img src="{p["cover"]}" alt="" loading="lazy">' if p.get('cover') else '<span class="post-card-pattern" aria-hidden="true"></span>'
+    cat = f'<span class="post-cat">{esc(p["category"])}</span>' if p.get('category') else ''
+    return (f'<a class="post-card link-card{" post-card--lead" if lead else ""}" href="/blog/{p["slug"]}/" data-anim="up" style="--d:{i * .06:.2f}s">'
+            f'<span class="post-card-art">{art}</span><span class="post-card-text">'
+            f'<span class="post-meta">{cat}<time datetime="{p["date"]}">{nice_date(p["date"])}</time></span>'
+            f'<h3>{esc(p["title"])}</h3><p>{esc(p["summary"])}</p><span class="see">Read it</span></span></a>')
+
+
+def page_route(n):
+    return '/blog/' if n == 1 else f'/blog/page/{n}/'
+
+
+pages = [POSTS[i:i + PER_PAGE] for i in range(0, len(POSTS), PER_PAGE)] or [[]]
+for n, chunk in enumerate(pages, 1):
+    pager = ''
+    if len(pages) > 1:
+        nums = ''.join(f'<a href="{page_route(k)}"{AC if k == n else ""}>{k}</a>' for k in range(1, len(pages) + 1))
+        prev = f'<a class="pager-step" href="{page_route(n - 1)}" rel="prev">Newer</a>' if n > 1 else ''
+        nxt = f'<a class="pager-step" href="{page_route(n + 1)}" rel="next">Older</a>' if n < len(pages) else ''
+        pager = f'<nav class="pager" aria-label="Blog pages">{prev}<span class="pager-nums">{nums}</span>{nxt}</nav>'
+    title = 'Blog | Arcane Designer' if n == 1 else f'Blog, page {n} | Arcane Designer'
+    bl = head(title, 'What changed this week in the AI tools people actually use: new features, launches and models, explained plainly by the team behind the Arcane Designer AI starter kits.', page_route(n),
+              schema={'@context': 'https://schema.org', '@type': 'Blog', 'name': 'Arcane Designer Blog', 'url': BASE + '/blog/', 'publisher': {'@id': BASE + '/#org'},
+                      'blogPost': [{'@type': 'BlogPosting', 'headline': p['title'], 'url': BASE + f'/blog/{p["slug"]}/', 'datePublished': p['date']} for p in chunk]})
+    bl += header('/blog/')
+    bl += f'''<section class="intro glow">
+  <div class="wrap work-intro">
+    <div data-anim="up">
+      <h1>The blog.</h1>
+      <p class="big">What changed in the AI tools you use, from new features to new models. Short reads, so you know what&rsquo;s worth trying.</p>
+    </div>
+    <img class="blog-arc" src="/assets/arc/laptop.webp" alt="" width="849" height="1012" data-anim="right">
+  </div>
+</section>
+<section class="sec post-list">
+  <div class="wrap">
+    <div class="post-grid">{''.join(post_card(p, i, lead=(i == 0)) for i, p in enumerate(chunk))}</div>
+{pager}
+  </div>
+</section>
+'''
+    bl += closer()
+    bl += footer()
+    write(page_route(n), bl)
+
+
+def article(p):
+    cover = f'<img class="blog-cover-art" src="{p["cover"]}" alt="">' if p.get('cover') else '<span class="blog-cover-art post-card-pattern" aria-hidden="true"></span>'
+    body = f'<p class="blog-lead">{esc(p["lead"])}</p>' if p.get('lead') else ''
+    if p.get('settings'):
+        body += f'<dl class="blog-settings" aria-label="{esc(p.get("settings_label", "The settings"))}">' + ''.join(
+            f'<div data-anim="up"><dt>{esc(s["name"])}</dt>\n          <dd><p>{esc(s["description"])}</p>'
+            + (f'<p class="blog-settings-path">{esc(s["path"])}</p>' if s.get('path') else '') + '</dd>\n        </div>' for s in p['settings']) + '</dl>'
+    for sec in p.get('sections', []):
+        body += (f'<section id="{sec["id"]}"><div data-anim="up"><h2>{esc(sec["heading"])}</h2>'
+                 + ''.join(f'<p>{esc(t)}</p>' for t in sec['paragraphs']) + '</div></section>')
+    if p.get('sources'):
+        body += '<ul class="blog-source" aria-label="Further reading" data-anim="up">' + ''.join(
+            f'<li><a href="{s["url"]}" target="_blank" rel="noopener">{esc(s["name"])}</a></li>' for s in p['sources']) + '</ul>'
+    faq = ''
+    if p.get('faq'):
+        faq = f'''
+      <section class="wrap blog-faq" id="faq" aria-labelledby="blog-faq-heading">
+        <h2 id="blog-faq-heading" data-anim="up">Frequently asked questions</h2>
+        <div class="faq">''' + ''.join(f'<details data-anim="up"><summary>{esc(q)}</summary><div><p>{esc(a)}</p></div></details>' for q, a in p['faq']) + '''</div>
+      </section>'''
+    return f'''<article class="blog-post blog-post--{p.get("layout", "brief")}">
+      <header class="blog-cover">
+        {cover}
+        <div class="wrap blog-cover-grid">
+          <div class="blog-headline">
+            <a class="blog-back" href="/blog/">Blog</a>
+            <h1>{esc(p["title"])}</h1><p>{esc(p["summary"])}</p>
+            <div class="blog-meta"><time datetime="{p["date"]}">{nice_date(p["date"])}</time></div>
+          </div>
+        </div>
+      </header>
+      <div class="wrap blog-reading"><div class="blog-body">{body}</div></div>{faq}
+    </article>'''
+
+
+for p in POSTS:
+    url = BASE + f'/blog/{p["slug"]}/'
+    img = p.get('cover') or '/assets/og.png'
+    schema = [{'@context': 'https://schema.org', '@type': 'BlogPosting', 'mainEntityOfPage': url, 'headline': p['title'], 'description': p['summary'],
+               'datePublished': p['date'], 'dateModified': p.get('updated', p['date']), 'image': BASE + img, 'inLanguage': 'en',
+               'author': {'@id': BASE + '/#org'}, 'publisher': {'@id': BASE + '/#org'}}]
+    if p.get('faq'):
+        schema.append(faq_schema(p['faq']))
+    pg = head(_esc(f'{p["title"]} | Arcane Designer'), _esc(p['summary']), f'/blog/{p["slug"]}/', schema=schema, og_type='article', og_image=img)
+    pg += header('/blog/')
+    pg += article(p)
+    pg += footer()
+    write(f'/blog/{p["slug"]}/', pg)
 
 # ================================================================ questions library
 qa = head('AI Questions, Answered Plainly | Arcane Designer', 'Plain answers to common questions about getting started with AI: which tool to use, what a prompt is, AI for small business marketing and more.', '/questions/',
