@@ -5,7 +5,7 @@ Edit copy and prices here, then re-run. The generated index.html files are what 
 Pages live in folders (/kits/, /free-guide/ ...) so addresses stay clean. contact.html keeps its old name."""
 import json, math, os, re, shutil
 
-V = '76'                      # bump after CSS/JS changes so browsers refetch
+V = '77'                      # bump after CSS/JS changes so browsers refetch
 BASE = 'https://arcanedesigner.com'
 EMAIL = 'nathan@arcanedesigner.com'
 LINKEDIN_BIZ = 'https://www.linkedin.com/company/arcane-designer/'
@@ -15,7 +15,8 @@ FONTS = ('https://fonts.googleapis.com/css2?family=Bebas+Neue'
          '&family=Figtree:wght@400;500;600;700&family=Archivo:wdth,wght@62..125,400..900&display=swap')
 
 # Fill these in as things go live. Empty means the button or section falls back or stays hidden.
-CHECKOUT = {}        # kit slug -> checkout link (Lemon Squeezy, Gumroad, Stripe...). Until set, "Get the kit" opens the free guide signup.
+CHECKOUT = {}        # kit slug -> checkout link with immediate download after payment
+CONTACT_FORM_URL = 'https://formspree.io/f/xjyweyne'
 VIDEOS = {}          # kit slug -> embeddable video page link, shown on that kit's page
 PODCAST_LINKS = [('YouTube', 'https://www.youtube.com/@AIMonday'), ('Spotify', 'https://open.spotify.com/show/3YuS205Pz6owg1eH1KXLul'), ('Apple Podcasts', 'https://podcasts.apple.com/us/podcast/ai-monday-ai-news-tools-and-leaders/id6834921078'), ('Instagram', 'https://www.instagram.com/aimondaypod/')]
 EPISODES = []        # [(title, one-line summary, url)]
@@ -328,18 +329,16 @@ ORG['sameAs'] += [u for _, u in PODCAST_LINKS]
 
 
 def product_schema(k):
-    return {'@context': 'https://schema.org', '@type': 'Product', 'name': plain(k['name']), 'description': plain(k['line']),
-            'brand': {'@type': 'Brand', 'name': 'Arcane Designer'}, 'image': BASE + f'/assets/arc/{k["pose"]}.webp',
-            'offers': {'@type': 'Offer', 'price': str(k['price']), 'priceCurrency': 'USD', 'url': BASE + f'/kits/{k["slug"]}/'}}
+    product = {'@context': 'https://schema.org', '@type': 'Product', 'name': plain(k['name']), 'description': plain(k['line']),
+               'brand': {'@type': 'Brand', 'name': 'Arcane Designer'}, 'image': BASE + f'/assets/arc/{k["pose"]}.webp'}
+    if k['slug'] in CHECKOUT:
+        product['offers'] = {'@type': 'Offer', 'price': str(k['price']), 'priceCurrency': 'USD', 'url': BASE + f'/kits/{k["slug"]}/'}
+    return product
 
 
 def faq_schema(items):
     return {'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': [
         {'@type': 'Question', 'name': plain(q), 'acceptedAnswer': {'@type': 'Answer', 'text': plain(a)}} for q, a in items]}
-
-
-def buy_href(slug):
-    return CHECKOUT.get(slug) or f'/free-guide/?kit={slug}'
 
 
 def kit_card(k, cls=''):
@@ -428,12 +427,12 @@ home += f'''<section class="hero-x dark-stage">
   <div class="wrap team">
     <div data-anim="left">
       <h2>Got a marketing person? Hand them this.</h2>
-      <p class="big">Sending one employee to a university AI certificate can cost $2,000 to $5,000. The marketing kit is $97, and they can start this afternoon.</p>
-      <div class="row" style="margin-top:26px">{btn("/kits/ai-for-marketing/", "Get it for your team")}<a class="tlink light" href="/kits/complete-bundle/">Or the full bundle</a></div>
+      <p class="big">Sending one employee to a university AI certificate can cost $2,000 to $5,000. The $97 marketing kit teaches the AI workflows your team can use on the job.</p>
+      <div class="row" style="margin-top:26px">{btn("/kits/ai-for-marketing/", "See the marketing kit")}<a class="tlink light" href="/kits/complete-bundle/">Or the full bundle</a></div>
     </div>
     <div class="team-compare" data-anim="right">
       <div><span>University certificate</span><b>$2,000+</b><i>Months of classes</i></div>
-      <div class="ours"><span>AI for Marketing kit</span><b>$97</b><i>Start today</i></div>
+      <div class="ours"><span>AI for Marketing kit</span><b>$97</b><i>{'Start today' if CHECKOUT.get('ai-for-marketing') else 'Coming soon'}</i></div>
     </div>
   </div>
 </section>
@@ -487,7 +486,7 @@ kp += header('/kits/')
 kp += f'''<section class="intro glow">
   <div class="wrap work-intro">
     <div data-anim="up">
-      <h1>Pick a kit. Start{NB}today.</h1>
+      <h1>Find your{NB}kit.</h1>
       <p class="big">Each kit is a download with real prompts, short videos of us doing the work and a first project to finish.</p>
     </div>
     <img src="/assets/arc/presents.webp" alt="" width="499" height="900" data-anim="right">
@@ -518,6 +517,7 @@ for k in ALL:
     others = [o for o in KITS if o['slug'] != k['slug']][:3]
     is_bundle = k['slug'] == 'complete-bundle'
     inside = KITS if is_bundle else None
+    checkout = CHECKOUT.get(k['slug'])
     p = head(f'{plain(k["name"])} | Arcane Designer', plain(k['line']) + ' A downloadable AI kit with real prompts and short videos.', f'/kits/{k["slug"]}/',
              schema=[product_schema(k), faq_schema(k['faq'])])
     p += header('/kits/')
@@ -531,7 +531,7 @@ for k in ALL:
       <p class="big">{k["line"]}</p>
       <div class="buy">
         <span class="amt">{f'<s class="was">${ALL_SEPARATE}</s>' if is_bundle else ''}${k["price"]}</span>
-        {btn(buy_href(k["slug"]), "Get the kit")}
+        {btn(checkout, "Get the kit") if checkout else '<span class="muted small">Coming soon</span>'}
       </div>
       <p class="muted small">One-time price. Yours to keep.</p>
     </div>
@@ -615,16 +615,7 @@ fg += f'''<section class="intro glow">
     <div data-anim="up">
       <h1>Your first 7 days with{NB}AI.</h1>
       <p class="big">A free guide that gets you using AI for real, one small task a day. Every day comes with a prompt to copy and a small win to show for it.</p>
-      <form class="form form-card guide-form" data-form="guide" novalidate>
-        <div class="row">
-          <div class="field"><label for="g-name">First name</label><input id="g-name" name="first_name" autocomplete="given-name" required></div>
-          <div class="field"><label for="g-email">Email</label><input id="g-email" name="email" type="email" autocomplete="email" required></div>
-        </div>
-        <input type="hidden" name="kit" value="">
-        <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <div class="form-foot"><button class="btn" type="submit"><span>Send me the guide</span></button></div>
-        <div class="form-status" role="status" tabindex="-1" hidden></div>
-      </form>
+      <p class="muted" style="margin-top:20px">The free guide is coming soon.</p>
     </div>
     <div class="guide-art" data-anim="right" aria-hidden="true">
       <div class="book-stage"><div class="book3d">
@@ -870,7 +861,7 @@ ct += f'''<section class="intro glow contact-intro">
 </section>
 <section class="sec" style="padding-top:0">
   <div class="wrap">
-    <form class="form form-card contact-form" data-form="contact" data-thanks="Thanks, it came through. We&rsquo;ll get back to you soon." novalidate data-anim="up">
+    <form class="form form-card contact-form" action="{CONTACT_FORM_URL}" method="post" data-form="contact" data-thanks="Thanks, it came through. We&rsquo;ll get back to you soon." data-anim="up">
       <div class="row">
         <div class="field"><label for="c-name">Your name</label><input id="c-name" name="name" autocomplete="name" required></div>
         <div class="field"><label for="c-email">Email</label><input id="c-email" name="email" type="email" autocomplete="email" required></div>

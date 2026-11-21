@@ -3,8 +3,6 @@
 /* ---- Settings Nathan fills in once accounts exist ---- */
 const SITE = {
   forms: {
-    contact: '',        // Formspree endpoint, e.g. https://formspree.io/f/xxxxxxx
-    guide: '',          // free-guide signup endpoint (Kit form action or Formspree)
     questionnaire: '',  // Formspree endpoint for the client questionnaire
   },
 };
@@ -276,13 +274,6 @@ onScroll();
   hero.addEventListener('pointerleave', () => { tx = 0; ty = 0; kick(); });
 })();
 
-/* ---- free guide: remember which kit someone came from ---- */
-(() => {
-  const kit = new URLSearchParams(location.search).get('kit');
-  const f = document.querySelector('form[data-form="guide"] input[name="kit"]');
-  if (kit && f) f.value = kit;
-})();
-
 /* ---- Start a project: "Get started" on a pricing card pre-picks that package ---- */
 (() => {
   const plan = new URLSearchParams(location.search).get('plan');
@@ -391,7 +382,7 @@ document.querySelectorAll('form[data-form]').forEach((form) => {
     e.preventDefault();
     if (!form.reportValidity()) return;
     const show = (cls, msg) => { status.hidden = false; status.className = 'form-status ' + cls; status.textContent = msg; status.focus?.(); };
-    const endpoint = SITE.forms[kind];
+    const endpoint = form.getAttribute('action') || SITE.forms[kind];
     if (!endpoint) { show('err', kind === 'contact' ? 'Messages aren\'t switched on yet. Check back in a few days.' : 'Signups open soon. Check back in a few days.'); return; }
     const btn = form.querySelector('[type="submit"]'); btn.disabled = true;
     try {
