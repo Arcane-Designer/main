@@ -499,7 +499,7 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
   filter: drop-shadow(0 2px 0 #3b3e4a) drop-shadow(0 5px 0 #1d1f27) drop-shadow(0 18px 24px rgba(0,0,0,.55)); }
 .tag .w { display: inline-block; padding-bottom: .18em; margin-bottom: -.12em; background: linear-gradient(180deg, #ffffff 0%, #f6f7fb 40%, #bfc5d0 68%, #8a91a0 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .js .tag .w { animation: rise 1s cubic-bezier(.2,.8,.2,1) both; }
-.js .tag .w:nth-child(2) { animation-delay: .1s; } .js .tag .w:nth-child(3) { animation-delay: .2s; }
+.js .tag:not(.tag-soft) .w:nth-child(2) { animation-delay: .1s; } .js .tag:not(.tag-soft) .w:nth-child(3) { animation-delay: .2s; }
 @keyframes rise { from { opacity: 0; transform: translateY(.35em) rotate(3deg); filter: blur(6px); } }
 .hero-x .big { color: rgba(242,242,247,.74); max-width: 46ch; margin: 0; }
 .hero-x .row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 18px 30px; margin-top: 4px; }
