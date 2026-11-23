@@ -71,5 +71,70 @@
         "The library setting applies to results you see when browsing or searching. You can open an existing design to review or replace any asset you’ve already added."
       ]
     ]
+  },
+  {
+    "slug": "chatgpt-space-plus",
+    "date": "2026-11-23",
+    "layout": "brief",
+    "category": "Tool update",
+    "title": "ChatGPT Space is coming to Plus",
+    "summary": "The new workspace gives project briefs, meeting notes and drafts a home outside the chat. Check who can open a page before you move your team’s work there.",
+    "cover": "/assets/blog/chatgpt-space-plus.jpg",
+    "lead": "A good ChatGPT session can leave you with a three-paragraph project brief buried in a long conversation. Space gives that brief a page of its own, where you can edit it and invite someone else to work on it. OpenAI started rolling Space out to ChatGPT Plus users on November 20.",
+    "sections": [
+      {
+        "id": "what-space-adds",
+        "heading": "A home for the work you want to keep",
+        "paragraphs": [
+          "Space replaces Library on accounts that have it. It brings together pages, presentations, images and uploaded files. You can group related pages in a space, nest a page under another and ask ChatGPT to revise a section. You can also edit the page yourself.",
+          "Say you’re planning a website launch. Keep the brief on one page and put talking points for the launch email on a page beneath it. The person writing the email can leave a comment on the line that needs work. You can come back to the current draft without scrolling through the conversation that produced it.",
+          "If you’re already using ChatGPT Projects, those stay in their own part of ChatGPT. A Project can still hold the chats, files and instructions you use to work through an idea. A page in Space is useful when you want a piece of that work to have a home you can return to."
+        ]
+      },
+      {
+        "id": "who-can-open-a-page",
+        "heading": "Check who can open the page",
+        "paragraphs": [
+          "People you invite need a Plus, Pro, Business or Enterprise account with Space access. There’s no public link, and someone on ChatGPT Free can’t open the page. If you’re sending a proposal to a client and you don’t know which plan they use, send it in a format they can already open.",
+          "Sharing a page also leaves the permissions on linked files in place. If the page links to a document in a connected app, a reader still needs access to that document. If you paste or summarize the document on the page, anyone who can read the page can see that copy."
+        ]
+      },
+      {
+        "id": "is-space-worth-trying",
+        "heading": "Is Space worth trying?",
+        "paragraphs": [
+          "Yes, if you already draft in ChatGPT and keep moving finished pieces into another app just so you can find and revise them later. A meeting recap or launch brief is a good first page. If everyone who needs it already has Space, try sharing it and see whether the team actually comes back to it.",
+          "If clients or contractors need to open your documents without signing in to a particular account, keep the final copy where those readers already have access. Space can still be where you work on the draft."
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "name": "OpenAI’s November 20 release notes",
+        "url": "https://help.openai.com/en/articles/6825453-chatgpt-release-notes"
+      },
+      {
+        "name": "OpenAI’s guide to Space and sharing",
+        "url": "https://help.openai.com/en/articles/20001549-getting-started-with-space-in-chatgpt"
+      }
+    ],
+    "faq": [
+      [
+        "Is ChatGPT Space included in Plus?",
+        "Yes. OpenAI began rolling it out worldwide to ChatGPT Plus users ages 18 and older on November 20, 2026. Look for Space in the sidebar. If it doesn’t appear in the desktop app, update the app and check again as the rollout reaches more accounts."
+      ],
+      [
+        "Can I share a ChatGPT Space page with someone on the Free plan?",
+        "No. Readers need an invitation or other permission and must be signed in to a Plus, Pro, Business or Enterprise account that has Space. There is no public link."
+      ],
+      [
+        "Does ChatGPT Space replace Projects?",
+        "Space replaces Library for accounts that have it. Projects stay available for organizing chats, files and project instructions."
+      ],
+      [
+        "Can I make slides in ChatGPT Space?",
+        "OpenAI says Slides is rolling out to eligible accounts with Space. Your account may get pages before it gets Slides."
+      ]
+    ]
   }
 ]
