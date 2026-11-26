@@ -136,5 +136,69 @@
         "OpenAI says Slides is rolling out to eligible accounts with Space. Your account may get pages before it gets Slides."
       ]
     ]
+  },
+  {
+    "slug": "claude-artifacts-desktop-apps",
+    "date": "2026-11-25",
+    "layout": "brief",
+    "category": "Tool update",
+    "title": "Claude can turn artifacts into desktop apps",
+    "summary": "A calculator or timer you build in Claude can now open in its own window on a Mac or Windows PC. Here’s when it’s worth installing one.",
+    "cover": "/assets/blog/claude-artifacts-desktop-apps.jpg",
+    "lead": "If you’ve ever dug through old Claude chats to find a calculator you built, you can now give it an app icon. On November 24, Anthropic began rolling out a feature that lets you install a Claude artifact as an app. Open it from the Dock or Start menu and it gets a window of its own.",
+    "sections": [
+      {
+        "id": "what-changed",
+        "heading": "The app stays tied to the artifact",
+        "paragraphs": [
+          "An artifact is something Claude builds in a conversation that you can open and work with separately, like a form or a calculator. With the new Install as app option, you can launch that tool directly from your desktop. If you edit the original artifact later, the installed app updates too.",
+          "You still need an internet connection and a signed-in Claude Desktop account to open it. If the tool asks Claude to do something, like draft a short message from the numbers you entered, those requests count toward your plan’s usage limit."
+        ]
+      },
+      {
+        "id": "what-to-install",
+        "heading": "Start with a tool you keep reopening",
+        "paragraphs": [
+          "Say you order printed flyers every few weeks. A small calculator could multiply the number of flyers by the price per flyer, then add the setup fee. Compare it with a past quote first. If you keep coming back to it, putting it in the Dock or Start menu saves a trip through your chat history every time.",
+          "A basic calculator can work with the access an artifact normally has in a browser. A timer that needs to alert you while you’re working in another window can ask to send notifications. Full computer access is a much broader permission. It lets an app run programs and read, change, or delete files. For a calculator, the default access is enough."
+        ]
+      },
+      {
+        "id": "who-gets-it",
+        "heading": "Who can install an app?",
+        "paragraphs": [
+          "Anthropic is rolling out the beta across Claude plans, including Free. You need Claude Desktop on Mac or Windows. Team owners can control the feature, and Enterprise owners have to turn it on before members can use it. Claude Docs, Slides, and Sheets are among the artifacts that can’t be installed.",
+          "If you work on a Mac or Windows PC and already reach for one artifact several times a week, that’s the one to try. If the tool needs to open on a phone or when you’re offline, stick with a format that fits how you’ll actually use it."
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "name": "Anthropic’s November 24 announcement",
+        "url": "https://claude.com/resources/articles/install-as-app"
+      },
+      {
+        "name": "Claude Help Center guide to installation and permissions",
+        "url": "https://support.claude.com/en/articles/18516354-install-an-artifact-as-an-app"
+      }
+    ],
+    "faq": [
+      [
+        "Can I install a Claude artifact on the Free plan?",
+        "Yes, once the beta reaches your account. Open an eligible artifact in the current Claude Desktop app for Mac or Windows and look for Install as app in its menu."
+      ],
+      [
+        "Can a Claude artifact app run offline?",
+        "You need to be online and signed in to Claude Desktop to open the installed app."
+      ],
+      [
+        "Will the installed app update if I change the artifact?",
+        "Yes. Edits to the artifact carry over to the installed app. Claude asks again for any permissions you previously allowed when the app changes."
+      ],
+      [
+        "Can I install Claude Docs, Slides, or Sheets as apps?",
+        "The beta supports eligible artifacts. Claude Docs, Slides, and Sheets can’t be installed as apps."
+      ]
+    ]
   }
 ]
