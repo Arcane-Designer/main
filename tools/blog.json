@@ -200,5 +200,73 @@
         "The beta supports eligible artifacts. Claude Docs, Slides, and Sheets can’t be installed as apps."
       ]
     ]
+  },
+  {
+    "slug": "deepl-voice-aure-v2",
+    "date": "2026-11-27",
+    "layout": "brief",
+    "category": "Tool update",
+    "title": "DeepL Voice speeds up live translation",
+    "summary": "A new model cuts the delay in DeepL’s tests. Guest access depends on the host’s plan.",
+    "cover": "/assets/blog/deepl-voice-aure-v2.jpg",
+    "lead": "On a translated call, a few seconds of silence can be enough for the next person to start talking before the last point comes through. DeepL released Aure v2 on November 26 to shorten the wait for spoken translations. It’s already enabled for six languages in DeepL Voice.",
+    "sections": [
+      {
+        "id": "what-got-faster",
+        "heading": "What got faster?",
+        "paragraphs": [
+          "DeepL says Aure v2 cut the median translation delay in half compared with its previous model. DeepL measured that on short speech recordings sent directly to its translation service. On a real call, the thing to watch is whether people can take turns speaking without waiting for the previous translation to catch up.",
+          "The new model covers English, German, French, Spanish, Japanese, and Korean at launch. It turns on automatically for those supported languages in DeepL’s online meeting and in-person translation products. If you’re planning a call with another language, check DeepL’s language list for what people can hear and which captions they can read."
+        ]
+      },
+      {
+        "id": "who-can-listen",
+        "heading": "Can guests hear the translation?",
+        "paragraphs": [
+          "DeepL Voice works with Zoom, Microsoft Teams, and Google Meet. The person starting translation adds a DeepL bot to the meeting. It posts a link in the meeting chat so people can follow along with translated captions or, where available, listen to the translated speech.",
+          "If the translation host has Voice Starter, Voice Business, or eligible Voice minutes on a DeepL Translator plan, external guests can listen without a DeepL account. The older Voice for Meetings Business plan has tighter rules for translated audio. Check which plan the host has before promising spoken translation to a customer."
+        ]
+      },
+      {
+        "id": "where-to-try-it",
+        "heading": "Try it on a call you already have",
+        "paragraphs": [
+          "If you regularly review samples with a supplier in another language, try it on a short call about a product you both know. You’ll find out whether people can follow the conversation and jump in at the right time. Check a detail that matters, like a size or delivery date, against the written follow-up.",
+          "Teams already paying for DeepL Voice can try the update on a supported call now. If you’re weighing a subscription for one occasional meeting, first see whether translated captions would do the job for everyone invited."
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "name": "DeepL’s Aure v2 announcement and test methodology",
+        "url": "https://www.deepl.com/en/press-release/aure-v2"
+      },
+      {
+        "name": "DeepL’s guide to spoken translation in meetings",
+        "url": "https://support.deepl.com/hc/en-us/articles/29861723462812-About-voice-to-voice-in-online-meetings"
+      },
+      {
+        "name": "DeepL Voice language support",
+        "url": "https://support.deepl.com/hc/en-us/articles/26625846174364-DeepL-Voice-languages"
+      }
+    ],
+    "faq": [
+      [
+        "Do I have to turn on Aure v2 in DeepL Voice?",
+        "DeepL automatically uses Aure v2 for its supported languages. Use DeepL Voice as usual."
+      ],
+      [
+        "What languages does DeepL Aure v2 support?",
+        "At launch, it supports English, German, French, Spanish, Japanese, and Korean. DeepL Voice offers captions in additional languages."
+      ],
+      [
+        "Can guests use DeepL Voice during a Zoom call?",
+        "Yes. On eligible plans, guests can open DeepL’s link from the meeting chat and hear translated speech. Guest audio availability depends on the translation host’s plan."
+      ],
+      [
+        "Is DeepL Voice twice as fast on every call?",
+        "DeepL measured a 50% lower median translation delay in its own test on short recordings. The delay you hear on a live call can vary."
+      ]
+    ]
   }
 ]
